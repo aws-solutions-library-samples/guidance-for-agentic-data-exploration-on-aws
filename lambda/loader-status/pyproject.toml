@@ -1,0 +1,5 @@
+[tool.poetry]
+name="loader-status"
+version="1.0"
+description=""
+authors=["Amazon Web Services"]

@@ -1,0 +1,13 @@
+{
+    "navigation": {
+      "home": "Home",
+      "dataExplorer": "Data Explorer",
+      "dataIngestion": "Data Ingestion",
+      "dataAnalyzer": "Data Analyzer",
+      "schemaTranslator": "Schema Translator",
+      "dataClassifier": "Data Classifier",
+      "dataLoader": "Data Loader",
+      "graphSchemaEditor": "Graph Schema Editor",
+      "documentation": "Documentation"
+    }
+  }

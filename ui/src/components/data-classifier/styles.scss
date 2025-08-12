@@ -1,0 +1,11 @@
+// Add any custom styles for the ETL Loader component
+.etl-loader {
+  &__table {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__header {
+    margin-bottom: 1rem;
+  }
+}

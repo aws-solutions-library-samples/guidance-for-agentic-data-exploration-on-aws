@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: Current Time API
+  version: 1.0.0
+  description: Public API - No authentication required
+security:
+  - noAuth: []
+paths:
+  /getCurrentTime:
+    description: This API will help you to get the current date and time for a
+      specific time zone. Time zone can be obtained from location information
+      such as City or Country
+    get:
+      operationId: get_getCurrentTime
+      description: Get current date and time for a specific timezone
+      parameters:
+        - name: timezone
+          in: query
+          description: Timezone for the location. The value for this parameter can be
+            obtained from the geocoding api
+          required: false
+          schema:
+            type: string
+            example: UTC
+            default: UTC
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_date_time:
+                    type: string
+                    description: Current date and time in the specified or default timezone
+      security:
+        - noAuth: []
+components:
+  securitySchemes:
+    noAuth:
+      #checkov:skip=CKV_OPENAPI_3:Public API - No authentication required
+      type: http
+      scheme: none
+      description: |
+        This is local lambda call no external API invoked

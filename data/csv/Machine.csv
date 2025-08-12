@@ -1,0 +1,51 @@
+Machine_ID,Machine_Name,Machine_Type,Manufacturer,Model_Number,Serial_Number,Installation_Date,Last_Maintenance_Date,Next_Maintenance_Date,Machine_Status,Max_Capacity_Units_Hour,Current_Efficiency_Percentage,Power_Consumption_kWh,Warranty_Expiration_Date,Purchase_Cost,Maintenance_Cost_Annual,Expected_Lifespan_Years,Software_Version,Control_System_Type,Product_Category
+MCH001,Steel Stamping Press,Stamping,Schuler Group,SP-5000,SP5K-78542,2018-03-15,2025-02-10,2025-05-10,Active,450,92.5,75,2028-03-15,285000,12500,15,v3.2.1,Siemens S7-1500,Oil Filters
+MCH002,Filter Housing Welder,Welding,FANUC,FW-2200,FW22-65432,2018-04-20,2025-02-15,2025-05-15,Active,380,94.3,65,2028-04-20,210000,9800,12,v4.1.0,FANUC R-30iB,Oil Filters
+MCH003,Media Pleating Machine,Pleating,Grob Systems,PM-1500,PM15-98765,2018-05-05,2025-02-20,2025-05-20,Active,520,91.8,55,2028-05-05,175000,8200,10,v2.8.5,Allen-Bradley ControlLogix,Oil Filters
+MCH004,Adhesive Dispenser,Dispensing,Nordson,AD-800,AD8-34567,2018-05-25,2025-02-25,2025-05-25,Active,600,93.5,40,2028-05-25,120000,5500,8,v5.3.2,Nordson ProBlue,Oil Filters
+MCH005,End Cap Assembly,Assembly,Bosch Rexroth,ECA-3000,ECA3-23456,2018-06-10,2025-03-01,2025-06-01,Active,480,95.2,50,2028-06-10,195000,7800,12,v3.7.0,Bosch IndraMotion,Oil Filters
+MCH006,Quality Testing Station,Testing,Keyence,QTS-1000,QTS1-87654,2018-06-25,2025-03-05,2025-06-05,Active,720,96.5,35,2028-06-25,145000,6200,15,v6.2.1,Keyence CV-X Series,Oil Filters
+MCH007,Packaging System,Packaging,Krones,PKG-2500,PKG25-45678,2018-07-10,2025-03-10,2025-06-10,Active,850,94.8,45,2028-07-10,165000,7100,10,v4.5.3,Siemens SIMATIC,Oil Filters
+MCH008,Steel Backing Plate Press,Stamping,Schuler Group,BP-4000,BP4K-12345,2019-02-15,2025-01-20,2025-04-20,Active,320,93.2,80,2029-02-15,310000,13500,15,v3.2.1,Siemens S7-1500,Brake Pads
+MCH009,Friction Material Mixer,Mixing,Bühler Group,FMM-1800,FMM18-67890,2019-03-10,2025-01-25,2025-04-25,Active,250,91.5,95,2029-03-10,340000,15200,12,v2.9.4,Allen-Bradley CompactLogix,Brake Pads
+MCH010,Friction Material Applicator,Application,Nordson,FMA-2200,FMA22-90123,2019-03-25,2025-02-01,2025-05-01,Active,280,92.8,85,2029-03-25,295000,13800,10,v5.3.2,Nordson ProBlue,Brake Pads
+MCH011,Heat Curing Oven,Curing,Despatch Industries,HCO-3500,HCO35-56789,2019-04-15,2025-02-05,2025-05-05,Active,300,94.5,120,2029-04-15,385000,16500,15,v4.0.1,Honeywell HC900,Brake Pads
+MCH012,Grinding Machine,Grinding,Okuma,GM-1500,GM15-01234,2019-05-01,2025-02-10,2025-05-10,Active,270,93.7,90,2029-05-01,320000,14200,12,v3.5.2,FANUC 31i-B,Brake Pads
+MCH013,Brake Pad Slotter,Slotting,DMG MORI,BPS-1000,BPS1-78901,2019-05-15,2025-02-15,2025-05-15,Active,350,95.1,75,2029-05-15,275000,12500,10,v4.2.0,Siemens SINUMERIK,Brake Pads
+MCH014,Quality Testing Station,Testing,Keyence,QTS-1000,QTS1-23456,2019-06-01,2025-02-20,2025-05-20,Active,720,96.5,35,2029-06-01,145000,6200,15,v6.2.1,Keyence CV-X Series,Brake Pads
+MCH015,Packaging System,Packaging,Krones,PKG-2500,PKG25-89012,2019-06-15,2025-02-25,2025-05-25,Active,850,94.8,45,2029-06-15,165000,7100,10,v4.5.3,Siemens SIMATIC,Brake Pads
+MCH016,Frame Injection Molder,Molding,Engel,FIM-3000,FIM3-34567,2019-08-10,2025-01-15,2025-04-15,Active,220,92.3,110,2029-08-10,420000,18500,15,v3.8.2,Engel CC300,Air Filters
+MCH017,Media Pleating Machine,Pleating,Grob Systems,PM-1500,PM15-90123,2019-08-25,2025-01-20,2025-04-20,Active,520,91.8,55,2029-08-25,175000,8200,10,v2.8.5,Allen-Bradley ControlLogix,Air Filters
+MCH018,Media Cutting System,Cutting,Trumpf,MCS-2000,MCS2-56789,2019-09-10,2025-01-25,2025-04-25,Active,480,93.5,65,2029-09-10,230000,10500,12,v4.1.3,Trumpf TruControl,Air Filters
+MCH019,Ultrasonic Welding Machine,Welding,Branson,UWM-1200,UWM12-01234,2019-09-25,2025-02-01,2025-05-01,Active,350,94.2,70,2029-09-25,250000,11200,10,v5.0.1,Branson DCX,Air Filters
+MCH020,Quality Testing Station,Testing,Keyence,QTS-1000,QTS1-67890,2019-10-10,2025-02-05,2025-05-05,Active,720,96.5,35,2029-10-10,145000,6200,15,v6.2.1,Keyence CV-X Series,Air Filters
+MCH021,Packaging System,Packaging,Krones,PKG-2500,PKG25-12345,2019-10-25,2025-02-10,2025-05-10,Active,850,94.8,45,2029-10-25,165000,7100,10,v4.5.3,Siemens SIMATIC,Air Filters
+MCH022,Frame Injection Molder,Molding,Engel,FIM-3000,FIM3-78901,2019-12-10,2025-01-10,2025-04-10,Active,220,92.3,110,2029-12-10,420000,18500,15,v3.8.2,Engel CC300,Cabin Filters
+MCH023,Carbon Layer Applicator,Application,Nordson,CLA-1800,CLA18-23456,2019-12-25,2025-01-15,2025-04-15,Active,280,93.8,75,2029-12-25,265000,12200,12,v5.3.2,Nordson ProBlue,Cabin Filters
+MCH024,Media Pleating Machine,Pleating,Grob Systems,PM-1500,PM15-89012,2020-01-10,2025-01-20,2025-04-20,Active,520,91.8,55,2030-01-10,175000,8200,10,v2.8.5,Allen-Bradley ControlLogix,Cabin Filters
+MCH025,Ultrasonic Welding Machine,Welding,Branson,UWM-1200,UWM12-45678,2020-01-25,2025-01-25,2025-04-25,Active,350,94.2,70,2030-01-25,250000,11200,10,v5.0.1,Branson DCX,Cabin Filters
+MCH026,Quality Testing Station,Testing,Keyence,QTS-1000,QTS1-01234,2020-02-10,2025-02-01,2025-05-01,Active,720,96.5,35,2030-02-10,145000,6200,15,v6.2.1,Keyence CV-X Series,Cabin Filters
+MCH027,Packaging System,Packaging,Krones,PKG-2500,PKG25-67890,2020-02-25,2025-02-05,2025-05-05,Active,850,94.8,45,2030-02-25,165000,7100,10,v4.5.3,Siemens SIMATIC,Cabin Filters
+MCH028,Stator Winding Machine,Winding,ABB,SWM-2000,SWM2-12345,2020-04-10,2025-01-15,2025-04-15,Active,180,93.5,95,2030-04-10,385000,17200,15,v4.2.1,ABB Ability,Alternators
+MCH029,Rotor Assembly System,Assembly,Bosch Rexroth,RAS-1500,RAS15-78901,2020-04-25,2025-01-20,2025-04-20,Active,210,92.8,85,2030-04-25,350000,15800,12,v3.7.0,Bosch IndraMotion,Alternators
+MCH030,Magnetizing Machine,Magnetizing,Siemens,MM-1000,MM1-23456,2020-05-10,2025-01-25,2025-04-25,Active,250,94.2,110,2030-05-10,420000,18500,15,v5.1.3,Siemens SIMATIC,Alternators
+MCH031,Balancing Machine,Balancing,Schenck,BM-3000,BM3-89012,2020-05-25,2025-02-01,2025-05-01,Active,230,95.5,75,2030-05-25,310000,14200,12,v4.0.2,Schenck ProSpin,Alternators
+MCH032,Electrical Testing System,Testing,Keysight,ETS-2500,ETS25-45678,2020-06-10,2025-02-05,2025-05-05,Active,280,96.8,65,2030-06-10,275000,12500,10,v6.3.0,Keysight PathWave,Alternators
+MCH033,Final Assembly Line,Assembly,Bosch Rexroth,FAL-3500,FAL35-01234,2020-06-25,2025-02-10,2025-05-10,Active,200,93.2,90,2030-06-25,365000,16200,15,v3.7.0,Bosch IndraMotion,Alternators
+MCH034,Packaging System,Packaging,Krones,PKG-2500,PKG25-67890,2020-07-10,2025-02-15,2025-05-15,Active,850,94.8,45,2030-07-10,165000,7100,10,v4.5.3,Siemens SIMATIC,Alternators
+MCH035,High-Speed Stamping Press,Stamping,Schuler Group,HSP-6000,HSP6K-12345,2018-08-15,2025-03-10,2025-06-10,Active,550,93.5,85,2028-08-15,325000,14500,15,v3.3.1,Siemens S7-1500,Oil Filters
+MCH036,Precision Filter Welder,Welding,FANUC,PFW-2500,PFW25-67890,2018-09-20,2025-03-15,2025-06-15,Active,420,95.3,70,2028-09-20,240000,10800,12,v4.2.0,FANUC R-30iB,Oil Filters
+MCH037,Advanced Media Pleater,Pleating,Grob Systems,AMP-1800,AMP18-23456,2018-10-05,2025-03-20,2025-06-20,Active,580,92.8,60,2028-10-05,195000,9200,10,v2.9.5,Allen-Bradley ControlLogix,Oil Filters
+MCH038,High-Precision Brake Press,Stamping,Schuler Group,HPB-5000,HPB5K-89012,2019-07-15,2025-02-20,2025-05-20,Active,380,94.2,90,2029-07-15,350000,15500,15,v3.3.1,Siemens S7-1500,Brake Pads
+MCH039,Advanced Friction Mixer,Mixing,Bühler Group,AFM-2200,AFM22-45678,2019-08-10,2025-02-25,2025-05-25,Active,290,92.5,105,2029-08-10,380000,17200,12,v3.0.4,Allen-Bradley CompactLogix,Brake Pads
+MCH040,Precision Material Applicator,Application,Nordson,PMA-2500,PMA25-01234,2019-08-25,2025-03-01,2025-06-01,Active,320,93.8,95,2029-08-25,325000,15800,10,v5.4.2,Nordson ProBlue,Brake Pads
+MCH041,High-Capacity Frame Molder,Molding,Engel,HCF-3500,HCF35-67890,2019-11-10,2025-02-15,2025-05-15,Active,260,93.3,120,2029-11-10,460000,20500,15,v3.9.2,Engel CC300,Air Filters
+MCH042,Advanced Media Pleater,Pleating,Grob Systems,AMP-1800,AMP18-23456,2019-11-25,2025-02-20,2025-05-20,Active,580,92.8,60,2029-11-25,195000,9200,10,v2.9.5,Allen-Bradley ControlLogix,Air Filters
+MCH043,Precision Media Cutter,Cutting,Trumpf,PMC-2500,PMC25-89012,2019-12-10,2025-02-25,2025-05-25,Active,520,94.5,70,2029-12-10,260000,11500,12,v4.2.3,Trumpf TruControl,Air Filters
+MCH044,Advanced Frame Molder,Molding,Engel,AFM-3500,AFM35-45678,2020-03-10,2025-02-10,2025-05-10,Active,260,93.3,120,2030-03-10,460000,20500,15,v3.9.2,Engel CC300,Cabin Filters
+MCH045,High-Efficiency Carbon Applicator,Application,Nordson,HCA-2200,HCA22-01234,2020-03-25,2025-02-15,2025-05-15,Active,320,94.8,85,2030-03-25,295000,13200,12,v5.4.2,Nordson ProBlue,Cabin Filters
+MCH046,Advanced Media Pleater,Pleating,Grob Systems,AMP-1800,AMP18-67890,2020-04-10,2025-02-20,2025-05-20,Active,580,92.8,60,2030-04-10,195000,9200,10,v2.9.5,Allen-Bradley ControlLogix,Cabin Filters
+MCH047,High-Precision Stator Winder,Winding,ABB,HSW-2500,HSW25-23456,2020-07-10,2025-02-15,2025-05-15,Active,220,94.5,105,2030-07-10,425000,19200,15,v4.3.1,ABB Ability,Alternators
+MCH048,Advanced Rotor Assembler,Assembly,Bosch Rexroth,ARA-1800,ARA18-89012,2020-07-25,2025-02-20,2025-05-20,Active,250,93.8,95,2030-07-25,390000,17800,12,v3.8.0,Bosch IndraMotion,Alternators
+MCH049,High-Power Magnetizer,Magnetizing,Siemens,HPM-1500,HPM15-45678,2020-08-10,2025-02-25,2025-05-25,Active,290,95.2,120,2030-08-10,460000,20500,15,v5.2.3,Siemens SIMATIC,Alternators
+MCH050,Precision Balancer,Balancing,Schenck,PB-3500,PB35-01234,2020-08-25,2025-03-01,2025-06-01,Active,270,96.5,85,2030-08-25,350000,16200,12,v4.1.2,Schenck ProSpin,Alternators

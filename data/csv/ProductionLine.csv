@@ -1,0 +1,36 @@
+Line_ID,Line_Name,Facility_ID,Product_Category,Primary_Product_ID,Secondary_Product_ID,Line_Type,Installation_Date,Max_Capacity_Units_Day,Current_Efficiency_Percentage,Shift_Pattern,Line_Manager,Last_Maintenance_Date,Next_Maintenance_Date,Downtime_Hours_MTD,OEE_Score,Quality_Rating,Status
+PL001,Oil Filter Line 1,FAC001,Oil Filters,PRD10001,PRD10002,Assembly,2018-05-12,3500,92.5,3 Shifts,James Wilson,2025-03-10,2025-06-10,12.5,85.3,A,Active
+PL002,Oil Filter Line 2,FAC001,Oil Filters,PRD10003,PRD10004,Heavy Duty,2019-08-23,2800,89.7,3 Shifts,Maria Rodriguez,2025-03-05,2025-06-05,18.2,82.1,A,Active
+PL003,Brake Pad Line 1,FAC001,Brake Pads,PRD10005,PRD10006,Precision,2020-02-15,2200,94.2,3 Shifts,Thomas Lee,2025-03-15,2025-06-15,8.7,88.9,A+,Active
+PL004,Brake Pad Line 2,FAC001,Brake Pads,PRD10007,PRD10008,Performance,2020-06-30,1800,91.8,3 Shifts,Sophia Chen,2025-02-28,2025-05-28,14.3,84.5,A,Active
+PL005,Air Filter Line,FAC001,Air Filters,PRD10009,PRD10010,Standard,2019-11-05,2200,90.5,3 Shifts,Daniel Martinez,2025-03-20,2025-06-20,15.8,83.2,A-,Active
+PL006,Oil Filter Line 3,FAC002,Oil Filters,PRD10001,PRD10002,Assembly,2017-09-18,3200,88.3,3 Shifts,Emily Johnson,2025-02-15,2025-04-15,22.4,80.7,B+,Active
+PL007,Brake Pad Line 3,FAC002,Brake Pads,PRD10005,PRD10006,Precision,2018-11-12,2000,93.1,3 Shifts,Michael Brown,2025-02-20,2025-04-20,10.2,86.5,A,Active
+PL008,Air Filter Line 2,FAC002,Air Filters,PRD10011,PRD10012,Heavy Duty,2019-03-25,1900,89.8,3 Shifts,Jessica Taylor,2025-03-01,2025-05-01,16.7,82.3,A-,Active
+PL009,Cabin Filter Line 1,FAC002,Cabin Filters,PRD10013,PRD10014,Standard,2020-01-10,2100,92.4,3 Shifts,David Garcia,2025-02-25,2025-04-25,12.1,85.8,A,Active
+PL010,Alternator Line 1,FAC002,Alternators,PRD10017,PRD10018,Standard,2020-08-05,1500,95.2,3 Shifts,Sarah Williams,2025-03-08,2025-05-08,7.5,89.6,A+,Active
+PL025,R&D Test Line 1,FAC003,Oil Filters,PRD10001,PRD10004,R&D,2020-05-15,500,85.0,1 Shift,Robert Chen,2025-01-20,2025-04-20,5.2,78.5,B+,Active
+PL026,R&D Test Line 2,FAC003,Brake Pads,PRD10005,PRD10008,R&D,2020-06-20,400,86.5,1 Shift,Lisa Thompson,2025-01-25,2025-04-25,4.8,79.2,B+,Active
+PL011,Oil Filter Line 4,FAC004,Oil Filters,PRD10003,PRD10004,Heavy Duty,2018-07-20,3000,91.2,3 Shifts,Robert Thompson,2025-03-12,2025-06-12,14.8,84.9,A,Active
+PL012,Oil Filter Line 5,FAC004,Oil Filters,PRD10001,PRD10002,Assembly,2019-05-15,3300,90.5,3 Shifts,Jennifer Garcia,2025-03-18,2025-06-18,15.3,83.7,A-,Active
+PL013,Brake Pad Line 4,FAC004,Brake Pads,PRD10007,PRD10008,Performance,2020-03-10,2100,93.8,3 Shifts,Christopher Davis,2025-03-02,2025-06-02,9.6,87.4,A,Active
+PL014,Air Filter Line 3,FAC004,Air Filters,PRD10009,PRD10010,Standard,2019-10-08,2300,89.7,3 Shifts,Amanda Wilson,2025-02-25,2025-05-25,17.2,82.1,B+,Active
+PL015,Cabin Filter Line 2,FAC004,Cabin Filters,PRD10015,PRD10016,Specialty,2020-04-22,1800,94.5,3 Shifts,Kevin Martinez,2025-03-15,2025-06-15,8.3,88.2,A+,Active
+PL027,Prototype Line 1,FAC005,Air Filters,PRD10009,PRD10012,R&D,2019-08-15,600,87.2,1 Shift,David Wilson,2025-02-15,2025-05-15,6.5,80.1,B+,Active
+PL028,Prototype Line 2,FAC005,Cabin Filters,PRD10013,PRD10016,R&D,2019-09-20,550,88.5,1 Shift,Rachel Adams,2025-02-20,2025-05-20,5.8,81.3,B+,Active
+PL029,Prototype Line 3,FAC005,Alternators,PRD10017,PRD10020,R&D,2019-10-25,400,89.0,1 Shift,Mark Johnson,2025-02-25,2025-05-25,5.2,82.0,A-,Active
+PL016,Oil Filter Line 6,FAC006,Oil Filters,PRD10001,PRD10002,Assembly,2017-11-30,3100,87.5,3 Shifts,Michelle Lee,2025-02-18,2025-05-18,23.6,79.8,B+,Active
+PL017,Brake Pad Line 5,FAC006,Brake Pads,PRD10005,PRD10006,Precision,2018-08-15,2050,92.3,3 Shifts,Andrew Johnson,2025-03-05,2025-06-05,11.4,85.7,A,Active
+PL018,Air Filter Line 4,FAC006,Air Filters,PRD10011,PRD10012,Heavy Duty,2019-06-20,1950,88.9,3 Shifts,Elizabeth Brown,2025-02-28,2025-05-28,18.5,81.2,B+,Active
+PL019,Alternator Line 2,FAC006,Alternators,PRD10019,PRD10020,Heavy Duty,2020-09-12,1400,94.8,3 Shifts,Amanda Taylor,2025-03-10,2025-06-10,8.9,88.5,A+,Active
+PL030,Quality Test Line,FAC007,Oil Filters,PRD10001,PRD10003,Testing,2020-01-15,800,91.5,2 Shifts,Kevin Martinez,2025-03-05,2025-06-05,7.2,84.3,A-,Active
+PL031,Quality Test Line,FAC007,Brake Pads,PRD10005,PRD10007,Testing,2020-02-20,700,92.0,2 Shifts,Laura Wilson,2025-03-10,2025-06-10,6.8,85.1,A-,Active
+PL032,Innovation Line 1,FAC008,Air Filters,PRD10009,PRD10012,R&D,2020-10-15,450,90.5,1 Shift,Michelle Lee,2025-02-20,2025-05-20,4.5,83.2,A-,Active
+PL033,Innovation Line 2,FAC008,Cabin Filters,PRD10013,PRD10016,R&D,2020-11-20,400,91.2,1 Shift,Jason Smith,2025-02-25,2025-05-25,4.2,84.0,A-,Active
+PL020,Oil Filter Line 7,FAC009,Oil Filters,PRD10003,PRD10004,Heavy Duty,2018-04-05,2900,90.8,3 Shifts,William Davis,2025-03-08,2025-06-08,15.7,84.2,A,Active
+PL021,Oil Filter Line 8,FAC009,Oil Filters,PRD10001,PRD10002,Assembly,2019-02-18,3250,89.2,3 Shifts,Stephanie Rodriguez,2025-02-25,2025-05-25,19.3,82.5,A-,Active
+PL022,Brake Pad Line 6,FAC009,Brake Pads,PRD10007,PRD10008,Performance,2020-01-25,2150,93.5,3 Shifts,Christopher Brown,2025-03-12,2025-06-12,10.1,87.0,A,Active
+PL023,Air Filter Line 5,FAC009,Air Filters,PRD10009,PRD10010,Standard,2019-09-15,2250,88.6,3 Shifts,Nicole Wilson,2025-03-01,2025-06-01,20.4,81.3,B+,Active
+PL024,Cabin Filter Line 3,FAC009,Cabin Filters,PRD10013,PRD10014,Standard,2020-05-08,1950,92.7,3 Shifts,Matthew Garcia,2025-03-18,2025-06-18,11.8,86.4,A,Active
+PL034,Quality Test Line,FAC010,Air Filters,PRD10009,PRD10011,Testing,2020-03-15,750,91.8,2 Shifts,Stephanie Rodriguez,2025-03-10,2025-06-10,7.0,84.6,A-,Active
+PL035,Quality Test Line,FAC010,Cabin Filters,PRD10013,PRD10015,Testing,2020-04-20,700,92.3,2 Shifts,Brian Taylor,2025-03-15,2025-06-15,6.5,85.4,A-,Active

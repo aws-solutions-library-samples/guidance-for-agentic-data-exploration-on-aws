@@ -1,0 +1,5 @@
+[tool.poetry]
+name="data-analyzer"
+version="1.0"
+description=""
+authors=["Amazon Web Services"]

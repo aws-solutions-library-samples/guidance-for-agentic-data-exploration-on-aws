@@ -1,0 +1,29 @@
+.schema-editor-container {
+  max-width: 800px;
+}
+
+.textarea-container {
+  position: relative;
+}
+
+.textarea-unsaved-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #d13212;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.unsaved-changes-text {
+  color: #d13212;
+  padding-left: 8px;
+  padding-top: 6px;
+  font-size: 14px;
+  display: inline-block;
+  margin-left: 8px;
+  font-weight: 500;
+}

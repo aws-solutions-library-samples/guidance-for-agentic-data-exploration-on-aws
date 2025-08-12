@@ -1,0 +1,5 @@
+[tool.poetry]
+name="etl-processor"
+version="1.0"
+description=""
+authors=["Amazon Web Services"]

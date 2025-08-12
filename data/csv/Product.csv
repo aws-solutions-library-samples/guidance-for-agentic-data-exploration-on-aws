@@ -1,0 +1,21 @@
+Product_ID,Product_Name,Product_Category,Description,Base_Price,Warranty_Period_Months,Min_Order_Qty,Lead_Time_Days,Status
+PRD10001,Premium Oil Filter,Oil Filters,High-performance oil filter with extended service life,12.99,12,50,14,Active
+PRD10002,Economy Oil Filter,Oil Filters,Cost-effective oil filter for standard maintenance,8.99,6,100,10,Active
+PRD10003,Heavy Duty Oil Filter,Oil Filters,Reinforced oil filter for commercial and heavy-duty applications,19.99,18,25,21,Active
+PRD10004,Racing Oil Filter,Oil Filters,High-flow oil filter designed for performance vehicles,24.99,12,20,30,Active
+PRD10005,Ceramic Brake Pads,Brake Pads,Premium ceramic brake pads with low dust and noise,49.99,24,20,14,Active
+PRD10006,Semi-Metallic Brake Pads,Brake Pads,Durable semi-metallic brake pads for everyday driving,39.99,18,30,10,Active
+PRD10007,Performance Brake Pads,Brake Pads,High-performance brake pads for sport and racing applications,69.99,12,15,21,Active
+PRD10008,Commercial Brake Pads,Brake Pads,Heavy-duty brake pads for commercial vehicles,59.99,24,10,30,Active
+PRD10009,Standard Air Filter,Air Filters,Regular replacement air filter for passenger vehicles,14.99,12,40,7,Active
+PRD10010,High-Flow Air Filter,Air Filters,Performance air filter with increased airflow,29.99,24,25,14,Active
+PRD10011,Heavy Duty Air Filter,Air Filters,Reinforced air filter for trucks and commercial vehicles,24.99,18,20,21,Active
+PRD10012,Washable Air Filter,Air Filters,Reusable air filter that can be cleaned and reinstalled,39.99,36,15,14,Active
+PRD10013,Standard Cabin Filter,Cabin Filters,Basic cabin air filter for dust and pollen filtration,19.99,12,30,7,Active
+PRD10014,HEPA Cabin Filter,Cabin Filters,Advanced HEPA cabin filter for superior air quality,29.99,12,20,14,Active
+PRD10015,Carbon Cabin Filter,Cabin Filters,Activated carbon cabin filter for odor elimination,34.99,12,20,14,Active
+PRD10016,Hypoallergenic Cabin Filter,Cabin Filters,Specialized cabin filter for allergy sufferers,39.99,12,15,21,Active
+PRD10017,Standard Alternator,Alternators,OEM replacement alternator for passenger vehicles,129.99,24,10,21,Active
+PRD10018,High-Output Alternator,Alternators,Performance alternator with increased amperage output,199.99,18,5,30,Active
+PRD10019,Heavy Duty Alternator,Alternators,Reinforced alternator for commercial and fleet vehicles,249.99,36,5,30,Active
+PRD10020,Compact Alternator,Alternators,Space-saving alternator design for limited engine compartments,159.99,24,8,21,Active

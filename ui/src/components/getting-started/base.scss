@@ -1,0 +1,9 @@
+@use '@cloudscape-design/design-tokens/index.scss' as awsui;
+
+.splash-title {
+  color: awsui.$color-text-home-header-default;
+}
+
+span.custom-home-text-secondary {
+  color: awsui.$color-text-home-header-default;
+}

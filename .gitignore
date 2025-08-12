@@ -1,0 +1,28 @@
+esbuild.js
+!jest.config.js
+*.d.ts
+node_modules
+dist
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
+
+!postcss.config.js
+!vite-env.d.ts
+!download.js
+
+# Mac OS system files
+**/.DS_Store
+
+aws-exports*
+ui/build/*
+ui/cypress/screenshots
+package-lock.json
+
+# TypeScript compilation artifacts
+lib/*.js
+bin/*.js
+test/*.js
+!lambda/**/node_modules/**/*.js

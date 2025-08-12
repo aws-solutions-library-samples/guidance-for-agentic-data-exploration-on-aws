@@ -1,0 +1,95 @@
+{
+  "name": "panoptic-v1",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "dependencies": {
+    "@aws-amplify/ui-react": "6.11.2",
+    "@aws-amplify/ui-react-storage": "3.11.0",
+    "@aws-sdk/client-bedrock-agent-runtime": "3.787.0",
+    "@aws-sdk/client-cloudwatch": "^3.804.0",
+    "@aws-sdk/client-ssm": "3.787.0",
+    "@cloudscape-design/chat-components": "1.0.37",
+    "@cloudscape-design/code-view": "3.0.50",
+    "@cloudscape-design/collection-hooks": "1.0.70",
+    "@cloudscape-design/components": "3.0.954",
+    "@cloudscape-design/design-tokens": "3.0.55",
+    "@cloudscape-design/global-styles": "1.0.41",
+    "@tanstack/react-query": "5.69.0",
+    "aws-amplify": "6.15.3",
+    "highlight.js": "11.11.1",
+    "i18next": "25.0.0",
+    "i18next-browser-languagedetector": "8.0.4",
+    "i18next-http-backend": "3.0.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-error-boundary": "5.0.0",
+    "react-force-graph-2d": "1.27.1",
+    "react-i18next": "15.4.1",
+    "react-markdown": "10.0.0",
+    "react-router-dom": "7.5.2",
+    "rehype-raw": "7.0.0",
+    "remark-gfm": "4.0.1",
+    "use-debounce": "^10.0.4"
+  },
+  "scripts": {
+    "start": "vite",
+    "start:msw": "VITE_USE_MOCKS=true vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "test": "vitest",
+    "test:e2e": "npx cypress run"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@aws-sdk/credential-providers": "3.758.0",
+    "@cypress/vite-plugin-cypress-esm": "1.1.2",
+    "@tanstack/react-query-devtools": "5.69.0",
+    "@testing-library/react": "16.2.0",
+    "@types/node": "22.10.10",
+    "@types/react": "19.0.12",
+    "@types/react-dom": "19.1.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "ajv": "7.2.4",
+    "aws-cdk": "2.1010.0",
+    "aws-cdk-lib": "2.189.1",
+    "constructs": "10.4.2",
+    "cypress": "14.1.0",
+    "cypress-vite": "1.6.0",
+    "esbuild": "0.25.1",
+    "jsdom": "26.0.0",
+    "msw": "2.7.3",
+    "sass": "1.85.0",
+    "tsx": "4.19.3",
+    "typescript": "5.8.2",
+    "vite": "6.2.7",
+    "vitest": "3.0.8"
+  },
+  "msw": {
+    "workerDirectory": [
+      "",
+      "public"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["es2022", "dom"],
+    "strict": true,
+    "sourceMap": true,
+    "importHelpers": true,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/**.ts", "src/**/**.tsx"],
+  "exclude": ["**/*.test.tsx"]
+}

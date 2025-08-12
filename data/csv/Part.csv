@@ -1,0 +1,201 @@
+Part_ID,Part_Name,Part_Category,Product_ID,Material_Type,Supplier_ID,Unit_Cost,Min_Stock_Level,Lead_Time_Days,Status
+PRT20001,Steel Housing Canister,Metal Components,PRD10001,Steel,SPL100001,2.50,200,30,Active
+PRT20002,Steel Center Tube,Metal Components,PRD10001,Steel,SPL100002,1.20,300,25,Active
+PRT20003,Steel Support Mesh,Metal Components,PRD10001,Steel,SPL100003,0.85,400,20,Active
+PRT20004,Steel End Plates,Metal Components,PRD10001,Steel,SPL100004,1.10,250,15,Active
+PRT20005,Steel Threaded Collar,Metal Components,PRD10001,Steel,SPL100001,0.95,300,30,Active
+PRT20006,Steel Relief Valve Spring,Metal Components,PRD10001,Steel,SPL100002,0.45,500,25,Active
+PRT20007,Steel Bypass Valve Spring,Metal Components,PRD10001,Steel,SPL100003,0.40,500,20,Active
+PRT20008,Nitrile Rubber Base Gasket,Rubber Components,PRD10001,Rubber,SPL100006,0.35,600,15,Active
+PRT20009,Nitrile Rubber Anti-Drainback Valve,Rubber Components,PRD10001,Rubber,SPL100007,0.65,400,20,Active
+PRT20010,Rubber End Disc Seals,Rubber Components,PRD10001,Rubber,SPL100008,0.30,700,15,Active
+PRT20011,Cellulose Synthetic Blend Media,Filter Media,PRD10001,Filter Media,SPL100016,1.75,200,30,Active
+PRT20012,Spiral Wound Outer Wrap,Filter Media,PRD10001,Filter Media,SPL100017,0.90,300,25,Active
+PRT20013,Support Media Layer,Filter Media,PRD10001,Filter Media,SPL100018,0.80,350,20,Active
+PRT20014,Metal Bypass Valve Assembly,Hardware,PRD10001,Metal,SPL100001,1.25,200,30,Active
+PRT20015,Metal Relief Valve Assembly,Hardware,PRD10001,Metal,SPL100002,1.30,200,25,Active
+PRT20016,End Cap Assembly,Hardware,PRD10001,Metal,SPL100003,0.95,250,20,Active
+PRT20017,Low Carbon Steel Backing Plate,Metal Components,PRD10005,Steel,SPL100001,3.75,150,30,Active
+PRT20018,Steel Attachment Clips,Metal Components,PRD10005,Steel,SPL100002,0.85,400,25,Active
+PRT20019,Steel Wear Indicators,Metal Components,PRD10005,Steel,SPL100003,0.95,350,20,Active
+PRT20020,Steel Mesh Shims,Metal Components,PRD10005,Steel,SPL100004,1.15,300,15,Active
+PRT20021,Ceramic Fibers,Friction Materials,PRD10005,Ceramic,SPL100011,4.50,100,35,Active
+PRT20022,Steel Wool Fibers,Friction Materials,PRD10005,Steel,SPL100001,1.25,250,30,Active
+PRT20023,Copper Fibers,Friction Materials,PRD10005,Copper,SPL100021,2.75,150,35,Active
+PRT20024,Aramid Fibers,Friction Materials,PRD10005,Synthetic,SPL100011,5.25,80,40,Active
+PRT20025,Metal Powder Blend,Friction Materials,PRD10005,Metal,SPL100001,2.10,200,30,Active
+PRT20026,Rubber Composite Shims,Rubber Components,PRD10005,Rubber,SPL100006,1.35,250,15,Active
+PRT20027,Rubber Thermal Insulators,Rubber Components,PRD10005,Rubber,SPL100007,1.45,200,20,Active
+PRT20028,Rubber Dampeners,Rubber Components,PRD10005,Rubber,SPL100008,1.20,250,15,Active
+PRT20029,Phenolic Resin Compound,Binding Materials,PRD10005,Chemical,SPL100026,3.85,100,25,Active
+PRT20030,Surface Coating Material,Binding Materials,PRD10005,Chemical,SPL100027,2.95,120,20,Active
+PRT20031,Anti-Squeal Compound,Binding Materials,PRD10005,Chemical,SPL100028,3.25,100,25,Active
+PRT20032,Metal Retention Clips,Hardware,PRD10005,Metal,SPL100001,0.75,400,30,Active
+PRT20033,Wear Sensor Clips,Hardware,PRD10005,Metal,SPL100002,1.15,300,25,Active
+PRT20034,Installation Hardware,Hardware,PRD10005,Metal,SPL100003,1.35,250,20,Active
+PRT20035,Polypropylene Main Frame,Frame Components,PRD10009,Plastic,SPL100011,1.95,200,30,Active
+PRT20036,Plastic Cross Braces,Frame Components,PRD10009,Plastic,SPL100012,0.85,350,25,Active
+PRT20037,Plastic End Caps,Frame Components,PRD10009,Plastic,SPL100013,0.75,400,20,Active
+PRT20038,Steel Support Mesh Grid,Frame Components,PRD10009,Steel,SPL100001,1.45,250,30,Active
+PRT20039,Pleated Primary Filter Media,Filter Media,PRD10009,Filter Media,SPL100016,2.85,150,30,Active
+PRT20040,Pre-Filter Layer,Filter Media,PRD10009,Filter Media,SPL100017,1.65,200,25,Active
+PRT20041,Support Media Layer,Filter Media,PRD10009,Filter Media,SPL100018,1.45,250,20,Active
+PRT20042,Media Spacing Elements,Filter Media,PRD10009,Plastic,SPL100011,0.55,500,30,Active
+PRT20043,Polyurethane Sealing Gasket,Sealing Components,PRD10009,Rubber,SPL100006,0.95,300,15,Active
+PRT20044,Rubber Edge Seals,Sealing Components,PRD10009,Rubber,SPL100007,0.85,350,20,Active
+PRT20045,Frame Seal Material,Sealing Components,PRD10009,Rubber,SPL100008,0.75,400,15,Active
+PRT20046,Cross Brace Fasteners,Hardware,PRD10009,Metal,SPL100001,0.35,600,30,Active
+PRT20047,Frame Assembly Clips,Hardware,PRD10009,Metal,SPL100002,0.45,550,25,Active
+PRT20048,Support Grid Fasteners,Hardware,PRD10009,Metal,SPL100003,0.40,600,20,Active
+PRT20049,Polypropylene Outer Frame,Frame Components,PRD10013,Plastic,SPL100011,2.15,180,30,Active
+PRT20050,Plastic Reinforcement Ribs,Frame Components,PRD10013,Plastic,SPL100012,0.95,300,25,Active
+PRT20051,Plastic Mounting Tabs,Frame Components,PRD10013,Plastic,SPL100013,0.65,450,20,Active
+PRT20052,Steel Support Mesh,Frame Components,PRD10013,Steel,SPL100001,1.35,250,30,Active
+PRT20053,Melt Blown Polypropylene Media,Filter Media,PRD10013,Filter Media,SPL100016,2.95,140,30,Active
+PRT20054,HEPA Filter Media,Filter Media,PRD10014,Filter Media,SPL100017,4.75,100,25,Active
+PRT20055,Electrostatic Media Layer,Filter Media,PRD10013,Filter Media,SPL100018,2.45,150,20,Active
+PRT20056,Carbon Filter Media,Filter Media,PRD10015,Filter Media,SPL100031,3.85,120,35,Active
+PRT20057,Pre-Filter Layer,Filter Media,PRD10013,Filter Media,SPL100017,1.55,200,25,Active
+PRT20058,Rubber Edge Sealing Strips,Sealing Components,PRD10013,Rubber,SPL100006,0.85,350,15,Active
+PRT20059,Rubber Mounting Seals,Sealing Components,PRD10013,Rubber,SPL100007,0.95,300,20,Active
+PRT20060,Frame Gaskets,Sealing Components,PRD10013,Rubber,SPL100008,0.75,400,15,Active
+PRT20061,Media Spacing Elements,Assembly Components,PRD10013,Plastic,SPL100011,0.45,550,30,Active
+PRT20062,Layer Bonding Adhesive,Assembly Components,PRD10013,Chemical,SPL100026,1.25,200,25,Active
+PRT20063,Frame Assembly Adhesive,Assembly Components,PRD10013,Chemical,SPL100027,1.35,180,20,Active
+PRT20064,Hardened Steel Shaft,Rotor Assembly,PRD10017,Steel,SPL100001,8.75,50,30,Active
+PRT20065,Copper Field Coil Windings,Rotor Assembly,PRD10017,Copper,SPL100021,12.50,30,35,Active
+PRT20066,Steel Pole Pieces,Rotor Assembly,PRD10017,Steel,SPL100002,6.85,60,25,Active
+PRT20067,Copper Slip Rings,Rotor Assembly,PRD10017,Copper,SPL100022,7.95,50,30,Active
+PRT20068,Steel Rotor Core,Rotor Assembly,PRD10017,Steel,SPL100003,9.25,40,20,Active
+PRT20069,Silicon Steel Laminated Core,Stator Assembly,PRD10017,Steel,SPL100004,11.75,35,15,Active
+PRT20070,Copper Phase Windings,Stator Assembly,PRD10017,Copper,SPL100023,14.50,25,35,Active
+PRT20071,Stator Insulation Material,Stator Assembly,PRD10017,Insulation,SPL100016,4.95,80,30,Active
+PRT20072,Core Fasteners,Stator Assembly,PRD10017,Metal,SPL100001,1.25,200,30,Active
+PRT20073,Cast Aluminum Drive End Frame,Frame Components,PRD10017,Aluminum,SPL100041,9.85,40,45,Active
+PRT20074,Cast Aluminum Slip Ring End Frame,Frame Components,PRD10017,Aluminum,SPL100042,9.65,40,40,Active
+PRT20075,Steel Through Bolts,Frame Components,PRD10017,Steel,SPL100001,1.45,200,30,Active
+PRT20076,Mounting Brackets,Frame Components,PRD10017,Steel,SPL100002,3.75,100,25,Active
+PRT20077,Silicon Diodes,Electrical Components,PRD10017,Electronic,SPL100053,2.95,150,45,Active
+PRT20078,Voltage Regulator Board,Electrical Components,PRD10017,Electronic,SPL100054,8.50,50,40,Active
+PRT20079,Carbon Copper Brushes,Electrical Components,PRD10017,Composite,SPL100055,3.25,120,50,Active
+PRT20080,Terminal Connectors,Electrical Components,PRD10017,Metal,SPL100001,1.85,180,30,Active
+PRT20081,Wiring Harness,Electrical Components,PRD10017,Composite,SPL100053,4.95,80,45,Active
+PRT20082,Steel Ball Bearings,Bearing Assembly,PRD10017,Steel,SPL100036,5.75,70,30,Active
+PRT20083,Bearing Seals,Bearing Assembly,PRD10017,Rubber,SPL100006,1.95,150,15,Active
+PRT20084,Bearing Retainers,Bearing Assembly,PRD10017,Metal,SPL100001,2.25,140,30,Active
+PRT20085,Steel Pulley,Drive Components,PRD10017,Steel,SPL100001,7.85,50,30,Active
+PRT20086,Cooling Fan,Drive Components,PRD10017,Plastic,SPL100011,3.95,90,30,Active
+PRT20087,Pulley Bolt,Drive Components,PRD10017,Steel,SPL100002,0.95,300,25,Active
+PRT20088,Woodruff Key,Drive Components,PRD10017,Steel,SPL100003,0.75,350,20,Active
+PRT20089,Rubber Mounting Grommets,Sealing/Insulation,PRD10017,Rubber,SPL100006,1.15,250,15,Active
+PRT20090,Rubber Sealing Rings,Sealing/Insulation,PRD10017,Rubber,SPL100007,1.25,230,20,Active
+PRT20091,Rubber Insulation Bushings,Sealing/Insulation,PRD10017,Rubber,SPL100008,1.35,220,15,Active
+PRT20092,Plastic Terminal Covers,Sealing/Insulation,PRD10017,Plastic,SPL100011,1.45,200,30,Active
+PRT20093,Heat Sink Compound,Sealing/Insulation,PRD10017,Chemical,SPL100026,2.95,120,25,Active
+PRT20094,Premium Steel Housing Canister,Metal Components,PRD10002,Steel,SPL100065,2.75,180,42,Active
+PRT20095,Reinforced Center Tube,Metal Components,PRD10002,Steel,SPL100066,1.35,280,38,Active
+PRT20096,High-Density Support Mesh,Metal Components,PRD10002,Steel,SPL100067,0.95,380,32,Active
+PRT20097,Precision End Plates,Metal Components,PRD10002,Steel,SPL100068,1.25,230,40,Active
+PRT20098,Heavy-Duty Threaded Collar,Metal Components,PRD10002,Steel,SPL100069,1.10,280,48,Active
+PRT20099,High-Tension Relief Valve Spring,Metal Components,PRD10002,Steel,SPL100065,0.55,480,42,Active
+PRT20100,Precision Bypass Valve Spring,Metal Components,PRD10002,Steel,SPL100066,0.50,480,38,Active
+PRT20101,Premium Nitrile Rubber Gasket,Rubber Components,PRD10002,Rubber,SPL100070,0.45,580,32,Active
+PRT20102,Enhanced Anti-Drainback Valve,Rubber Components,PRD10002,Rubber,SPL100071,0.75,380,30,Active
+PRT20103,High-Performance End Disc Seals,Rubber Components,PRD10002,Rubber,SPL100072,0.40,680,28,Active
+PRT20104,Advanced Synthetic Blend Media,Filter Media,PRD10002,Filter Media,SPL100080,1.95,180,35,Active
+PRT20105,Reinforced Outer Wrap,Filter Media,PRD10002,Filter Media,SPL100081,1.05,280,30,Active
+PRT20106,Premium Support Media Layer,Filter Media,PRD10002,Filter Media,SPL100082,0.95,330,38,Active
+PRT20107,Enhanced Bypass Valve Assembly,Hardware,PRD10002,Metal,SPL100065,1.45,180,42,Active
+PRT20108,Precision Relief Valve Assembly,Hardware,PRD10002,Metal,SPL100066,1.50,180,38,Active
+PRT20109,Reinforced End Cap Assembly,Hardware,PRD10002,Metal,SPL100067,1.15,230,32,Active
+PRT20110,Heavy-Duty Steel Backing Plate,Metal Components,PRD10006,Steel,SPL100065,4.25,130,42,Active
+PRT20111,Reinforced Attachment Clips,Metal Components,PRD10006,Steel,SPL100066,1.05,380,38,Active
+PRT20112,Precision Wear Indicators,Metal Components,PRD10006,Steel,SPL100067,1.15,330,32,Active
+PRT20113,Advanced Mesh Shims,Metal Components,PRD10006,Steel,SPL100068,1.35,280,40,Active
+PRT20114,Premium Ceramic Fibers,Friction Materials,PRD10006,Ceramic,SPL100075,4.95,90,28,Active
+PRT20115,High-Grade Steel Wool Fibers,Friction Materials,PRD10006,Steel,SPL100065,1.45,230,42,Active
+PRT20116,Premium Copper Fibers,Friction Materials,PRD10006,Copper,SPL100085,3.15,130,40,Active
+PRT20117,Advanced Aramid Fibers,Friction Materials,PRD10006,Synthetic,SPL100075,5.75,70,28,Active
+PRT20118,Precision Metal Powder Blend,Friction Materials,PRD10006,Metal,SPL100065,2.45,180,42,Active
+PRT20119,Advanced Composite Shims,Rubber Components,PRD10006,Rubber,SPL100070,1.55,230,32,Active
+PRT20120,High-Performance Thermal Insulators,Rubber Components,PRD10006,Rubber,SPL100071,1.65,180,30,Active
+PRT20121,Premium Rubber Dampeners,Rubber Components,PRD10006,Rubber,SPL100072,1.40,230,28,Active
+PRT20122,Advanced Phenolic Resin Compound,Binding Materials,PRD10006,Chemical,SPL100090,4.25,90,28,Active
+PRT20123,Premium Surface Coating Material,Binding Materials,PRD10006,Chemical,SPL100091,3.35,110,26,Active
+PRT20124,Enhanced Anti-Squeal Compound,Binding Materials,PRD10006,Chemical,SPL100092,3.65,90,32,Active
+PRT20125,Reinforced Retention Clips,Hardware,PRD10006,Metal,SPL100065,0.95,380,42,Active
+PRT20126,Precision Wear Sensor Clips,Hardware,PRD10006,Metal,SPL100066,1.35,280,38,Active
+PRT20127,Premium Installation Hardware,Hardware,PRD10006,Metal,SPL100067,1.55,230,32,Active
+PRT20128,High-Grade Polypropylene Frame,Frame Components,PRD10010,Plastic,SPL100075,2.25,160,28,Active
+PRT20129,Reinforced Cross Braces,Frame Components,PRD10010,Plastic,SPL100076,1.05,330,42,Active
+PRT20130,Premium End Caps,Frame Components,PRD10010,Plastic,SPL100077,0.95,380,26,Active
+PRT20131,Heavy-Duty Support Mesh Grid,Frame Components,PRD10010,Steel,SPL100065,1.65,230,42,Active
+PRT20132,Advanced Pleated Filter Media,Filter Media,PRD10010,Filter Media,SPL100080,3.25,130,35,Active
+PRT20133,Premium Pre-Filter Layer,Filter Media,PRD10010,Filter Media,SPL100081,1.85,180,30,Active
+PRT20134,Enhanced Support Media Layer,Filter Media,PRD10010,Filter Media,SPL100082,1.65,230,38,Active
+PRT20135,High-Performance Spacing Elements,Filter Media,PRD10010,Plastic,SPL100075,0.75,480,28,Active
+PRT20136,Premium Polyurethane Gasket,Sealing Components,PRD10010,Rubber,SPL100070,1.15,280,32,Active
+PRT20137,Advanced Edge Seals,Sealing Components,PRD10010,Rubber,SPL100071,1.05,330,30,Active
+PRT20138,High-Grade Frame Seal Material,Sealing Components,PRD10010,Rubber,SPL100072,0.95,380,28,Active
+PRT20139,Reinforced Brace Fasteners,Hardware,PRD10010,Metal,SPL100065,0.55,580,42,Active
+PRT20140,Premium Assembly Clips,Hardware,PRD10010,Metal,SPL100066,0.65,530,38,Active
+PRT20141,Heavy-Duty Grid Fasteners,Hardware,PRD10010,Metal,SPL100067,0.60,580,32,Active
+PRT20142,Advanced Polypropylene Frame,Frame Components,PRD10014,Plastic,SPL100075,2.45,160,28,Active
+PRT20143,Reinforced Reinforcement Ribs,Frame Components,PRD10014,Plastic,SPL100076,1.15,280,42,Active
+PRT20144,Precision Mounting Tabs,Frame Components,PRD10014,Plastic,SPL100077,0.85,430,26,Active
+PRT20145,Heavy-Duty Support Mesh,Frame Components,PRD10014,Steel,SPL100065,1.55,230,42,Active
+PRT20146,Premium Melt Blown Media,Filter Media,PRD10014,Filter Media,SPL100080,3.35,120,35,Active
+PRT20147,Advanced HEPA Filter Media,Filter Media,PRD10014,Filter Media,SPL100081,5.25,90,30,Active
+PRT20148,Enhanced Electrostatic Media,Filter Media,PRD10014,Filter Media,SPL100082,2.85,130,38,Active
+PRT20149,Premium Carbon Filter Media,Filter Media,PRD10015,Filter Media,SPL100095,4.35,100,38,Active
+PRT20150,High-Performance Pre-Filter Layer,Filter Media,PRD10014,Filter Media,SPL100081,1.75,180,30,Active
+PRT20151,Advanced Edge Sealing Strips,Sealing Components,PRD10014,Rubber,SPL100070,1.05,330,32,Active
+PRT20152,Premium Mounting Seals,Sealing Components,PRD10014,Rubber,SPL100071,1.15,280,30,Active
+PRT20153,Enhanced Frame Gaskets,Sealing Components,PRD10014,Rubber,SPL100072,0.95,380,28,Active
+PRT20154,Precision Spacing Elements,Assembly Components,PRD10014,Plastic,SPL100075,0.65,530,28,Active
+PRT20155,Advanced Bonding Adhesive,Assembly Components,PRD10014,Chemical,SPL100090,1.45,180,28,Active
+PRT20156,Premium Assembly Adhesive,Assembly Components,PRD10014,Chemical,SPL100091,1.55,160,26,Active
+PRT20157,Precision Hardened Steel Shaft,Rotor Assembly,PRD10018,Steel,SPL100065,9.75,45,42,Active
+PRT20158,Premium Copper Field Coil,Rotor Assembly,PRD10018,Copper,SPL100085,13.95,25,40,Active
+PRT20159,Advanced Steel Pole Pieces,Rotor Assembly,PRD10018,Steel,SPL100066,7.65,55,38,Active
+PRT20160,High-Performance Slip Rings,Rotor Assembly,PRD10018,Copper,SPL100086,8.95,45,38,Active
+PRT20161,Reinforced Rotor Core,Rotor Assembly,PRD10018,Steel,SPL100067,10.25,35,32,Active
+PRT20162,Premium Silicon Steel Core,Stator Assembly,PRD10018,Steel,SPL100068,12.95,30,40,Active
+PRT20163,Advanced Copper Phase Windings,Stator Assembly,PRD10018,Copper,SPL100087,15.95,20,32,Active
+PRT20164,High-Grade Insulation Material,Stator Assembly,PRD10018,Insulation,SPL100080,5.65,70,35,Active
+PRT20165,Precision Core Fasteners,Stator Assembly,PRD10018,Metal,SPL100065,1.45,180,42,Active
+PRT20166,Premium Aluminum Drive Frame,Frame Components,PRD10018,Aluminum,SPL100076,10.95,35,42,Active
+PRT20167,Advanced Aluminum Slip Ring Frame,Frame Components,PRD10018,Aluminum,SPL100077,10.75,35,26,Active
+PRT20168,Reinforced Through Bolts,Frame Components,PRD10018,Steel,SPL100065,1.65,180,42,Active
+PRT20169,Heavy-Duty Mounting Brackets,Frame Components,PRD10018,Steel,SPL100066,4.25,90,38,Active
+PRT20170,High-Performance Silicon Diodes,Electrical Components,PRD10018,Electronic,SPL100087,3.45,130,32,Active
+PRT20171,Advanced Voltage Regulator,Electrical Components,PRD10018,Electronic,SPL100088,9.50,45,42,Active
+PRT20172,Premium Carbon Copper Brushes,Electrical Components,PRD10018,Composite,SPL100089,3.75,110,36,Active
+PRT20173,Precision Terminal Connectors,Electrical Components,PRD10018,Metal,SPL100065,2.15,160,42,Active
+PRT20174,Enhanced Wiring Harness,Electrical Components,PRD10018,Composite,SPL100087,5.65,70,32,Active
+PRT20175,Premium Ball Bearings,Bearing Assembly,PRD10018,Steel,SPL100100,6.45,60,32,Active
+PRT20176,Advanced Bearing Seals,Bearing Assembly,PRD10018,Rubber,SPL100070,2.25,130,32,Active
+PRT20177,Reinforced Bearing Retainers,Bearing Assembly,PRD10018,Metal,SPL100065,2.55,120,42,Active
+PRT20178,Heavy-Duty Steel Pulley,Drive Components,PRD10018,Steel,SPL100065,8.65,45,42,Active
+PRT20179,High-Performance Cooling Fan,Drive Components,PRD10018,Plastic,SPL100075,4.45,80,28,Active
+PRT20180,Precision Pulley Bolt,Drive Components,PRD10018,Steel,SPL100066,1.15,280,38,Active
+PRT20181,Advanced Woodruff Key,Drive Components,PRD10018,Steel,SPL100067,0.95,330,32,Active
+PRT20182,Premium Mounting Grommets,Sealing/Insulation,PRD10018,Rubber,SPL100070,1.35,230,32,Active
+PRT20183,Enhanced Sealing Rings,Sealing/Insulation,PRD10018,Rubber,SPL100071,1.45,210,30,Active
+PRT20184,Advanced Insulation Bushings,Sealing/Insulation,PRD10018,Rubber,SPL100072,1.55,200,28,Active
+PRT20185,Premium Terminal Covers,Sealing/Insulation,PRD10018,Plastic,SPL100075,1.65,180,28,Active
+PRT20186,High-Performance Heat Sink Compound,Sealing/Insulation,PRD10018,Chemical,SPL100090,3.35,100,28,Active
+PRT20187,Heavy-Duty Steel Housing,Metal Components,PRD10003,Steel,SPL100001,3.25,160,30,Active
+PRT20188,Reinforced Steel Center Tube,Metal Components,PRD10003,Steel,SPL100065,1.75,250,42,Active
+PRT20189,Industrial Support Mesh,Metal Components,PRD10003,Steel,SPL100066,1.35,350,38,Active
+PRT20190,Heavy-Duty End Plates,Metal Components,PRD10003,Steel,SPL100067,1.65,200,32,Active
+PRT20191,Industrial Threaded Collar,Metal Components,PRD10003,Steel,SPL100068,1.45,250,40,Active
+PRT20192,Heavy-Duty Relief Valve Spring,Metal Components,PRD10003,Steel,SPL100069,0.85,450,48,Active
+PRT20193,Industrial Bypass Valve Spring,Metal Components,PRD10003,Steel,SPL100001,0.80,450,30,Active
+PRT20194,Heavy-Duty Nitrile Rubber Gasket,Rubber Components,PRD10003,Rubber,SPL100006,0.75,550,15,Active
+PRT20195,Industrial Anti-Drainback Valve,Rubber Components,PRD10003,Rubber,SPL100070,1.05,350,32,Active
+PRT20196,Heavy-Duty End Disc Seals,Rubber Components,PRD10003,Rubber,SPL100071,0.70,650,30,Active
+PRT20197,Industrial Filter Media Blend,Filter Media,PRD10003,Filter Media,SPL100016,2.45,150,30,Active
+PRT20198,Heavy-Duty Outer Wrap,Filter Media,PRD10003,Filter Media,SPL100080,1.40,250,35,Active
+PRT20199,Industrial Support Media Layer,Filter Media,PRD10003,Filter Media,SPL100081,1.30,300,30,Active
+PRT20200,Heavy-Duty Bypass Valve Assembly,Hardware,PRD10003,Metal,SPL100001,1.85,150,30,Active

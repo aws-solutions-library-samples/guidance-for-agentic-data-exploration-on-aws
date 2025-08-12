@@ -1,0 +1,105 @@
+Supplier_ID,Company_Name,Material_Category,Primary_Material,Region,Country,Credit_Rating,Payment_Terms,Lead_Time_Days,Min_Order_Qty,Quality_Cert,Tax_ID,Currency,Status
+SPL100001,ThyssenKrupp AG,Steel,Carbon Steel,Europe,Germany,AA,Net 60,45,5000 KG,ISO 9001/TS 16949,DE123456789,EUR,Active
+SPL100002,Gerdau Special Steel,Steel,Alloy Steel,Americas,USA,A+,Net 45,30,2000 KG,ISO 9001/TS 16949,US234567890,USD,Active
+SPL100003,POSCO,Steel,Stainless Steel,Asia,South Korea,AA-,Net 60,40,3000 KG,ISO 9001/TS 16949,KR345678901,USD,Active
+SPL100004,Ternium,Steel,Carbon Steel,Americas,Mexico,BBB+,Net 30,35,2500 KG,ISO 9001,MX456789012,USD,Active
+SPL100005,Tata Steel,Steel,Various Steel,Asia,India,BBB,Net 45,50,4000 KG,ISO 9001/TS 16949,IN567890123,USD,Active
+SPL100006,DuPont,Rubber,Synthetic Rubber,Americas,USA,AA,Net 60,30,1000 KG,ISO 9001/TS 16949,US678901234,USD,Active
+SPL100007,Freudenberg Group,Rubber,Natural Rubber,Europe,Germany,A+,Net 45,35,800 KG,ISO 9001/TS 16949,DE789012345,EUR,Active
+SPL100008,Sumitomo Rubber,Rubber,Various Rubber,Asia,Japan,A,Net 60,40,1200 KG,ISO 9001/TS 16949,JP890123456,JPY,Active
+SPL100009,Industrias PKS,Rubber,Synthetic Rubber,Americas,Brazil,BBB,Net 30,45,1500 KG,ISO 9001,BR901234567,BRL,Active
+SPL100010,NOK Corporation,Rubber,Specialized Rubber,Asia,Japan,A+,Net 45,35,1000 KG,ISO 9001/TS 16949,JP012345678,JPY,Active
+SPL100011,BASF SE,Plastics,Polypropylene,Europe,Germany,AA+,Net 60,30,2000 KG,ISO 9001/TS 16949,DE123456780,EUR,Active
+SPL100012,Dow Chemical,Plastics,Polyethylene,Americas,USA,AA,Net 45,25,1500 KG,ISO 9001/TS 16949,US234567891,USD,Active
+SPL100013,LG Chem,Plastics,Various Polymers,Asia,South Korea,A+,Net 60,35,2500 KG,ISO 9001/TS 16949,KR345678902,USD,Active
+SPL100014,Braskem,Plastics,Polyethylene,Americas,Brazil,BBB+,Net 30,40,3000 KG,ISO 9001,BR456789013,BRL,Active
+SPL100015,Reliance Industries,Plastics,Various Polymers,Asia,India,BBB,Net 45,45,2000 KG,ISO 9001,IN567890124,USD,Active
+SPL100016,Ahlstrom-Munksjö,Filter Media,Cellulose Media,Europe,Finland,A+,Net 45,40,500 KG,ISO 9001/TS 16949,FI678901235,EUR,Active
+SPL100017,Hollingsworth & Vose,Filter Media,Synthetic Media,Americas,USA,A,Net 60,35,400 KG,ISO 9001/TS 16949,US789012346,USD,Active
+SPL100018,Toyobo,Filter Media,Various Media,Asia,Japan,A,Net 45,45,600 KG,ISO 9001/TS 16949,JP890123457,JPY,Active
+SPL100019,Fiberweb Brazil,Filter Media,Nonwoven Media,Americas,Brazil,BBB,Net 30,50,800 KG,ISO 9001,BR901234568,BRL,Active
+SPL100020,KNH Enterprise,Filter Media,Synthetic Media,Asia,Taiwan,BBB+,Net 45,40,500 KG,ISO 9001,TW012345679,USD,Active
+SPL100021,Aurubis AG,Copper,Copper Wire,Europe,Germany,A+,Net 60,45,1000 KG,ISO 9001/TS 16949,DE123456781,EUR,Active
+SPL100022,Essex Furukawa,Copper,Magnet Wire,Americas,USA,A,Net 45,30,800 KG,ISO 9001/TS 16949,US234567892,USD,Active
+SPL100023,Sumitomo Electric,Copper,Copper Components,Asia,Japan,AA-,Net 60,40,1200 KG,ISO 9001/TS 16949,JP345678903,JPY,Active
+SPL100024,Nexans Brazil,Copper,Copper Wire,Americas,Brazil,BBB+,Net 30,45,1000 KG,ISO 9001,BR456789014,BRL,Active
+SPL100025,LS Cable,Copper,Various Copper,Asia,South Korea,A-,Net 45,35,1500 KG,ISO 9001/TS 16949,KR567890125,USD,Active
+SPL100026,Henkel AG,Adhesives,Industrial Adhesives,Europe,Germany,AA,Net 60,30,200 KG,ISO 9001/TS 16949,DE678901236,EUR,Active
+SPL100027,3M Company,Adhesives,Various Adhesives,Americas,USA,AA+,Net 45,25,150 KG,ISO 9001/TS 16949,US789012347,USD,Active
+SPL100028,Nitto Denko,Adhesives,Specialized Adhesives,Asia,Japan,A+,Net 60,35,250 KG,ISO 9001/TS 16949,JP890123458,JPY,Active
+SPL100029,Artecola,Adhesives,Industrial Adhesives,Americas,Brazil,BBB,Net 30,40,300 KG,ISO 9001,BR901234569,BRL,Active
+SPL100030,Pidilite,Adhesives,Various Adhesives,Asia,India,BBB+,Net 45,45,200 KG,ISO 9001,IN012345670,USD,Active
+SPL100031,Calgon Carbon,Carbon,Activated Carbon,Americas,USA,A,Net 45,40,500 KG,ISO 9001/TS 16949,US123456782,USD,Active
+SPL100032,Carbotech AC,Carbon,Activated Carbon,Europe,Germany,A-,Net 60,45,600 KG,ISO 9001,DE234567893,EUR,Active
+SPL100033,Kuraray,Carbon,Specialized Carbon,Asia,Japan,A+,Net 45,35,400 KG,ISO 9001/TS 16949,JP345678904,JPY,Active
+SPL100034,Carbotec Brazil,Carbon,Various Carbon,Americas,Brazil,BBB,Net 30,50,700 KG,ISO 9001,BR456789015,BRL,Active
+SPL100035,Indo German Carbons,Carbon,Activated Carbon,Asia,India,BBB,Net 45,45,500 KG,ISO 9001,IN567890126,USD,Active
+SPL100036,SKF Group,Bearings,Ball Bearings,Europe,Sweden,AA,Net 60,30,100 Units,ISO 9001/TS 16949,SE678901237,EUR,Active
+SPL100037,Timken,Bearings,Roller Bearings,Americas,USA,A+,Net 45,35,150 Units,ISO 9001/TS 16949,US789012348,USD,Active
+SPL100038,NSK Ltd,Bearings,Various Bearings,Asia,Japan,AA-,Net 60,40,200 Units,ISO 9001/TS 16949,JP890123459,JPY,Active
+SPL100039,ITWL Bearings,Bearings,Ball Bearings,Americas,Mexico,BBB+,Net 30,45,250 Units,ISO 9001,MX901234560,USD,Active
+SPL100040,Tata Bearings,Bearings,Various Bearings,Asia,India,BBB,Net 45,40,150 Units,ISO 9001/TS 16949,IN012345671,USD,Active
+SPL100041,Baosteel Group,Steel,Carbon Steel,Asia,China,A+,LC 90,45,5000 KG,ISO 9001/TS 16949,CN123456001,USD,Active
+SPL100042,Shagang Group,Steel,Alloy Steel,Asia,China,A,LC 60,40,4000 KG,ISO 9001/TS 16949,CN123456002,USD,Active
+SPL100043,Ansteel Group,Steel,Stainless Steel,Asia,China,A-,LC 90,50,6000 KG,ISO 9001/TS 16949,CN123456003,USD,Active
+SPL100044,Zhongce Rubber,Rubber,Synthetic Rubber,Asia,China,BBB+,LC 60,35,1500 KG,ISO 9001/TS 16949,CN123456004,USD,Active
+SPL100045,Shandong Yinbao,Rubber,Natural Rubber,Asia,China,BBB,LC 90,40,2000 KG,ISO 9001/TS 16949,CN123456005,USD,Active
+SPL100046,Ningbo Rubber,Rubber,Various Rubber,Asia,China,BBB+,LC 60,45,1800 KG,ISO 9001/TS 16949,CN123456006,USD,Active
+SPL100047,Sinopec,Plastics,Polypropylene,Asia,China,A+,LC 90,35,3000 KG,ISO 9001/TS 16949,CN123456007,USD,Active
+SPL100048,PetroChina,Plastics,Polyethylene,Asia,China,A+,LC 90,40,2500 KG,ISO 9001/TS 16949,CN123456008,USD,Active
+SPL100049,Kingfa Sci&Tech,Plastics,Various Polymers,Asia,China,A-,LC 60,45,2000 KG,ISO 9001/TS 16949,CN123456009,USD,Active
+SPL100050,Zhaojin Filter,Filter Media,Cellulose Media,Asia,China,BBB,LC 60,40,600 KG,ISO 9001/TS 16949,CN123456010,USD,Active
+SPL100051,Xinxiang Aviation,Filter Media,Synthetic Media,Asia,China,BBB+,LC 90,45,800 KG,ISO 9001/TS 16949,CN123456011,USD,Active
+SPL100052,Hangzhou Filter,Filter Media,Various Media,Asia,China,BBB,LC 60,50,700 KG,ISO 9001/TS 16949,CN123456012,USD,Active
+SPL100053,Jiangxi Copper,Copper,Copper Wire,Asia,China,A-,LC 90,45,1500 KG,ISO 9001/TS 16949,CN123456013,USD,Active
+SPL100054,Tongling Nonferrous,Copper,Magnet Wire,Asia,China,BBB+,LC 60,40,1200 KG,ISO 9001/TS 16949,CN123456014,USD,Active
+SPL100055,China Copper Corp,Copper,Various Copper,Asia,China,A-,LC 90,50,2000 KG,ISO 9001/TS 16949,CN123456015,USD,Active
+SPL100056,Comens New Materials,Adhesives,Industrial Adhesives,Asia,China,BBB+,LC 60,35,300 KG,ISO 9001/TS 16949,CN123456016,USD,Active
+SPL100057,Huitian Adhesive,Adhesives,Various Adhesives,Asia,China,BBB,LC 90,40,250 KG,ISO 9001/TS 16949,CN123456017,USD,Active
+SPL100058,Jointas Chemical,Adhesives,Specialized Adhesives,Asia,China,BBB+,LC 60,45,400 KG,ISO 9001/TS 16949,CN123456018,USD,Active
+SPL100059,Fujian Xinsen,Carbon,Activated Carbon,Asia,China,BBB,LC 90,45,800 KG,ISO 9001/TS 16949,CN123456019,USD,Active
+SPL100060,Ningxia Huahui,Carbon,Specialized Carbon,Asia,China,BBB+,LC 60,40,600 KG,ISO 9001/TS 16949,CN123456020,USD,Active
+SPL100061,Zhengzhou Zhulin,Carbon,Various Carbon,Asia,China,BBB,LC 90,50,700 KG,ISO 9001/TS 16949,CN123456021,USD,Active
+SPL100062,Wafangdian Bearing,Bearings,Ball Bearings,Asia,China,BBB+,LC 60,40,200 Units,ISO 9001/TS 16949,CN123456022,USD,Active
+SPL100063,Luoyang Bearing,Bearings,Roller Bearings,Asia,China,BBB,LC 90,45,250 Units,ISO 9001/TS 16949,CN123456023,USD,Active
+SPL100064,Harbin Bearing,Bearings,Various Bearings,Asia,China,BBB+,LC 60,50,300 Units,ISO 9001/TS 16949,CN123456024,USD,Active
+SPL100065,ArcelorMittal,Steel,Carbon Steel,Europe,Luxembourg,AA-,Net 60,42,4500 KG,ISO 9001/TS 16949,LU123456789,EUR,Active
+SPL100066,Nippon Steel,Steel,Various Steel,Asia,Japan,AA,Net 60,38,3500 KG,ISO 9001/TS 16949,JP123456790,JPY,Active
+SPL100067,Nucor Corporation,Steel,Carbon Steel,Americas,USA,A,Net 45,32,2800 KG,ISO 9001/TS 16949,US123456791,USD,Active
+SPL100068,Salzgitter AG,Steel,Precision Steel,Europe,Germany,A+,Net 60,40,3200 KG,ISO 9001/TS 16949,DE123456792,EUR,Active
+SPL100069,Severstal,Steel,Alloy Steel,Europe,Russia,BBB+,Net 45,48,4000 KG,ISO 9001,RU123456793,RUB,Active
+SPL100070,Bridgestone,Rubber,Various Rubber,Asia,Japan,AA,Net 60,32,1100 KG,ISO 9001/TS 16949,JP123456794,JPY,Active
+SPL100071,Continental AG,Rubber,Synthetic Rubber,Europe,Germany,AA-,Net 45,30,950 KG,ISO 9001/TS 16949,DE123456795,EUR,Active
+SPL100072,Goodyear,Rubber,Natural Rubber,Americas,USA,A+,Net 45,28,1050 KG,ISO 9001/TS 16949,US123456796,USD,Active
+SPL100073,Trelleborg AB,Rubber,Specialized Rubber,Europe,Sweden,A,Net 60,36,900 KG,ISO 9001/TS 16949,SE123456797,EUR,Active
+SPL100074,Hexpol AB,Rubber,Synthetic Rubber,Europe,Sweden,A-,Net 45,34,1200 KG,ISO 9001/TS 16949,SE123456798,EUR,Active
+SPL100075,Covestro,Plastics,Polycarbonate,Europe,Germany,AA-,Net 60,28,1800 KG,ISO 9001/TS 16949,DE123456799,EUR,Active
+SPL100076,Sabic,Plastics,Various Polymers,Middle East,Saudi Arabia,A+,Net 60,42,2200 KG,ISO 9001/TS 16949,SA123456800,USD,Active
+SPL100077,Lyondellbasell,Plastics,Polyethylene,Americas,USA,AA,Net 45,26,1600 KG,ISO 9001/TS 16949,US123456801,USD,Active
+SPL100078,Formosa Plastics,Plastics,PVC,Asia,Taiwan,A,Net 45,38,2300 KG,ISO 9001/TS 16949,TW123456802,USD,Active
+SPL100079,Borealis AG,Plastics,Polypropylene,Europe,Austria,A+,Net 60,32,1900 KG,ISO 9001/TS 16949,AT123456803,EUR,Active
+SPL100080,Mann+Hummel,Filter Media,Various Media,Europe,Germany,AA-,Net 45,35,450 KG,ISO 9001/TS 16949,DE123456804,EUR,Active
+SPL100081,Donaldson Company,Filter Media,Synthetic Media,Americas,USA,A+,Net 45,30,420 KG,ISO 9001/TS 16949,US123456805,USD,Active
+SPL100082,Freudenberg Filtration,Filter Media,Cellulose Media,Europe,Germany,AA,Net 60,38,480 KG,ISO 9001/TS 16949,DE123456806,EUR,Active
+SPL100083,Cummins Filtration,Filter Media,Various Media,Americas,USA,A,Net 45,32,520 KG,ISO 9001/TS 16949,US123456807,USD,Active
+SPL100084,Toray Industries,Filter Media,Advanced Media,Asia,Japan,AA-,Net 60,36,460 KG,ISO 9001/TS 16949,JP123456808,JPY,Active
+SPL100085,Wieland Group,Copper,Copper Alloys,Europe,Germany,A+,Net 60,40,950 KG,ISO 9001/TS 16949,DE123456809,EUR,Active
+SPL100086,Mitsubishi Materials,Copper,Copper Components,Asia,Japan,AA,Net 60,38,1100 KG,ISO 9001/TS 16949,JP123456810,JPY,Active
+SPL100087,Mueller Industries,Copper,Copper Tubing,Americas,USA,A,Net 45,32,900 KG,ISO 9001/TS 16949,US123456811,USD,Active
+SPL100088,KME Group,Copper,Copper Products,Europe,Germany,A-,Net 60,42,1050 KG,ISO 9001/TS 16949,DE123456812,EUR,Active
+SPL100089,Furukawa Electric,Copper,Magnet Wire,Asia,Japan,A+,Net 45,36,980 KG,ISO 9001/TS 16949,JP123456813,JPY,Active
+SPL100090,Sika AG,Adhesives,Industrial Adhesives,Europe,Switzerland,AA,Net 60,28,180 KG,ISO 9001/TS 16949,CH123456814,CHF,Active
+SPL100091,H.B. Fuller,Adhesives,Various Adhesives,Americas,USA,A+,Net 45,26,160 KG,ISO 9001/TS 16949,US123456815,USD,Active
+SPL100092,Bostik,Adhesives,Specialized Adhesives,Europe,France,A,Net 60,32,220 KG,ISO 9001/TS 16949,FR123456816,EUR,Active
+SPL100093,Lord Corporation,Adhesives,Industrial Adhesives,Americas,USA,A-,Net 45,30,190 KG,ISO 9001/TS 16949,US123456817,USD,Active
+SPL100094,Mapei,Adhesives,Various Adhesives,Europe,Italy,A+,Net 60,34,210 KG,ISO 9001/TS 16949,IT123456818,EUR,Active
+SPL100095,Cabot Corporation,Carbon,Activated Carbon,Americas,USA,AA-,Net 45,38,550 KG,ISO 9001/TS 16949,US123456819,USD,Active
+SPL100096,Jacobi Carbons,Carbon,Various Carbon,Europe,Sweden,A,Net 60,42,580 KG,ISO 9001/TS 16949,SE123456820,EUR,Active
+SPL100097,Haycarb,Carbon,Activated Carbon,Asia,Sri Lanka,BBB+,Net 45,46,620 KG,ISO 9001,LK123456821,USD,Active
+SPL100098,Carbon Activated Corp,Carbon,Specialized Carbon,Americas,USA,A-,Net 45,36,540 KG,ISO 9001/TS 16949,US123456822,USD,Active
+SPL100099,Desotec,Carbon,Various Carbon,Europe,Belgium,A+,Net 60,40,560 KG,ISO 9001/TS 16949,BE123456823,EUR,Active
+SPL100100,Schaeffler Group,Bearings,Various Bearings,Europe,Germany,AA,Net 60,32,120 Units,ISO 9001/TS 16949,DE123456824,EUR,Active
+SPL100101,NTN Corporation,Bearings,Ball Bearings,Asia,Japan,AA-,Net 45,34,140 Units,ISO 9001/TS 16949,JP123456825,JPY,Active
+SPL100102,JTEKT Corporation,Bearings,Roller Bearings,Asia,Japan,A+,Net 60,36,160 Units,ISO 9001/TS 16949,JP123456826,JPY,Active
+SPL100103,RBC Bearings,Bearings,Precision Bearings,Americas,USA,A,Net 45,30,130 Units,ISO 9001/TS 16949,US123456827,USD,Active
+SPL100104,Minebea Mitsumi,Bearings,Miniature Bearings,Asia,Japan,A+,Net 60,38,180 Units,ISO 9001/TS 16949,JP123456828,JPY,Active

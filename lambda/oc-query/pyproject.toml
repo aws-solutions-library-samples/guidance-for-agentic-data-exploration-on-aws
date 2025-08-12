@@ -1,0 +1,13 @@
+[tool.poetry]
+name="oc-query"
+version="1.0"
+description=""
+authors=["Amazon Web Services"]
+
+[tool.poetry.dependencies]
+python="^3.11"
+langchain="^0.3.23"
+langchain-core="^0.3.52"
+langchain-aws="^0.2.19"
+langchain-community="^0.3.21"
+h11="^0.16.0"
