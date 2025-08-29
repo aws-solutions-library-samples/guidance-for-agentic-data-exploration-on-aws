@@ -17,7 +17,7 @@
 
 ## Overview 
 
-The Guidance for Agentic Data Exploration on AWS (codename Panoptic) is a Generative AI powered solution that leverages [AI Agents](https://aws.amazon.com/bedrock/agents/) on [Amazon Bedrock](https://aws.amazon.com/bedrock/) to unify and analyze diverse data streams without traditional ETL barriers and data integration. This Guidance addresses the challenge of analyzing complex, interconnected data from multiple sources by providing a multi-agent system that can intelligently process, visualize, and extract insights from various data formats.
+The Guidance for Agentic Data Exploration on AWS (Panoptic) is a Generative AI powered solution that leverages [AI Agents](https://aws.amazon.com/bedrock/agents/) on [Amazon Bedrock](https://aws.amazon.com/bedrock/) to unify and analyze diverse data streams without traditional ETL barriers and data integration. This Guidance addresses the challenge of analyzing complex, interconnected data from multiple sources by providing a multi-agent system that can intelligently process, visualize, and extract insights from various data formats.
 
 **Why did we build this Guidance?**
 
