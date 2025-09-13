@@ -264,7 +264,7 @@ export class BedrockAgentStack extends cdk.Stack {
       functionName: ocQueryFn,
       role: ocQueryLambdaRole,
       entry: 'lambda/oc-query',
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       index: 'lambda.py', 
       handler: 'lambda_handler', 
       memorySize: 1024,
