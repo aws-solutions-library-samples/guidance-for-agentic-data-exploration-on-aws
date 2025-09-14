@@ -478,8 +478,9 @@ export class UserInterfaceStack extends cdk.Stack {
           "sh",
           "-c",
           [
-            "npm --cache /tmp/.npm install",
-            `npm --cache /tmp/.npm run build`,
+            "npm i corepack",
+            "pnpm -C /tmp/.npm install",
+            "pnpm -C /tmp/.npm run build",
             "cp -aur /asset-input/build/* /asset-output/",
           ].join(" && "),
         ],
@@ -493,8 +494,8 @@ export class UserInterfaceStack extends cdk.Stack {
                 },
               };
 
-              execSync(`npm --silent --force --prefix "${appPath}" install`, options);
-              execSync(`npm --silent --prefix "${appPath}" run build`, options);
+              execSync(`pnpm --silent --force --prefix "${appPath}" install`, options);
+              execSync(`pnpm --silent --prefix "${appPath}" run build`, options);
               UiUtils.copyDirRecursive(buildPath, outputDir);
             } catch (e) {
               console.error(e);

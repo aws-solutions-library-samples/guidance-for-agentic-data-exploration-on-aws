@@ -90,42 +90,42 @@ export class NeptuneBaseStack extends cdk.Stack {
     const getSubnetsByIds = (subnetIdsStr: string): ec2.ISubnet[] => {
       // Split the comma-separated list of subnet IDs
       const subnetIds = subnetIdsStr.split(',').map(id => id.trim());
-      
+
       const subnets: ec2.ISubnet[] = [];
-      
+
       // We need to get the VPC's subnets to find the availability zones
       const allVpcSubnets = [
         ...this.vpc.privateSubnets,
         ...this.vpc.isolatedSubnets,
         ...this.vpc.publicSubnets
       ];
-      
+
       // Create a map of subnet ID to availability zone
       const subnetAzMap = new Map<string, string>();
       allVpcSubnets.forEach(subnet => {
         subnetAzMap.set(subnet.subnetId, subnet.availabilityZone);
       });
-      
+
       // Import each subnet by ID with its availability zone
       for (const subnetId of subnetIds) {
         // Get the AZ for this subnet ID from the VPC lookup
         const az = subnetAzMap.get(subnetId);
-        
+
         // If we found the AZ, use fromSubnetAttributes, otherwise fall back to fromSubnetId
-        const subnet = az 
+        const subnet = az
           ? ec2.Subnet.fromSubnetAttributes(this, `ImportedSubnet-${subnetId}`, {
-              subnetId: subnetId,
-              availabilityZone: az
-            })
+            subnetId: subnetId,
+            availabilityZone: az
+          })
           : ec2.Subnet.fromSubnetId(this, `ImportedSubnet-${subnetId}`, subnetId);
-        
+
         subnets.push(subnet);
       }
-      
+
       if (subnets.length === 0) {
         throw new Error(`No valid subnet IDs found in: ${subnetIdsStr}. Please provide valid subnet IDs.`);
       }
-      
+
       return subnets;
     };
 
@@ -157,16 +157,16 @@ export class NeptuneBaseStack extends cdk.Stack {
     // Neptune Subnet Group
     // Priority: 1) Specific subnet IDs if provided, 2) Existing VPC subnet selection, 3) New VPC private subnets
     let selectedSubnets: ec2.ISubnet[];
-    
+
     if (dbSubnetIds) {
       // Use subnets with the specified IDs
       selectedSubnets = getSubnetsByIds(dbSubnetIds);
     } else if (vpcId) {
       // For existing VPC, use private subnets; fallback to isolated, then public
-      selectedSubnets = this.vpc.privateSubnets.length > 0 
-        ? this.vpc.privateSubnets 
-        : this.vpc.isolatedSubnets.length > 0 
-          ? this.vpc.isolatedSubnets 
+      selectedSubnets = this.vpc.privateSubnets.length > 0
+        ? this.vpc.privateSubnets
+        : this.vpc.isolatedSubnets.length > 0
+          ? this.vpc.isolatedSubnets
           : this.vpc.publicSubnets; // fallback to public if no private subnets exist
     } else {
       // For new VPC, use the created private subnets
@@ -174,7 +174,7 @@ export class NeptuneBaseStack extends cdk.Stack {
     }
 
     if (selectedSubnets.length === 0) {
-      const errorMsg = dbSubnetIds 
+      const errorMsg = dbSubnetIds
         ? `No valid subnets found for IDs: ${dbSubnetIds}. Please verify the subnet IDs are correct.`
         : 'No suitable subnets found in the VPC. Please ensure the VPC has private, isolated, or public subnets available.';
       throw new Error(errorMsg);
@@ -194,7 +194,7 @@ export class NeptuneBaseStack extends cdk.Stack {
         // If we can't access availabilityZone property, we'll skip this validation
         // The actual validation will happen at CloudFormation deployment time
         console.warn('Could not validate subnet availability zones at synthesis time. ' +
-                    'Validation will occur during deployment.');
+          'Validation will occur during deployment.');
       }
     }
 
@@ -219,61 +219,65 @@ export class NeptuneBaseStack extends cdk.Stack {
       });
     }
 
-    // VPC Endpoints for Bedrock (only create for new VPC to avoid conflicts)
+    // VPC Endpoints (only create for new VPC to avoid conflicts)
     if (!vpcId) {
-    const bedrockEndpointSG = new ec2.SecurityGroup(this, 'BedrockEndpointSG', {
-      vpc: this.vpc,
-      description: 'Security group for Bedrock VPC endpoint',
-      allowAllOutbound: true,
-    });
-    // Suppress both EC23 and CdkNagValidationFailure warnings
-    NagSuppressions.addResourceSuppressions(bedrockEndpointSG, [
-      {
-        id: 'AwsSolutions-EC23',
-        reason: 'Security group is used for Bedrock VPC endpoint and requires access to VPC CIDR'
-      },
-      {
-        id: 'CdkNagValidationFailure',
-        reason: 'Security group uses intrinsic function to reference VPC CIDR block'
-      }
-    ]);
-    
-    const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockEndpoint', {
-      vpc: this.vpc,
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-runtime`),
-      privateDnsEnabled: true,
-      subnets: { subnets: selectedSubnets },
-      securityGroups: [ bedrockEndpointSG ]
-    });
 
-    const bedrockRuntimeEndpointSG = new ec2.SecurityGroup(this, 'BedrockRuntimeEndpointSG', {
-      vpc: this.vpc,
-      description: 'Security group for Bedrock Runtime VPC endpoint',
-      allowAllOutbound: true,
-    })
-    NagSuppressions.addResourceSuppressions(bedrockRuntimeEndpointSG, [
-      {
-        id: 'AwsSolutions-EC23',
-        reason: 'Security group is used for Bedrock VPC endpoint and requires access to VPC CIDR',
-      },
-      {
-        id: 'CdkNagValidationFailure',
-        reason: 'Security group uses intrinsic function to reference VPC CIDR block'
-      }
-    ]);
-    const bedrockRuntimeEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockRuntimeEndpoint', {
-      vpc: this.vpc,
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock`),
-      privateDnsEnabled: true,
-      subnets: { subnets: selectedSubnets },
-      securityGroups: [ bedrockRuntimeEndpointSG ]
-    });
+      // Shared security group for all VPC endpoints
+      const vpcEndpointSG = new ec2.SecurityGroup(this, 'VpcEndpointSG', {
+        vpc: this.vpc,
+        description: 'Shared security group for all VPC endpoints',
+        allowAllOutbound: true,
+      });
 
-      // Add ingress rules to the security groups
+      NagSuppressions.addResourceSuppressions(vpcEndpointSG, [
+        {
+          id: 'AwsSolutions-EC23',
+          reason: 'Security group is used for VPC endpoints and requires access to VPC CIDR'
+        },
+        {
+          id: 'CdkNagValidationFailure',
+          reason: 'Security group uses intrinsic function to reference VPC CIDR block'
+        }
+      ]);
+
+      // SQS VPC endpoint
+      const sqsEndpoint = new ec2.InterfaceVpcEndpoint(this, 'SqsEndpoint', {
+        vpc: this.vpc,
+        service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.sqs`),
+        privateDnsEnabled: true,
+        subnets: { subnets: selectedSubnets },
+        securityGroups: [vpcEndpointSG]
+      });
+
+      sqsEndpoint.connections.allowDefaultPortFromAnyIpv4('Allow HTTPS traffic from within VPC');
+      sqsEndpoint.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['sqs:*'],
+          resources: ['*'],
+          principals: [new iam.AnyPrincipal()],
+        }),
+      );
+
+      // Bedrock VPC endpoints
+      const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockEndpoint', {
+        vpc: this.vpc,
+        service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-runtime`),
+        privateDnsEnabled: true,
+        subnets: { subnets: selectedSubnets },
+        securityGroups: [vpcEndpointSG]
+      });
+
+      const bedrockRuntimeEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockRuntimeEndpoint', {
+        vpc: this.vpc,
+        service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock`),
+        privateDnsEnabled: true,
+        subnets: { subnets: selectedSubnets },
+        securityGroups: [vpcEndpointSG]
+      });
+
       bedrockEndpoint.connections.allowDefaultPortFromAnyIpv4('Allow HTTPS traffic from within VPC');
       bedrockRuntimeEndpoint.connections.allowDefaultPortFromAnyIpv4('Allow HTTPS traffic from within VPC');
 
-      // Add VPC endpoint policy for Amazon Bedrock actions
       bedrockEndpoint.addToPolicy(
         new iam.PolicyStatement({
           actions: ['bedrock:*'],
@@ -282,56 +286,23 @@ export class NeptuneBaseStack extends cdk.Stack {
         }),
       );
 
-    // Create VPC Endpoints for Bedrock Agents
-    const bedrockAgentEndpointSG = new ec2.SecurityGroup(this, 'BedrockAgentEndpointSG', {
-      vpc: this.vpc,
-      description: 'Security group for Bedrock Agent VPC endpoint',
-      allowAllOutbound: true,
-    });
-    NagSuppressions.addResourceSuppressions(bedrockAgentEndpointSG, [
-      {
-        id: 'AwsSolutions-EC23',
-        reason: 'Security group is used for Bedrock VPC endpoint and requires access to VPC CIDR',
-      },
-      {
-        id: 'CdkNagValidationFailure',
-        reason: 'Security group uses intrinsic function to reference VPC CIDR block'
-      }
-    ]);
-    
-    const bedrockAgentEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockAgentEndpoint', {
-      vpc: this.vpc,
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-agent`),
-      privateDnsEnabled: true,
-      subnets: { subnets: selectedSubnets },
-      securityGroups: [ bedrockAgentEndpointSG ]
-    });
-
-      const bedrockAgentRuntimeEndpointSG = new ec2.SecurityGroup(this, 'BedrockAgentRuntimeEndpointSG', {
+      // Bedrock Agent VPC endpoints
+      const bedrockAgentEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockAgentEndpoint', {
         vpc: this.vpc,
-        description: 'Security group for Bedrock Agent Runtime VPC endpoint',
-        allowAllOutbound: true,
+        service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-agent`),
+        privateDnsEnabled: true,
+        subnets: { subnets: selectedSubnets },
+        securityGroups: [vpcEndpointSG]
       });
-      NagSuppressions.addResourceSuppressions(bedrockAgentRuntimeEndpointSG, [
-        {
-          id: 'AwsSolutions-EC23',
-          reason: 'Security group is used for Bedrock VPC endpoint and requires access to VPC CIDR',
-        },
-        {
-          id: 'CdkNagValidationFailure',
-          reason: 'Security group uses intrinsic function to reference VPC CIDR block'
-        }
-      ]);
 
-    const bedrockAgentRuntimeEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockAgentRuntimeEndpoint', {
-      vpc: this.vpc,
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-agent-runtime`),
-      privateDnsEnabled: true,
-      subnets: { subnets: selectedSubnets },
-      securityGroups: [ bedrockAgentRuntimeEndpointSG ]
-    });
+      const bedrockAgentRuntimeEndpoint = new ec2.InterfaceVpcEndpoint(this, 'BedrockAgentRuntimeEndpoint', {
+        vpc: this.vpc,
+        service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${this.region}.bedrock-agent-runtime`),
+        privateDnsEnabled: true,
+        subnets: { subnets: selectedSubnets },
+        securityGroups: [vpcEndpointSG]
+      });
 
-      // Add ingress rules to the security groups
       bedrockAgentEndpoint.connections.allowDefaultPortFromAnyIpv4('Allow HTTPS traffic from within VPC');
       bedrockAgentRuntimeEndpoint.connections.allowDefaultPortFromAnyIpv4('Allow HTTPS traffic from within VPC');
       bedrockAgentEndpoint.addToPolicy(
@@ -358,8 +329,6 @@ export class NeptuneBaseStack extends cdk.Stack {
           resources: ['*']
         })
       );
-    }
-
 
       //create DynamoDB Gateway Endpoint
       const dynamodbEndpoint = new ec2.GatewayVpcEndpoint(this, 'DynamoDBGatewayEndpoint', {
@@ -378,6 +347,7 @@ export class NeptuneBaseStack extends cdk.Stack {
           resources: ['*']
         })
       );
+    }
 
     // Neptune Security Group - use existing or create new
     let neptuneSG: ec2.ISecurityGroup;
@@ -1003,7 +973,7 @@ export class NeptuneBaseStack extends cdk.Stack {
       memorySize: 1024,
       timeout: cdk.Duration.minutes(5),
       vpc: this.vpc,
-      vpcSubnets: {subnets: selectedSubnets},
+      vpcSubnets: { subnets: selectedSubnets },
       securityGroups: [neptuneSG],
       logGroup: this.etlProcessorLogGroup,
       environment: {
