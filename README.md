@@ -51,14 +51,16 @@ The following table provides a sample cost breakdown for deploying this Guidance
 
 | AWS service | Dimensions | Cost [USD] |
 | ----------- | ------------ | ------------ |
+| Amazon OpenSearch Serverless | 2 Indexing, 2 Search OCUs | $346.00 |
+| Amazon Neptune Serverless | db.t3.medium instance + 1GB storage | $291.00 |
+| Networking | NAT Gateways, Public IPs, VPC endpoint | $104.00 |
 | Amazon Bedrock | 10,000 agent interactions per month (Claude 3.5 Sonnet) | $75.00 |
-| Amazon Neptune | db.t3.medium instance + 1GB storage | $45.00 |
 | AWS Lambda | 50,000 invocations, 512MB memory | $8.50 |
-| Amazon Cognito | 1,000 active users per month | $0.00 |
-| Amazon API Gateway | 100,000 REST API calls per month | $0.35 |
 | Amazon CloudWatch | Standard monitoring and logging | $15.00 |
 | Amazon S3 | 10GB storage + data transfer | $2.50 |
-| **Total estimated monthly cost** | | **$146.35** |
+| Amazon Cognito | 1,000 active users per month | $0.00 |
+| Amazon API Gateway | 100,000 REST API calls per month | $0.35 |
+| **Total estimated monthly cost** | | **$842.35** |
 
 ## Prerequisites 
 
