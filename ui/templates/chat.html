@@ -1,0 +1,2573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panoptic | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/hint.2.7.0.min.css') }}" />
+    <script src="{{ url_for('static', filename='ext/marked.12.0.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <script>
+      // Configure marked to enable tables and other features
+      marked.setOptions({
+        gfm: true,
+        tables: true,
+        breaks: false,
+        pedantic: false,
+        sanitize: false, // This allows HTML tags like <img>
+        smartLists: true,
+        smartypants: false,
+      });
+    </script>
+    {% include 'includes/header_scripts.html' %} {% include 'includes/header_styles.html' %}
+  </head>
+  <body>
+    {% include 'includes/header.html' %}
+
+    <div class="chat-container" id="chat-container">
+      <div class="messages" id="messages">
+        <div class="message assistant" style="margin-bottom: 2rem; padding-top: 1.5rem">
+          Hello! I'm Panoptic, your manufacturing data exploration assistant. I can help you analyze and visualize your
+          data, generate insights, and assist with various tasks related to your datasets. What would you like to
+          explore today?
+          <div class="timestamp" id="initial-timestamp"></div>
+        </div>
+      </div>
+
+      <div class="typing-indicator" id="typing">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <div class="input-row">
+          <textarea id="messageInput" class="text-input" placeholder="Type your message here..." rows="3"></textarea>
+          <div class="button-row">
+            <div class="button-group">
+              <button
+                class="debug-button hint--top-right"
+                id="llmButton"
+                onclick="toggleLLMSelector(); hideTooltip(this)"
+                data-hint="Select LLM models"
+              >
+                <span id="llm-icon"></span>
+              </button>
+              <button
+                class="file-button hint--top-right"
+                onclick="document.getElementById('fileInput').click(); hideTooltip(this)"
+                data-hint="Upload files"
+              >
+                <span id="file-icon"></span>
+              </button>
+              <button
+                class="debug-button hint--top-right"
+                id="suggestionsButton"
+                onclick="toggleSuggestions(); hideTooltip(this)"
+                data-hint="Show prompt suggestions"
+              >
+                <span id="suggestions-icon"></span>
+              </button>
+              <button
+                class="debug-button hint--top-right"
+                id="historyButton"
+                onclick="toggleHistory(); hideTooltip(this)"
+                data-hint="Show conversation history"
+              >
+                <span id="history-icon"></span>
+              </button>
+              <!-- <button class="debug-button hint--top-right" id="clearButton" onclick="clearHistory(); hideTooltip(this)" data-hint="Clear conversation history">
+                            <span id="clear-icon"></span>
+                        </button> -->
+              <button
+                class="debug-button hint--top-right"
+                id="debugButton"
+                onclick="toggleDebug(); hideTooltip(this)"
+                data-hint="Toggle debug information"
+              >
+                <span id="debug-icon"></span>
+              </button>
+            </div>
+            <button class="send-button" id="sendButton" onclick="sendMessage()">
+              <span id="send-icon"></span> Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt Suggestions Popup -->
+    <div id="suggestionsPopup" class="suggestions-popup" style="display: none">
+      <div class="suggestions-list" id="suggestionsList">
+        <!-- Suggestions loaded dynamically -->
+      </div>
+    </div>
+
+    <!-- LLM Selector Modal -->
+    <div id="llmModal" class="llm-modal" style="display: none">
+      <div class="llm-modal-content">
+        <div class="llm-modal-header">
+          <h3>Select LLM Models</h3>
+          <button class="close-modal" onclick="closeLLMModal()">&times;</button>
+        </div>
+        <div class="llm-modal-body">
+          <div class="llm-section">
+            <h4>General Chat Model</h4>
+            <p>Used for general conversation and all agents</p>
+            <select id="chatModelSelect" onchange="updateChatModel()">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+          <div class="llm-section">
+            <h4>OpenCypher Query Model</h4>
+            <p>Used specifically for Neptune database queries</p>
+            <select id="neptuneModelSelect" onchange="updateNeptuneModel()">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+          <div class="llm-section">
+            <h4>Image Generation Model</h4>
+            <p>Used for generating images from text prompts</p>
+            <select id="imageModelSelect" onchange="updateImageModel()">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Panel -->
+    <div class="events-panel" id="eventsPanel">
+      <div class="events-header">
+        <h3>Agent Trace</h3>
+        <div class="events-controls">
+          <button
+            class="toggle-text-gen"
+            id="toggleTextGen"
+            onclick="toggleTextGeneration()"
+            title="Hide/Show text generation events"
+          >
+            <i data-feather="eye-off" id="textGenIcon"></i>
+          </button>
+          <button class="close-events" onclick="toggleEventsPanel()">&times;</button>
+        </div>
+      </div>
+      <div class="events-content" id="eventsContent">
+        <div class="events-placeholder">Events will appear here.</div>
+      </div>
+    </div>
+
+    <script>
+      // Make user data available to JavaScript
+      const userData = {
+        email: '{{ user.email or "" }}',
+        name: '{{ user.name or "" }}',
+      };
+
+      window.addEventListener("unhandledrejection", function (e) {
+        if (
+          e.reason &&
+          e.reason.message &&
+          e.reason.message.includes("message channel closed before a response was received")
+        ) {
+          e.preventDefault();
+          return true;
+        }
+      });
+
+      // Add timestamp and badge to initial message
+      document.addEventListener("DOMContentLoaded", function () {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        document.getElementById("initial-timestamp").textContent = timeString;
+
+        // Focus on the message input
+        document.getElementById("messageInput").focus();
+
+        // Add badge to initial message
+        const initialMessage = document.querySelector(".message.assistant");
+        const badge = document.createElement("div");
+        badge.className = "message-badge";
+        badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+        initialMessage.appendChild(badge);
+
+        // Initialize button icons
+        document.getElementById("file-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.paperclip.toSvg({ width: 16, height: 16 }),
+        );
+        document.getElementById("suggestions-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.list.toSvg({ width: 16, height: 16 }),
+        );
+        document.getElementById("debug-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.settings.toSvg({ width: 16, height: 16 }),
+        );
+        document.getElementById("history-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.clock.toSvg({ width: 16, height: 16 }),
+        );
+        // document.getElementById('clear-icon').innerHTML = DOMPurify.sanitize(feather.icons['trash-2'].toSvg({width: 16, height: 16}));
+        document.getElementById("llm-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.cpu.toSvg({ width: 16, height: 16 }),
+        );
+        document.getElementById("send-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.send.toSvg({ width: 16, height: 16 }),
+        );
+        document.getElementById("header-icon").innerHTML = DOMPurify.sanitize(
+          feather.icons.zap.toSvg({ width: 20, height: 20 }),
+        );
+
+        // Force feather icons to replace any that might not have loaded
+        setTimeout(() => {
+          feather.replace();
+        }, 100);
+
+        // Load suggestions from config file
+        loadSuggestions();
+
+        // Load LLM configuration
+        loadLLMConfig();
+
+        // Handle file selection - auto-upload when file is selected
+        document.getElementById("fileInput").addEventListener("change", function (e) {
+          if (e.target.files.length > 0) {
+            const message = document.getElementById("messageInput").value.trim();
+
+            if (e.target.files.length === 1) {
+              // Single file upload - use existing function
+              const file = e.target.files[0];
+              uploadFileWithActions(file, message);
+            } else {
+              // Multiple file upload - use new function
+              uploadMultipleFilesWithActions(Array.from(e.target.files), message);
+            }
+          }
+        });
+      });
+
+      // Initialize debug mode from localStorage
+      let debugMode = localStorage.getItem("debugMode") === "true";
+      let lastDebugContainer = null;
+
+      // Apply debug mode on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        if (debugMode) {
+          const debugButton = document.getElementById("debugButton");
+          debugButton.classList.add("active");
+          toggleEventsPanel(true);
+
+          // Show any existing debug messages
+          const debugMessages = document.querySelectorAll(".message.debug");
+          debugMessages.forEach((msg) => {
+            msg.classList.add("show");
+          });
+        }
+
+        // Focus on input field
+        document.getElementById("messageInput").focus();
+      });
+
+      function toggleDebug() {
+        debugMode = !debugMode;
+
+        // Save to localStorage
+        localStorage.setItem("debugMode", debugMode.toString());
+
+        const debugMessages = document.querySelectorAll(".message.debug");
+        const button = document.getElementById("debugButton");
+
+        debugMessages.forEach((msg) => {
+          if (debugMode) {
+            msg.classList.add("show");
+          } else {
+            msg.classList.remove("show");
+          }
+        });
+
+        if (debugMode) {
+          button.classList.add("active");
+          toggleEventsPanel(true);
+          // Focus the input when debug mode is enabled
+          document.getElementById("messageInput").focus();
+        } else {
+          button.classList.remove("active");
+          toggleEventsPanel(false);
+        }
+      }
+
+      function toggleEventsPanel(show) {
+        const panel = document.getElementById("eventsPanel");
+        const body = document.body;
+        const header = document.querySelector(".header");
+        const debugButton = document.getElementById("debugButton");
+
+        if (show === undefined) {
+          show = !panel.classList.contains("open");
+        }
+
+        if (show) {
+          panel.classList.add("open");
+          body.classList.add("events-open");
+          header.classList.add("events-open");
+        } else {
+          panel.classList.remove("open");
+          body.classList.remove("events-open");
+          header.classList.remove("events-open");
+          // Also turn off debug mode when panel is closed
+          debugMode = false;
+          localStorage.setItem("debugMode", "false");
+          debugButton.classList.remove("active");
+          const debugMessages = document.querySelectorAll(".message.debug");
+          debugMessages.forEach((msg) => {
+            msg.classList.remove("show");
+          });
+        }
+      }
+
+      // Global variable to track text generation visibility
+      let showTextGeneration = false; // Hidden by default
+
+      function toggleTextGeneration() {
+        showTextGeneration = !showTextGeneration;
+        const button = document.getElementById("toggleTextGen");
+        const icon = document.getElementById("textGenIcon");
+
+        if (showTextGeneration) {
+          button.classList.add("active");
+          icon.setAttribute("data-feather", "eye");
+          button.title = "Hide text generation events";
+        } else {
+          button.classList.remove("active");
+          icon.setAttribute("data-feather", "eye-off");
+          button.title = "Show text generation events";
+        }
+
+        // Re-render feather icons
+        feather.replace();
+
+        // Show/hide existing text generation events
+        const textGenEvents = document.querySelectorAll('.event-item[data-event-type="📟 text_generation"]');
+        textGenEvents.forEach((event) => {
+          event.style.display = showTextGeneration ? "block" : "none";
+        });
+      }
+
+      function addCustomEvent(message) {
+        const eventsContent = document.getElementById("eventsContent");
+        const placeholder = eventsContent.querySelector(".events-placeholder");
+
+        if (placeholder) {
+          placeholder.remove();
+        }
+
+        const eventItem = document.createElement("div");
+        eventItem.className = "event-item";
+
+        const timestamp = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          fractionalSecondDigits: 3,
+        });
+
+        eventItem.innerHTML = DOMPurify.sanitize(`
+                <div class="event-timestamp">${timestamp}</div>
+                <div class="event-content">${message}</div>
+            `);
+
+        eventsContent.appendChild(eventItem);
+        eventsContent.scrollTop = eventsContent.scrollHeight;
+      }
+
+      function openImageModal(imageSrc) {
+        // Create modal overlay
+        const modal = document.createElement("div");
+        modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                cursor: pointer;
+            `;
+
+        // Create image element
+        const img = document.createElement("img");
+        img.src = imageSrc;
+        img.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            `;
+
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+
+        // Close modal when clicked
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+
+        // Close modal with Escape key
+        const handleEscape = (e) => {
+          if (e.key === "Escape" && document.body.contains(modal)) {
+            document.body.removeChild(modal);
+            document.removeEventListener("keydown", handleEscape);
+          }
+        };
+        document.addEventListener("keydown", handleEscape);
+      }
+
+      function processPendingImages() {
+        if (!window.pendingImages || window.pendingImages.length === 0) return;
+
+        const imagesToProcess = [...window.pendingImages];
+        window.pendingImages = [];
+
+        // Group all thumbnails in a single message
+        let allThumbnails = [];
+        let processedCount = 0;
+
+        imagesToProcess.forEach((filename) => {
+          // Check if this is a direct image path (data visualizer) or generated image (image assistant)
+          if (filename.includes(".png") || filename.includes(".jpg") || filename.includes(".jpeg")) {
+            // Direct image path from data visualizer
+            const imageUrl = `/query-get-image/${filename}`;
+
+            const thumbnailHtml = `<img src="${imageUrl}" style="max-width: 200px; max-height: 150px; object-fit: contain; cursor: pointer; border: 2px solid #ddd; border-radius: 8px; margin: 5px;" class="image-thumbnail" data-image-url="${imageUrl}" title="Click to view full size">`;
+            allThumbnails.push(thumbnailHtml);
+            processedCount++;
+
+            // If all images processed, add single message
+            if (processedCount === imagesToProcess.length) {
+              addMessage(allThumbnails.join(""), "assistant");
+            }
+          } else {
+            // Generated image from image assistant
+            fetch(`/get-generated-image/${encodeURIComponent(filename)}`)
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success && data.image_html) {
+                  // Convert full-size image to clickable thumbnail
+                  const thumbnailHtml = data.image_html.replace(
+                    /<img([^>]*?)src="([^"]*?)"([^>]*?)>/g,
+                    `<img$1src="$2"$3 style="max-width: 200px; max-height: 150px; object-fit: contain; cursor: pointer; border: 2px solid #ddd; border-radius: 8px; margin: 5px;" onclick="openImageModal('$2')" title="Click to view full size">`,
+                  );
+                  allThumbnails.push(thumbnailHtml);
+                }
+                processedCount++;
+
+                // If all images processed, add single message
+                if (processedCount === imagesToProcess.length) {
+                  addMessage(allThumbnails.join(""), "assistant");
+                }
+              })
+              .catch((error) => {
+                console.error("Error loading image:", error);
+                processedCount++;
+
+                // If all images processed, add single message
+                if (processedCount === imagesToProcess.length) {
+                  addMessage(allThumbnails.join(""), "assistant");
+                }
+              });
+          }
+        });
+      }
+
+      function addEventToPanel(event) {
+        // Skip image generation events - they should only appear in main chat
+        if (
+          event.type === "tool_result" &&
+          event.content &&
+          (event.content.includes("[Generated image:") || event.content.includes("[Generated chart:"))
+        ) {
+          // Instead of showing in events panel, defer image processing
+          if (event.content.includes("[Generated image:")) {
+            const imageMarkerRegex = /\[Generated image:\s*([^\]]+)\]/g;
+            let match;
+            while ((match = imageMarkerRegex.exec(event.content)) !== null) {
+              const filename = match[1].trim();
+              if (!window.pendingImages) window.pendingImages = [];
+              if (!window.pendingImages.includes(filename)) {
+                window.pendingImages.push(filename);
+              }
+            }
+          }
+          return;
+        }
+
+        const eventsContent = document.getElementById("eventsContent");
+        const placeholder = eventsContent.querySelector(".events-placeholder");
+
+        if (placeholder) {
+          placeholder.remove();
+        }
+
+        const eventItem = document.createElement("div");
+        eventItem.className = "event-item";
+        eventItem.setAttribute("data-event-type", event.type);
+
+        // Hide text generation events by default
+        if (event.type === "📟 text_generation" && !showTextGeneration) {
+          eventItem.style.display = "none";
+        }
+
+        const timestamp = new Date(event.timestamp * 1000).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          fractionalSecondDigits: 3,
+        });
+
+        // Check if this is a tool result
+        const isToolResult = event.data && event.data.tools === "tool_result";
+        const toolName = event.data && event.data.tool_name ? event.data.tool_name : "unknown";
+
+        // Check if this is a guardrail redaction
+        const isGuardrailRedaction = event.type === "redactContent";
+
+        // Check if this is a thinking event
+        const isThinkingEvent = event.type === "🧠 thinking";
+
+        // Check if this is a usage event
+        const isUsageEvent = event.type === "📊 usage";
+
+        // Apply special styling for tool results
+        if (isToolResult) {
+          eventItem.style.backgroundColor = "#fffbf0"; // Light yellow background
+        }
+
+        // Apply special styling for thinking events
+        if (isThinkingEvent) {
+          eventItem.style.backgroundColor = "#f3f0ff"; // Light purple background
+        }
+
+        // Apply special styling for usage events
+        if (isUsageEvent) {
+          eventItem.style.backgroundColor = "#f0fff4"; // Light green background
+        }
+
+        // Apply special styling for guardrail redactions
+        if (isGuardrailRedaction) {
+          eventItem.style.backgroundColor = "#ffebee"; // Light red background
+          eventItem.style.border = "1px solid #f44336"; // Red border
+          eventItem.style.borderRadius = "4px";
+          eventItem.style.padding = "8px";
+        }
+
+        // Only show data if it's not empty
+        const hasData = event.data && Object.keys(event.data).length > 0;
+        let dataHtml = "";
+
+        if (hasData) {
+          // Special handling for guardrail redactions
+          if (isGuardrailRedaction) {
+            const redactMessage =
+              event.data.redactUserContentMessage || event.data.message || "Content blocked by guardrails";
+            dataHtml = `<div class="event-data guardrail-message"><strong>⚠️ ${redactMessage}</strong></div>`;
+          }
+          // Use formatted content if available, otherwise format the data nicely
+          else if (event.data.formatted_content) {
+            dataHtml = `<div class="event-data">${event.data.formatted_content}</div>`;
+          } else {
+            // Format specific fields nicely
+            const formatted = [];
+
+            if (event.data.text) formatted.push(`text: ${event.data.text}`);
+            if (event.data.tool) formatted.push(`tool: ${event.data.tool}`);
+            if (event.data.query) formatted.push(`query: ${event.data.query}`);
+            if (event.data.input) formatted.push(`input: ${event.data.input}`);
+            if (event.data.role) formatted.push(`role: ${event.data.role}`);
+            if (event.data.content) formatted.push(`content: ${event.data.content}`);
+            if (event.data.tools) formatted.push(`tools: ${event.data.tools}`);
+            if (event.data.tokens) formatted.push(`${event.data.tokens}`);
+            if (event.data.latency) formatted.push(`${event.data.latency}`);
+            if (event.data.models) formatted.push(`${event.data.models}`);
+            if (event.data.result) formatted.push(`result: ${event.data.result}`);
+            if (event.data.stop_reason) formatted.push(`reason: ${event.data.stop_reason}`);
+            if (event.data.metadata) formatted.push(`${event.data.metadata}`);
+            if (formatted.length > 0) {
+              dataHtml = `<div class="event-data">${formatted.join("<br>")}</div>`;
+            }
+          }
+        }
+
+        // Check for image generation markers and defer loading until streaming completes
+        if (event.type === "tool_result" && event.content && event.content.includes("[Generated image:")) {
+          // This is now handled in addEventToPanel
+          return;
+        }
+
+        // Customize the event type display for tool results and guardrails
+        let eventTypeDisplay = event.type;
+        if (isToolResult) {
+          eventTypeDisplay = `🔧 tool_result (${toolName})`;
+        } else if (isGuardrailRedaction) {
+          eventTypeDisplay = `🛡️ guardrail_blocked`;
+        }
+
+        eventItem.innerHTML = DOMPurify.sanitize(`
+                <div class="event-type">${eventTypeDisplay}</div>
+                <div class="event-timestamp">${timestamp}</div>
+                ${dataHtml}
+            `);
+
+        eventsContent.appendChild(eventItem);
+        eventsContent.scrollTop = eventsContent.scrollHeight;
+      }
+
+      let historyMode = false;
+
+      async function toggleHistory() {
+        historyMode = !historyMode;
+        const button = document.getElementById("historyButton");
+
+        if (historyMode) {
+          button.classList.add("active");
+          await fetchAndDisplayHistory();
+
+          // Auto-scroll to the start of conversation history
+          setTimeout(() => {
+            const historyMessages = document.querySelectorAll(".message.history-single");
+            if (historyMessages.length > 0) {
+              const element = historyMessages[0];
+              const elementTop = element.offsetTop;
+              const offset = 80; // Account for top nav bar height
+              window.scrollTo({
+                top: elementTop - offset,
+                behavior: "smooth",
+              });
+            }
+          }, 100);
+        } else {
+          button.classList.remove("active");
+          // Remove history messages
+          const historyMessages = document.querySelectorAll(".message.history-single");
+          historyMessages.forEach((msg) => msg.parentElement.remove());
+        }
+      }
+
+      async function fetchAndDisplayHistory() {
+        try {
+          // Use relative URL to go through API Gateway (HTTPS)
+          const response = await fetch(`/conversation?user_id=${encodeURIComponent(userData.email || "local@dev")}`);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Error response:", errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+          }
+
+          const data = await response.json();
+
+          if (data.messages && data.messages.length > 0) {
+            // Filter out tool messages - only show clean user/assistant conversation
+            const cleanMessages = data.messages.filter((msg) => {
+              // Skip messages that contain tool JSON
+              const hasToolUse = msg.content.includes("toolUse") && msg.content.includes("{");
+              const hasToolResult = msg.content.includes("toolResult") && msg.content.includes("{");
+              const isJsonBlock =
+                msg.content.startsWith("```json") &&
+                (msg.content.includes("toolUse") || msg.content.includes("toolResult"));
+
+              return !hasToolUse && !hasToolResult && !isJsonBlock;
+            });
+
+            // Display clean messages
+            let historyContent = `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">Conversation History (${cleanMessages.length} messages):</h4>
+                        <button onclick="downloadConversation()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem;" title="Download conversation">
+                            <span id="download-icon"></span>
+                        </button>
+                    </div>`;
+
+            cleanMessages.reverse().forEach((msg, index) => {
+              const icon = msg.role === "user" ? "👤" : "⚡";
+              const roleClass = msg.role === "user" ? "history-user-text" : "history-assistant-text";
+
+              const parsedContent = marked.parse(msg.content);
+
+              historyContent += `<div class="history-entry">
+                            <span class="history-icon">${icon}</span> 
+                            <div class="history-content">
+                                <div class="${roleClass}">${parsedContent}</div>
+                            </div>
+                        </div>`;
+            });
+
+            // Add bottom download button
+            historyContent += `<div style="display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 1rem;">
+                        <button onclick="downloadConversation()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem;" title="Download conversation">
+                            <span id="download-icon-bottom"></span>
+                        </button>
+                    </div>`;
+
+            addMessage(historyContent, "history-single");
+
+            // Initialize download icons after adding to DOM
+            setTimeout(() => {
+              const downloadIcon = document.getElementById("download-icon");
+              const downloadIconBottom = document.getElementById("download-icon-bottom");
+              if (downloadIcon) {
+                downloadIcon.innerHTML = DOMPurify.sanitize(feather.icons.download.toSvg({ width: 16, height: 16 }));
+              }
+              if (downloadIconBottom) {
+                downloadIconBottom.innerHTML = DOMPurify.sanitize(
+                  feather.icons.download.toSvg({ width: 16, height: 16 }),
+                );
+              }
+            }, 50);
+          } else {
+            addMessage("No conversation history available.", "history-single");
+          }
+        } catch (error) {
+          addMessage("Error fetching conversation history: " + error.message, "history-single");
+        }
+      }
+
+      async function downloadConversation() {
+        try {
+          // Use relative URL to go through API Gateway (HTTPS)
+          const response = await fetch(`/conversation?user_id=${encodeURIComponent(userData.email || "local@dev")}`);
+          const data = await response.json();
+
+          if (data.messages && data.messages.length > 0) {
+            // Filter out tool messages for clean download
+            const cleanMessages = data.messages.filter((msg) => {
+              const hasToolUse = msg.content.includes("toolUse") && msg.content.includes("{");
+              const hasToolResult = msg.content.includes("toolResult") && msg.content.includes("{");
+              const isJsonBlock =
+                msg.content.startsWith("```json") &&
+                (msg.content.includes("toolUse") || msg.content.includes("toolResult"));
+              return !hasToolUse && !hasToolResult && !isJsonBlock;
+            });
+
+            // Create text content
+            let textContent = `Conversation History\n`;
+            textContent += `Generated: ${new Date().toLocaleString()}\n`;
+            textContent += `Total Messages: ${cleanMessages.length}\n`;
+            textContent += `${"=".repeat(50)}\n\n`;
+
+            cleanMessages.reverse().forEach((msg, index) => {
+              const role = msg.role === "user" ? "USER" : "ASSISTANT";
+              textContent += `[${role}]\n${msg.content}\n\n`;
+            });
+
+            // Create and download file
+            const blob = new Blob([textContent], { type: "text/plain" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `conversation-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          } else {
+            alert("No conversation history to download.");
+          }
+        } catch (error) {
+          alert("Error downloading conversation: " + error.message);
+        }
+      }
+
+      async function clearHistory() {
+        if (confirm("Are you sure you want to clear the conversation history? This cannot be undone.")) {
+          try {
+            // Use relative URL to go through API Gateway (HTTPS)
+            const response = await fetch("/clear-conversation", {
+              method: "POST",
+            });
+
+            if (response.ok) {
+              // Hide history if currently displayed
+              if (historyMode) {
+                toggleHistory();
+              }
+              alert("Conversation history cleared successfully.");
+            } else {
+              alert("Error clearing conversation history.");
+            }
+          } catch (error) {
+            alert("Error clearing conversation history: " + error.message);
+          }
+        }
+      }
+
+      function toggleSuggestions() {
+        const popup = document.getElementById("suggestionsPopup");
+        const button = document.getElementById("suggestionsButton");
+
+        if (popup.style.display === "none") {
+          // Position popup above the button
+          const buttonRect = button.getBoundingClientRect();
+          popup.style.display = "block";
+          popup.style.left = buttonRect.left + "px";
+          popup.style.top = buttonRect.top - popup.offsetHeight - 5 + "px";
+          button.classList.add("active");
+        } else {
+          popup.style.display = "none";
+          button.classList.remove("active");
+        }
+      }
+
+      function selectSuggestion(text) {
+        const input = document.getElementById("messageInput");
+        input.value = text;
+        input.focus();
+
+        // Hide popup
+        document.getElementById("suggestionsPopup").style.display = "none";
+        document.getElementById("suggestionsButton").classList.remove("active");
+      }
+
+      // Close suggestions popup when clicking outside
+      document.addEventListener("click", function (event) {
+        const popup = document.getElementById("suggestionsPopup");
+        const button = document.getElementById("suggestionsButton");
+
+        if (!popup.contains(event.target) && !button.contains(event.target)) {
+          popup.style.display = "none";
+          button.classList.remove("active");
+        }
+      });
+
+      async function loadSuggestions() {
+        try {
+          const response = await fetch("/static/suggestions.json");
+          const data = await response.json();
+
+          const suggestionsList = document.getElementById("suggestionsList");
+          suggestionsList.innerHTML = DOMPurify.sanitize("");
+
+          // Group suggestions by category
+          const categories = {};
+          data.suggestions.forEach((suggestion) => {
+            if (!categories[suggestion.category]) {
+              categories[suggestion.category] = [];
+            }
+            categories[suggestion.category].push(suggestion);
+          });
+
+          // Create category sections
+          Object.keys(categories).forEach((category) => {
+            // Add category header
+            const header = document.createElement("div");
+            header.className = "suggestion-category";
+            header.textContent = category.toUpperCase();
+            suggestionsList.appendChild(header);
+
+            // Add suggestions for this category
+            categories[category].forEach((suggestion) => {
+              const item = document.createElement("div");
+              item.className = "suggestion-item";
+              // Limit display text to 80 characters
+              const displayText =
+                suggestion.text.length > 80 ? suggestion.text.substring(0, 80) + "..." : suggestion.text;
+              item.textContent = displayText;
+              item.title = suggestion.text; // Show full text on hover
+              item.onclick = () => selectSuggestion(suggestion.text);
+              suggestionsList.appendChild(item);
+            });
+          });
+        } catch (error) {
+          console.error("Error loading suggestions:", error);
+          // Fallback to default suggestions
+          const suggestionsList = document.getElementById("suggestionsList");
+          suggestionsList.innerHTML = DOMPurify.sanitize(`
+                    <div class="suggestion-item" onclick="selectSuggestion('What is the weather in New York?')">
+                        What is the weather in New York?
+                    </div>
+                `);
+        }
+      }
+
+      function updateImageModel() {
+        const select = document.getElementById("imageModelSelect");
+        currentImageModel = select.value;
+        localStorage.setItem("imageModel", currentImageModel);
+
+        applyImageModel(currentImageModel);
+      }
+
+      async function applyImageModel(modelId) {
+        try {
+          const response = await fetch("/set-models", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ image_model: modelId }),
+          });
+          const data = await response.json();
+          if (data.status !== "success") {
+            console.error("Failed to update image model:", data.message);
+          } else {
+            localStorage.setItem("lastAppliedImageModel", modelId);
+          }
+        } catch (error) {
+          console.error("Error updating image model:", error);
+        }
+      }
+
+      // Helper function to get model display name
+      function getModelDisplayName(modelId) {
+        if (!llmConfig || !llmConfig.models) return modelId;
+
+        const model = llmConfig.models.find((m) => m.id === modelId);
+        return model ? model.name : modelId;
+      }
+
+      // LLM Selector Functions
+      let llmConfig = null;
+      let currentChatModel = null;
+      let currentNeptuneModel = null;
+      let currentImageModel = null;
+
+      async function loadLLMConfig() {
+        try {
+          const response = await fetch("/static/llm-config.json");
+          llmConfig = await response.json();
+
+          // Load saved models from localStorage or use defaults
+          currentChatModel = localStorage.getItem("chatModel") || llmConfig.defaults.chat;
+          currentNeptuneModel = localStorage.getItem("neptuneModel") || llmConfig.defaults.neptune;
+          currentImageModel = localStorage.getItem("imageModel") || llmConfig.defaults.image;
+
+          populateLLMSelectors();
+
+          // Apply models to backend - always apply saved models on page load to ensure backend is in sync
+          const modelsToSet = {};
+
+          // Apply chat model if user has saved a preference (different from default)
+          if (localStorage.getItem("chatModel") && currentChatModel !== llmConfig.defaults.chat) {
+            modelsToSet.chat_model = currentChatModel;
+          }
+          // Apply neptune model if user has saved a preference (different from default)
+          if (localStorage.getItem("neptuneModel") && currentNeptuneModel !== llmConfig.defaults.neptune) {
+            modelsToSet.neptune_model = currentNeptuneModel;
+          }
+          // Apply image model if user has saved a preference (different from default)
+          if (localStorage.getItem("imageModel") && currentImageModel !== llmConfig.defaults.image) {
+            modelsToSet.image_model = currentImageModel;
+          }
+
+          if (Object.keys(modelsToSet).length > 0) {
+            console.debug("Applying saved models on page load:", modelsToSet);
+            await applyModels(modelsToSet);
+            // Store applied models for tracking
+            if (modelsToSet.chat_model) localStorage.setItem("lastAppliedChatModel", modelsToSet.chat_model);
+            if (modelsToSet.neptune_model) localStorage.setItem("lastAppliedNeptuneModel", modelsToSet.neptune_model);
+            if (modelsToSet.image_model) localStorage.setItem("lastAppliedImageModel", modelsToSet.image_model);
+          } else {
+            console.debug("No custom models to apply - using defaults");
+          }
+        } catch (error) {
+          console.error("Error loading LLM config:", error);
+        }
+      }
+
+      function populateLLMSelectors() {
+        if (!llmConfig) return;
+
+        const chatSelect = document.getElementById("chatModelSelect");
+        const neptuneSelect = document.getElementById("neptuneModelSelect");
+        const imageSelect = document.getElementById("imageModelSelect");
+
+        // Clear existing options
+        chatSelect.innerHTML = "";
+        neptuneSelect.innerHTML = "";
+        imageSelect.innerHTML = "";
+
+        // Add options for chat and neptune selectors
+        llmConfig.models.forEach((model) => {
+          const chatOption = document.createElement("option");
+          chatOption.value = model.id;
+          chatOption.textContent = `${model.name} (${model.provider})`;
+          if (model.id === currentChatModel) chatOption.selected = true;
+          chatSelect.appendChild(chatOption);
+
+          const neptuneOption = document.createElement("option");
+          neptuneOption.value = model.id;
+          neptuneOption.textContent = `${model.name} (${model.provider})`;
+          if (model.id === currentNeptuneModel) neptuneOption.selected = true;
+          neptuneSelect.appendChild(neptuneOption);
+        });
+
+        // Add options for image selector
+        llmConfig.image_models.forEach((model) => {
+          const imageOption = document.createElement("option");
+          imageOption.value = model.id;
+          imageOption.textContent = `${model.name} (${model.provider})`;
+          if (model.id === currentImageModel) imageOption.selected = true;
+          imageSelect.appendChild(imageOption);
+        });
+      }
+
+      function toggleLLMSelector() {
+        const modal = document.getElementById("llmModal");
+        modal.style.display = modal.style.display === "none" ? "flex" : "none";
+      }
+
+      function closeLLMModal() {
+        document.getElementById("llmModal").style.display = "none";
+      }
+
+      function updateChatModel() {
+        const select = document.getElementById("chatModelSelect");
+        currentChatModel = select.value;
+        localStorage.setItem("chatModel", currentChatModel);
+
+        applyChatModel(currentChatModel);
+      }
+
+      function updateNeptuneModel() {
+        const select = document.getElementById("neptuneModelSelect");
+        currentNeptuneModel = select.value;
+        localStorage.setItem("neptuneModel", currentNeptuneModel);
+
+        applyNeptuneModel(currentNeptuneModel);
+      }
+
+      async function applyModels(models) {
+        try {
+          const response = await fetch("/set-models", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(models),
+          });
+
+          if (!response.ok) {
+            console.error("Failed to set models:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error setting models:", error);
+        }
+      }
+
+      async function applyChatModel(modelId) {
+        try {
+          const response = await fetch("/set-models", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ chat_model: modelId }),
+          });
+          const data = await response.json();
+          if (data.status !== "success") {
+            console.error("Failed to update chat model:", data.message);
+          } else {
+            localStorage.setItem("lastAppliedChatModel", modelId);
+          }
+        } catch (error) {
+          console.error("Error updating chat model:", error);
+        }
+      }
+
+      async function applyNeptuneModel(modelId) {
+        try {
+          const response = await fetch("/set-models", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ neptune_model: modelId }),
+          });
+          const data = await response.json();
+          if (data.status !== "success") {
+            console.error("Failed to update Neptune model:", data.message);
+          } else {
+            localStorage.setItem("lastAppliedNeptuneModel", modelId);
+          }
+        } catch (error) {
+          console.error("Error updating Neptune model:", error);
+        }
+      }
+
+      // Close modal when clicking outside
+      document.addEventListener("click", function (event) {
+        const modal = document.getElementById("llmModal");
+        const button = document.getElementById("llmButton");
+
+        if (
+          modal.style.display === "flex" &&
+          !modal.querySelector(".llm-modal-content").contains(event.target) &&
+          !button.contains(event.target)
+        ) {
+          closeLLMModal();
+        }
+      });
+
+      function scrollToBottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+
+      function hideTooltip(element) {
+        // Temporarily remove the hint class to hide tooltip
+        element.classList.remove("hint--top-right");
+
+        // Add mouseleave listener to restore tooltip when mouse leaves
+        const restoreTooltip = () => {
+          element.classList.add("hint--top-right");
+          element.removeEventListener("mouseleave", restoreTooltip);
+        };
+        element.addEventListener("mouseleave", restoreTooltip);
+      }
+
+      function addFeedbackButtons(messageElement, userMessage, assistantMessage) {
+        // Check if feedback buttons already exist
+        if (messageElement.querySelector(".thumbs-up") || messageElement.querySelector(".thumbs-down")) {
+          return;
+        }
+
+        const thumbsUp = document.createElement("button");
+        thumbsUp.className = "feedback-btn thumbs-up";
+        thumbsUp.innerHTML = DOMPurify.sanitize(feather.icons["thumbs-up"].toSvg({ width: 12, height: 12 }));
+        thumbsUp.title = "This response was helpful";
+
+        const thumbsDown = document.createElement("button");
+        thumbsDown.className = "feedback-btn thumbs-down";
+        thumbsDown.innerHTML = DOMPurify.sanitize(feather.icons["thumbs-down"].toSvg({ width: 12, height: 12 }));
+        thumbsDown.title = "This response needs improvement";
+
+        thumbsUp.addEventListener("click", () => {
+          submitFeedback(userMessage, assistantMessage, "positive", "");
+          thumbsUp.classList.add("selected");
+          thumbsDown.classList.remove("selected");
+          // Disable both buttons after feedback
+          thumbsUp.disabled = true;
+          thumbsDown.disabled = true;
+          showTooltip(thumbsUp, "Thank you for your feedback!");
+        });
+
+        thumbsDown.addEventListener("click", () => {
+          thumbsDown.classList.add("selected");
+          thumbsUp.classList.remove("selected");
+          // Disable both buttons after feedback
+          thumbsUp.disabled = true;
+          thumbsDown.disabled = true;
+          showFeedbackModal(userMessage, assistantMessage);
+        });
+
+        messageElement.appendChild(thumbsUp);
+        messageElement.appendChild(thumbsDown);
+      }
+
+      function showTooltip(element, message) {
+        const tooltip = document.createElement("div");
+        tooltip.textContent = message;
+        tooltip.style.cssText = `
+                position: absolute;
+                background: #333;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                top: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                white-space: nowrap;
+                z-index: 1000;
+            `;
+        // element.style.position = 'relative';
+        element.appendChild(tooltip);
+        setTimeout(() => tooltip.remove(), 2000);
+      }
+
+      function showFeedbackModal(userMessage, assistantMessage) {
+        const modal = document.createElement("div");
+        modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+
+        const modalContent = document.createElement("div");
+        modalContent.style.cssText = `
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+        modalContent.innerHTML = `
+                <h2 style="margin-top: 0;">Help us improve</h2>
+                <p>We appreciate your feedback. Please let us know how we can improve this response.</p>
+                <label style="display: block; margin: 16px 0 8px 0; font-weight: bold;">
+                    What would have made this response more helpful?
+                </label>
+                <textarea id="feedbackText" placeholder="Please provide specific details about what was incorrect or could be improved..." 
+                    style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button id="cancelFeedback" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button id="submitFeedback" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Submit Feedback
+                    </button>
+                </div>
+            `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        document.getElementById("cancelFeedback").onclick = () => modal.remove();
+        document.getElementById("submitFeedback").onclick = () => {
+          const feedback = document.getElementById("feedbackText").value;
+          submitFeedback(userMessage, assistantMessage, "negative", feedback);
+          modal.remove();
+        };
+
+        // Close on background click
+        modal.onclick = (e) => {
+          if (e.target === modal) modal.remove();
+        };
+      }
+
+      function submitFeedback(userMessage, assistantMessage, sentiment, feedback) {
+        const feedbackData = {
+          timestamp: new Date().toISOString(),
+          user_message: userMessage,
+          assistant_message: assistantMessage,
+          sentiment: sentiment,
+          feedback: feedback,
+          user_id: userData.email || "anonymous",
+        };
+
+        fetch("/submit-feedback", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(feedbackData),
+        }).catch((error) => {
+          console.error("Error submitting feedback:", error);
+        });
+      }
+
+      function addCopyButton(messageElement) {
+        // Check if copy button already exists
+        if (messageElement.querySelector(".copy-button")) {
+          return;
+        }
+
+        const copyButton = document.createElement("button");
+        copyButton.className = "copy-button";
+        copyButton.innerHTML = DOMPurify.sanitize(
+          feather.icons.copy.toSvg({ width: 12, height: 12 }) + '<span class="copy-text">Copy</span>',
+        );
+
+        copyButton.addEventListener("click", async () => {
+          // Clone the element and remove copy button to get clean text
+          const clone = messageElement.cloneNode(true);
+          const copyButtonInClone = clone.querySelector(".copy-button");
+          if (copyButtonInClone) {
+            copyButtonInClone.remove();
+          }
+
+          // Get text content without HTML tags
+          const textContent = clone.innerText || clone.textContent;
+          // Remove the timestamp from the end
+          const cleanText = textContent.replace(/\d{1,2}:\d{2}:\d{2} [AP]M$/, "").trim();
+
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(cleanText);
+            } else {
+              // Fallback for browsers without clipboard API
+              const textArea = document.createElement("textarea");
+              textArea.value = cleanText;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+            }
+
+            copyButton.innerHTML = DOMPurify.sanitize(
+              feather.icons.check.toSvg({ width: 12, height: 12 }) + '<span class="copy-text">Copied!</span>',
+            );
+            copyButton.classList.add("copied");
+
+            setTimeout(() => {
+              copyButton.innerHTML = DOMPurify.sanitize(
+                feather.icons.copy.toSvg({ width: 12, height: 12 }) + '<span class="copy-text">Copy</span>',
+              );
+              copyButton.classList.remove("copied");
+            }, 2000);
+          } catch (err) {
+            console.error("Failed to copy text: ", err);
+          }
+        });
+
+        messageElement.appendChild(copyButton);
+      }
+
+      function addMessage(content, type = "assistant", role = null, timestamp = null) {
+        const messages = document.getElementById("messages");
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+        // Handle debug message grouping
+        if (type === "debug") {
+          if (lastDebugContainer && lastDebugContainer.querySelector(".message.debug")) {
+            // Add to existing debug container
+            const existingDebugMessage = lastDebugContainer.querySelector(".message.debug");
+            existingDebugMessage.innerHTML += "<br>" + DOMPurify.sanitize(content);
+          } else {
+            // Create new debug container
+            const messageContainer = document.createElement("div");
+            const message = document.createElement("div");
+            message.className = `message ${type}`;
+            message.innerHTML = DOMPurify.sanitize(content);
+
+            if (debugMode) {
+              message.classList.add("show");
+            }
+
+            messageContainer.appendChild(message);
+            messages.appendChild(messageContainer);
+            lastDebugContainer = messageContainer;
+          }
+          scrollToBottom();
+          return lastDebugContainer.querySelector(".message.debug");
+        } else if (type === "history-single") {
+          // Handle single history bubble
+          const messageContainer = document.createElement("div");
+          const message = document.createElement("div");
+          message.className = `message history-single`;
+          message.innerHTML = DOMPurify.sanitize(content); // Don't use marked.parse to preserve HTML formatting
+
+          messageContainer.appendChild(message);
+          messages.appendChild(messageContainer);
+          scrollToBottom();
+          return message;
+        } else {
+          // Reset debug container for non-debug messages
+          lastDebugContainer = null;
+        }
+
+        const messageContainer = document.createElement("div");
+        const message = document.createElement("div");
+        message.className = `message ${type}`;
+
+        if (type === "assistant") {
+          // Check for base64 images and handle them as thumbnails
+          if (content.includes('<img src="data:image/')) {
+            // Convert to thumbnails
+            const thumbnailContent = content.replace(
+              /<img([^>]*?)src="(data:image[^"]*?)"([^>]*?)>/g,
+              `<img$1src="$2"$3 style="max-width: 200px; max-height: 150px; cursor: pointer; border: 2px solid #ddd; border-radius: 8px;" onclick="openImageModal('$2')" title="Click to view full size">`,
+            );
+            message.innerHTML = DOMPurify.sanitize(thumbnailContent);
+          } else {
+            // Render markdown for assistant messages
+            message.innerHTML = DOMPurify.sanitize(marked.parse(content));
+          }
+
+          // Add badge
+          const badge = document.createElement("div");
+          badge.className = "message-badge";
+          badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+          message.appendChild(badge);
+
+          // Add copy button
+          addCopyButton(message);
+
+          const timestampDiv = document.createElement("div");
+          timestampDiv.className = "timestamp";
+          timestampDiv.textContent = timeString;
+          message.appendChild(timestampDiv);
+          messageContainer.appendChild(message);
+          messages.appendChild(messageContainer);
+        } else if (type === "user") {
+          message.textContent = content;
+
+          // Check if user message is long (>10 lines)
+          const lines = content.split("\n");
+          if (lines.length > 10) {
+            const shortContent = lines.slice(0, 10).join("\n");
+            message.textContent = shortContent;
+            message.classList.add("compressed");
+
+            // Add badge after text content is set
+            const badge = document.createElement("div");
+            badge.className = "message-badge";
+            badge.innerHTML = DOMPurify.sanitize(feather.icons.user.toSvg({ width: 16, height: 16 }));
+            message.appendChild(badge);
+
+            const timestampDiv = document.createElement("div");
+            timestampDiv.className = "timestamp";
+            timestampDiv.textContent = timeString;
+            message.appendChild(timestampDiv);
+
+            const expandButton = document.createElement("button");
+            expandButton.className = "expand-button";
+            expandButton.textContent = "Show more";
+            expandButton.onclick = function () {
+              if (message.classList.contains("compressed")) {
+                message.textContent = content;
+                message.classList.remove("compressed");
+                expandButton.textContent = "Show less";
+                // Re-add badge, timestamp, and button after content change
+                const newBadge = document.createElement("div");
+                newBadge.className = "message-badge";
+                newBadge.innerHTML = DOMPurify.sanitize(feather.icons.user.toSvg({ width: 16, height: 16 }));
+                message.appendChild(newBadge);
+
+                const newTimestamp = document.createElement("div");
+                newTimestamp.className = "timestamp";
+                newTimestamp.textContent = timeString;
+                message.appendChild(newTimestamp);
+
+                message.appendChild(expandButton);
+              } else {
+                message.textContent = shortContent;
+                message.classList.add("compressed");
+                expandButton.textContent = "Show more";
+                // Re-add badge, timestamp, and button after content change
+                const newBadge = document.createElement("div");
+                newBadge.className = "message-badge";
+                newBadge.innerHTML = DOMPurify.sanitize(feather.icons.user.toSvg({ width: 16, height: 16 }));
+                message.appendChild(newBadge);
+
+                const newTimestamp = document.createElement("div");
+                newTimestamp.className = "timestamp";
+                newTimestamp.textContent = timeString;
+                message.appendChild(newTimestamp);
+
+                message.appendChild(expandButton);
+              }
+              scrollToBottom();
+            };
+
+            message.appendChild(expandButton);
+            messageContainer.appendChild(message);
+            messages.appendChild(messageContainer);
+          } else {
+            // Add badge for normal messages
+            const badge = document.createElement("div");
+            badge.className = "message-badge";
+            badge.innerHTML = DOMPurify.sanitize(feather.icons.user.toSvg({ width: 16, height: 16 }));
+            message.appendChild(badge);
+
+            const timestampDiv = document.createElement("div");
+            timestampDiv.className = "timestamp";
+            timestampDiv.textContent = timeString;
+            message.appendChild(timestampDiv);
+            messageContainer.appendChild(message);
+            messages.appendChild(messageContainer);
+          }
+        } else {
+          message.textContent = content;
+          const timestampDiv = document.createElement("div");
+          timestampDiv.className = "timestamp";
+          timestampDiv.textContent = timeString;
+          message.appendChild(timestampDiv);
+          messageContainer.appendChild(message);
+          messages.appendChild(messageContainer);
+        }
+
+        scrollToBottom();
+        return message;
+      }
+
+      function showTyping() {
+        document.getElementById("typing").style.display = "block";
+        scrollToBottom();
+      }
+
+      function hideTyping() {
+        document.getElementById("typing").style.display = "none";
+
+        // Add copy button to the last assistant message when streaming completes
+        const messages = document.querySelectorAll(".message.assistant");
+        const lastAssistantMessage = messages[messages.length - 1];
+        if (lastAssistantMessage && !lastAssistantMessage.querySelector(".copy-button")) {
+          // Add feedback buttons first
+          const userMessages = document.querySelectorAll(".message.user");
+          const lastUserMessage = userMessages[userMessages.length - 1];
+          let userMessageText = "";
+          if (lastUserMessage) {
+            // Clone the message and remove timestamp to get clean text
+            const messageClone = lastUserMessage.cloneNode(true);
+            const timestamp = messageClone.querySelector(".timestamp");
+            if (timestamp) {
+              timestamp.remove();
+            }
+            const badge = messageClone.querySelector(".message-badge");
+            if (badge) {
+              badge.remove();
+            }
+            const expandButton = messageClone.querySelector(".expand-button");
+            if (expandButton) {
+              expandButton.remove();
+            }
+            userMessageText = messageClone.textContent.trim();
+          }
+          const assistantMessageText = lastAssistantMessage.textContent || lastAssistantMessage.innerText;
+          addFeedbackButtons(lastAssistantMessage, userMessageText, assistantMessageText);
+
+          addCopyButton(lastAssistantMessage);
+        }
+      }
+
+      // Test function to verify new upload function is loaded
+
+      // Event delegation for file expand buttons
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("file-expand-btn")) {
+          const fileId = e.target.getAttribute("data-file-id");
+          const preElement = document.querySelector(`pre[data-file-id="${fileId}"]`);
+          const fileContent = window.fileContents[fileId];
+
+          if (!fileContent || !preElement) return;
+
+          if (preElement.classList.contains("compressed")) {
+            preElement.textContent = fileContent.full;
+            preElement.classList.remove("compressed");
+            e.target.textContent = "Show less";
+          } else {
+            preElement.textContent = fileContent.short;
+            preElement.classList.add("compressed");
+            e.target.textContent = "Show more";
+          }
+          scrollToBottom();
+        }
+      });
+
+      async function uploadFileWithActions(file, message) {
+        // Clear input and show user message
+        const input = document.getElementById("messageInput");
+        const button = document.getElementById("sendButton");
+        const fileInput = document.getElementById("fileInput");
+
+        input.value = "";
+        button.disabled = true;
+        fileInput.value = "";
+
+        // Add user message if provided
+        if (message) {
+          addMessage(message, "user");
+        }
+
+        // Add workflow event for file upload start
+        addCustomEvent(`📁 File Upload Started: ${file.name} (${file.type})`);
+
+        // Show uploading message
+        addMessage(`📎 Uploading file: ${file.name}...`, "assistant");
+
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          // Add workflow event for processing
+          addCustomEvent(`🔄 Processing file: ${file.name}`);
+
+          const response = await fetch("/upload-file", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.status === "success") {
+            // Add workflow event for successful processing
+            addCustomEvent(`✅ File processed successfully: ${result.actions.length} actions available`);
+            addCustomEvent(`📋 Available actions: ${result.actions.join(", ")}`);
+
+            // Create action buttons HTML
+            const actionButtonsHtml = result.actions
+              .map(
+                (action, index) =>
+                  `<button class="action-btn" data-action="${action}" data-filename="${result.filename}" data-index="${index}">${action}</button>`,
+              )
+              .join(" ");
+
+            // Check if content preview is long (>10 lines) and create expandable version
+            const contentLines = result.content_preview.split("\n");
+            let previewHtml;
+
+            if (contentLines.length > 10) {
+              const shortContent = contentLines.slice(0, 10).join("\n");
+              const fileId = "file_" + Date.now();
+              previewHtml = `
+                            <details class="file-preview">
+                                <summary>Preview content</summary>
+                                <pre class="file-content compressed" data-file-id="${fileId}">${shortContent}</pre>
+                                <button class="expand-button file-expand-btn" data-file-id="${fileId}">Show more</button>
+                            </details>
+                        `;
+
+              // Store full content using the unique ID
+              window.fileContents = window.fileContents || {};
+              window.fileContents[fileId] = {
+                full: result.content_preview,
+                short: shortContent,
+              };
+            } else {
+              previewHtml = `
+                            <details class="file-preview">
+                                <summary>Preview content</summary>
+                                <pre>${result.content_preview}</pre>
+                            </details>
+                        `;
+            }
+
+            const messageHtml = `
+                        <div class="file-upload-result">
+                            <p>${result.message}</p>
+                            <div class="file-actions">
+                                ${actionButtonsHtml}
+                            </div>
+                            ${previewHtml}
+                        </div>
+                    `;
+
+            // Store full content for expand/collapse functionality
+            if (contentLines.length > 10) {
+              window.fileContents = window.fileContents || {};
+              window.fileContents[result.filename] = {
+                full: result.content_preview,
+                short: contentLines.slice(0, 10).join("\n"),
+              };
+            }
+
+            // Use addMessage with placeholder text, then replace innerHTML
+            const messageElement = addMessage(result.message, "assistant");
+            messageElement.innerHTML = DOMPurify.sanitize(messageHtml);
+
+            // Add event listeners to action buttons
+            const actionButtons = messageElement.querySelectorAll(".action-btn");
+            actionButtons.forEach((button) => {
+              button.addEventListener("click", () => {
+                const action = button.getAttribute("data-action");
+                const filename = button.getAttribute("data-filename");
+                handleFileAction(action, filename);
+              });
+            });
+
+            // Re-add the badge and timestamp that got overwritten
+            const badge = document.createElement("div");
+            badge.className = "message-badge";
+            badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+            messageElement.appendChild(badge);
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            const timestampDiv = document.createElement("div");
+            timestampDiv.className = "timestamp";
+            timestampDiv.textContent = timeString;
+            messageElement.appendChild(timestampDiv);
+
+            scrollToBottom();
+          } else {
+            // Add workflow event for failure
+            addCustomEvent(`❌ File upload failed: ${result.error}`);
+            addMessage(`❌ Upload failed: ${result.error}`, "assistant");
+          }
+        } catch (error) {
+          // Add workflow event for error
+          addCustomEvent(`💥 File upload error: ${error.message}`);
+          addMessage(`❌ Upload error: ${error.message}`, "assistant");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function uploadMultipleFilesWithActions(files, message) {
+        // Clear input and show user message
+        const input = document.getElementById("messageInput");
+        const button = document.getElementById("sendButton");
+        const fileInput = document.getElementById("fileInput");
+
+        input.value = "";
+        button.disabled = true;
+        fileInput.value = "";
+
+        // Add user message if provided
+        if (message) {
+          addMessage(message, "user");
+        }
+
+        // Add workflow event for multiple file upload start
+        addCustomEvent(`📁 Multiple File Upload Started: ${files.length} files`);
+
+        // Show uploading message
+        addMessage(`📎 Uploading ${files.length} files...`, "assistant");
+
+        try {
+          const uploadResults = [];
+          const allActions = new Set();
+          let hasErrors = false;
+
+          // Upload all files
+          for (const file of files) {
+            addCustomEvent(`🔄 Processing file: ${file.name}`);
+
+            try {
+              const formData = new FormData();
+              formData.append("file", file);
+
+              const response = await fetch("/upload-file", {
+                method: "POST",
+                body: formData,
+              });
+
+              const result = await response.json();
+
+              if (result.status === "success") {
+                uploadResults.push(result);
+                result.actions.forEach((action) => allActions.add(action));
+                addCustomEvent(`✅ File processed successfully: ${file.name}`);
+              } else {
+                hasErrors = true;
+                addCustomEvent(`❌ File upload failed: ${file.name} - ${result.error}`);
+              }
+            } catch (error) {
+              hasErrors = true;
+              addCustomEvent(`💥 File upload error: ${file.name} - ${error.message}`);
+            }
+          }
+
+          if (uploadResults.length > 0) {
+            // Create summary message with action buttons
+            const successCount = uploadResults.length;
+            const totalCount = files.length;
+
+            // Find common actions across all files
+            const commonActions = Array.from(allActions);
+
+            addCustomEvent(`📋 Available actions for ${successCount} files: ${commonActions.join(", ")}`);
+
+            // Create action buttons HTML
+            const actionButtonsHtml = commonActions
+              .map(
+                (action, index) =>
+                  `<button class="action-btn multi-file-action" data-action="${action}" data-index="${index}">${action}</button>`,
+              )
+              .join(" ");
+
+            // Create file list HTML
+            const fileListHtml = uploadResults
+              .map((result) => `<li><strong>${result.filename}</strong> (${result.file_type})</li>`)
+              .join("");
+
+            const messageHtml = `
+                        <div class="multiple-file-upload-result">
+                            <p>Successfully processed ${successCount} of ${totalCount} files:</p>
+                            <ul class="file-list">
+                                ${fileListHtml}
+                            </ul>
+                            ${hasErrors ? '<p class="error-note">⚠️ Some files failed to upload. Check the events panel for details.</p>' : ""}
+                            <div class="file-actions">
+                                <p>Select an action to apply to all ${successCount} files:</p>
+                                <div class="action-buttons">
+                                    ${actionButtonsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+            // Use addMessage with placeholder text, then replace innerHTML
+            const messageElement = addMessage(`Processed ${successCount} files`, "assistant");
+            messageElement.innerHTML = DOMPurify.sanitize(messageHtml);
+
+            // Store file results for action handling
+            window.multiFileResults = uploadResults;
+
+            // Add event listeners to action buttons
+            const actionButtons = messageElement.querySelectorAll(".multi-file-action");
+            actionButtons.forEach((button) => {
+              button.addEventListener("click", () => {
+                const action = button.getAttribute("data-action");
+                handleMultipleFileAction(action, uploadResults);
+              });
+            });
+
+            // Re-add the badge and timestamp that got overwritten
+            const badge = document.createElement("div");
+            badge.className = "message-badge";
+            badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+            messageElement.appendChild(badge);
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            const timestampDiv = document.createElement("div");
+            timestampDiv.className = "timestamp";
+            timestampDiv.textContent = timeString;
+            messageElement.appendChild(timestampDiv);
+
+            scrollToBottom();
+          } else {
+            // All files failed
+            addCustomEvent(`❌ All file uploads failed`);
+            addMessage(`❌ All ${files.length} file uploads failed. Check the events panel for details.`, "assistant");
+          }
+        } catch (error) {
+          // Add workflow event for error
+          addCustomEvent(`💥 Multiple file upload error: ${error.message}`);
+          addMessage(`❌ Upload error: ${error.message}`, "assistant");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function handleMultipleFileAction(action, fileResults) {
+        // Add workflow event for multiple file action start
+        addCustomEvent(`🎯 Multiple File Action Started: ${action} on ${fileResults.length} files`);
+
+        addMessage(`🔄 Processing "${action}" for ${fileResults.length} files...`, "assistant");
+
+        try {
+          let successCount = 0;
+          let failureCount = 0;
+          const results = [];
+
+          // Process each file with the selected action
+          for (const fileResult of fileResults) {
+            const filename = fileResult.filename;
+
+            try {
+              // Handle "Add to KB" with direct S3 upload
+              if (action === "Add to KB") {
+                addCustomEvent(`📤 Uploading ${filename} to knowledge base`);
+
+                const response = await fetch("/upload-to-kb", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    filename: filename,
+                  }),
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                  successCount++;
+                  addCustomEvent(`✅ ${filename} uploaded to knowledge base successfully`);
+                  results.push(`✅ ${filename}: Uploaded to KB at ${result.s3_key || "knowledge base"}`);
+                } else {
+                  failureCount++;
+                  addCustomEvent(`❌ ${filename} upload failed: ${result.error}`);
+                  results.push(`❌ ${filename}: ${result.error}`);
+                }
+              }
+              // Handle "Add to Graph DB" with direct S3 upload
+              else if (action === "Add to Graph DB") {
+                addCustomEvent(`📤 Uploading ${filename} to graph database ETL bucket`);
+
+                const response = await fetch("/upload-to-graph-db", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    filename: filename,
+                  }),
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                  successCount++;
+                  addCustomEvent(`✅ ${filename} uploaded to graph database ETL bucket successfully`);
+                  results.push(
+                    `✅ ${filename}: Uploaded to Graph DB at ${result.s3_key || result.bucket + "/incoming"}`,
+                  );
+                } else {
+                  failureCount++;
+                  addCustomEvent(`❌ ${filename} upload failed: ${result.error}`);
+                  results.push(`❌ ${filename}: ${result.error}`);
+                }
+              }
+              // Handle other actions with existing flow
+              else {
+                addCustomEvent(`📝 Generating prompt for ${filename} with action: ${action}`);
+
+                const response = await fetch("/file-action", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    action: action,
+                    filename: filename,
+                  }),
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                  successCount++;
+                  addCustomEvent(`✅ ${filename} processed successfully`);
+                  results.push(`✅ ${filename}: Ready for analysis`);
+
+                  // Store the analysis data for later use - get raw file content for data analyzer
+                  if (action === "Analyze" && result.status === "success") {
+                    if (!window.analysisData) window.analysisData = [];
+
+                    // Get raw file content for proper data analyzer format
+                    fetch("/get-file-content", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        filename: filename,
+                      }),
+                    })
+                      .then((response) => response.json())
+                      .then((contentResult) => {
+                        if (contentResult.status === "success") {
+                          // Limit to first 21 rows (header + 20 data rows) to avoid memory limits
+                          const lines = contentResult.content.split("\n");
+                          const limitedContent = lines.slice(0, 21).join("\n");
+
+                          // Format as expected by data analyzer: File: filename\ndata
+                          const formattedData = `File: ${filename}\n${limitedContent}`;
+                          window.analysisData.push(formattedData);
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error getting file content:", error);
+                      });
+                  }
+                } else {
+                  failureCount++;
+                  addCustomEvent(`❌ ${filename} processing failed: ${result.error}`);
+                  results.push(`❌ ${filename}: ${result.error}`);
+                }
+              }
+            } catch (error) {
+              failureCount++;
+              addCustomEvent(`💥 ${filename} error: ${error.message}`);
+              results.push(`❌ ${filename}: ${error.message}`);
+            }
+          }
+
+          // Create summary message
+          const summaryHtml = `
+                    <div class="multiple-action-result">
+                        <h4>Action "${action}" completed:</h4>
+                        <p><strong>Success:</strong> ${successCount} files</p>
+                        <p><strong>Failed:</strong> ${failureCount} files</p>
+                        <details class="action-details">
+                            <summary>View details</summary>
+                            <ul>
+                                ${results.map((result) => `<li>${result}</li>`).join("")}
+                            </ul>
+                        </details>
+                    </div>
+                `;
+
+          const messageElement = addMessage(
+            `Action completed: ${successCount} success, ${failureCount} failed`,
+            "assistant",
+          );
+          messageElement.innerHTML = DOMPurify.sanitize(summaryHtml);
+
+          // Re-add the badge and timestamp
+          const badge = document.createElement("div");
+          badge.className = "message-badge";
+          badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+          messageElement.appendChild(badge);
+
+          const now = new Date();
+          const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          const timestampDiv = document.createElement("div");
+          timestampDiv.className = "timestamp";
+          timestampDiv.textContent = timeString;
+          messageElement.appendChild(timestampDiv);
+
+          // If this was an "Analyze" action and all files succeeded, trigger analysis
+          if (action === "Analyze" && successCount > 0 && failureCount === 0) {
+            // Wait a moment for all file content requests to complete, then trigger analysis
+            setTimeout(async () => {
+              let analysisPrompt;
+              if (window.analysisData && window.analysisData.length > 0) {
+                // Use the properly formatted data for the data analyzer tool
+                const formattedSampleData = window.analysisData.join("\n");
+                analysisPrompt = `I need to analyze sample data from ${successCount} uploaded files to generate a complete database schema. Here is the sample data:\n\n${formattedSampleData}\n\nPlease analyze this sample data and generate a complete relational database schema with CREATE TABLE statements, including appropriate data types, primary keys, and foreign key relationships based on the data structure and patterns found in these files.`;
+                // Clear the stored data
+                window.analysisData = [];
+              } else {
+                // Fallback prompt - also focused on data analysis
+                analysisPrompt = `I've uploaded ${successCount} data files for analysis. Please analyze the sample data in these files and generate a complete database schema with appropriate table structures, data types, and relationships.`;
+              }
+
+              // Add user message and trigger analysis
+              addMessage(`Analyzing ${successCount} uploaded files...`, "user");
+              await sendMessage(analysisPrompt, true); // true to skip adding user message again
+            }, 1000); // Wait 1 second for file content requests to complete
+          }
+          // If files were uploaded to KB or Graph DB, notify the agent
+          else if ((action === "Add to KB" || action === "Add to Graph DB") && successCount > 0) {
+            const locationInfo = results
+              .filter((r) => r.startsWith("✅"))
+              .map((r) => r.split(": ")[1])
+              .join(", ");
+            const notificationPrompt = `I have successfully uploaded ${successCount} files using "${action}". The files are now available at: ${locationInfo}. The uploaded files are ready for use in future queries and analysis.`;
+
+            // Add user message and notify agent
+            addMessage(`Notifying system about ${successCount} uploaded files...`, "user");
+            await sendMessage(notificationPrompt, true);
+          }
+        } catch (error) {
+          addCustomEvent(`💥 Multiple file action error: ${error.message}`);
+          addMessage(`❌ Action error: ${error.message}`, "assistant");
+        }
+      }
+
+      async function handleFileAction(action, filename) {
+        // Add workflow event for action start
+        addCustomEvent(`🎯 File Action Started: ${action} on ${filename}`);
+
+        addMessage(`🔄 Processing "${action}" for ${filename}...`, "assistant");
+
+        try {
+          // Handle "Add to KB" with direct S3 upload
+          if (action === "Add to KB") {
+            addCustomEvent(`📤 Uploading ${filename} to knowledge base`);
+
+            const response = await fetch("/upload-to-kb", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                filename: filename,
+              }),
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success") {
+              addCustomEvent(`✅ File uploaded to knowledge base successfully`);
+              addMessage(
+                `✅ ${result.message}. The file has been added to the products knowledge base and will be available for future queries.`,
+                "assistant",
+              );
+            } else {
+              addCustomEvent(`❌ Upload failed: ${result.error}`);
+              addMessage(`❌ Upload failed: ${result.error}`, "assistant");
+            }
+            return;
+          }
+
+          // Handle "Add to Graph DB" with direct S3 upload
+          if (action === "Add to Graph DB") {
+            addCustomEvent(`📤 Uploading ${filename} to graph database ETL bucket`);
+
+            const response = await fetch("/upload-to-graph-db", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                filename: filename,
+              }),
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success") {
+              addCustomEvent(`✅ File uploaded to graph database ETL bucket successfully`);
+              addMessage(
+                `✅ ${result.message}. The file has been uploaded to the Neptune ETL bucket at '${result.s3_key}' and is ready for graph database processing.`,
+                "assistant",
+              );
+            } else {
+              addCustomEvent(`❌ Upload failed: ${result.error}`);
+              addMessage(`❌ Upload failed: ${result.error}`, "assistant");
+            }
+            return;
+          }
+
+          // Handle other actions with existing flow
+          addCustomEvent(`📝 Generating prompt for action: ${action}`);
+
+          const response = await fetch("/file-action", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              action: action,
+              filename: filename,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.status === "success") {
+            // Add workflow event for routing to agent
+            addCustomEvent(`🚀 Routing to supervisor agent with generated prompt`);
+
+            // Use the clean prompt for display, but send agent_prompt to the service
+            const displayPrompt = result.prompt;
+            const agentPrompt = result.agent_prompt || result.prompt;
+
+            // Add user message with clean prompt
+            addMessage(displayPrompt, "user");
+
+            // Send agent prompt to the service (skip adding user message again)
+            await sendMessage(agentPrompt, true);
+          } else {
+            // Add workflow event for failure
+            addCustomEvent(`❌ Action failed: ${result.error}`);
+            addMessage(`❌ Action failed: ${result.error}`, "assistant");
+          }
+        } catch (error) {
+          // Add workflow event for error
+          addCustomEvent(`💥 Action error: ${error.message}`);
+          addMessage(`❌ Action error: ${error.message}`, "assistant");
+        }
+      }
+
+      async function sendMessage(customMessage = null, skipUserMessage = false) {
+        const input = document.getElementById("messageInput");
+        const button = document.getElementById("sendButton");
+        const fileInput = document.getElementById("fileInput");
+
+        // Hide conversation history if it's currently displayed
+        if (historyMode) {
+          toggleHistory();
+        }
+
+        let message = customMessage || input.value.trim();
+        let fileContent = null;
+        let fileName = null;
+
+        // Handle file upload
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          fileName = file.name;
+
+          if (file.type.startsWith("image/")) {
+            // Handle image files with new upload endpoint
+            uploadFileWithActions(file, message);
+            return;
+          } else {
+            // Handle text files with new upload endpoint
+            uploadFileWithActions(file, message);
+            return;
+          }
+        }
+
+        if (!message) return;
+
+        // Clear input and disable button
+        input.value = "";
+        button.disabled = true;
+        fileInput.value = "";
+
+        // Add user message (unless we're skipping it)
+        if (!skipUserMessage) {
+          addMessage(message, "user");
+        }
+
+        // Show typing indicator
+        showTyping();
+
+        try {
+          // Use relative URL for streaming
+          const endpoint = "/query-streaming-with-events";
+
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              prompt: message,
+              user_id: userData.email || "local@dev",
+            }),
+          });
+
+          if (!response.ok) {
+            console.error("Response not OK:", response.status, response.statusText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const reader = response.body.getReader();
+          let assistantMessage = "";
+          let assistantMessageElement = null;
+          let buffer = "";
+
+          function readStream() {
+            reader
+              .read()
+              .then(({ done, value }) => {
+                if (done) {
+                  hideTyping();
+                  button.disabled = false;
+                  processPendingImages();
+                  return;
+                }
+
+                const chunk = new TextDecoder().decode(value);
+                buffer += chunk;
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+                for (const line of lines) {
+                  if (line.startsWith("data: ")) {
+                    try {
+                      const data = JSON.parse(line.slice(6));
+
+                      if (data.type === "content") {
+                        if (!assistantMessageElement) {
+                          assistantMessageElement = addMessage("", "assistant");
+                        }
+                        assistantMessage += data.data || data.message || "";
+
+                        // Format message for proper markdown parsing
+                        let formattedMessage = assistantMessage;
+
+                        // Check if this is thinking content and replace with user-friendly text
+                        if (formattedMessage.trim().startsWith("<thinking>")) {
+                          // Remove all complete thinking blocks
+                          const thinkingRegex = /<thinking>[\s\S]*?<\/thinking>/g;
+                          const cleanedMessage = formattedMessage.replace(thinkingRegex, "").trim();
+
+                          // Check if there's still an incomplete thinking block
+                          const hasIncompleteThinking = cleanedMessage.includes("<thinking>");
+
+                          if (cleanedMessage.length > 0 && !hasIncompleteThinking) {
+                            // We have actual response content after removing thinking blocks
+                            formattedMessage = cleanedMessage;
+                          } else {
+                            // Still thinking content (complete or incomplete blocks)
+                            formattedMessage = `<em style="color: #888;">Thinking...</em> <span class="spinner">${feather.icons.zap.toSvg({ width: 16, height: 16 })}</span>`;
+                          }
+                        }
+
+                        // Detect and properly format tables
+                        const lines = formattedMessage.split("\n");
+                        let inTable = false;
+                        let result = [];
+
+                        for (let i = 0; i < lines.length; i++) {
+                          const line = lines[i];
+                          const isTableRow = line.trim().startsWith("|") && line.trim().endsWith("|");
+
+                          if (isTableRow && !inTable) {
+                            // Starting a table - add blank line before
+                            if (result.length > 0 && result[result.length - 1].trim() !== "") {
+                              result.push("");
+                            }
+                            inTable = true;
+                          } else if (!isTableRow && inTable) {
+                            // Ending a table - add blank line after
+                            result.push(lines[i - 1]); // Add the last table row
+                            result.push("");
+                            inTable = false;
+                            result.push(line);
+                            continue;
+                          }
+
+                          result.push(line);
+                        }
+
+                        formattedMessage = result.join("\n");
+
+                        // Check for base64 images and handle them as thumbnails
+                        if (formattedMessage.includes('<img src="data:image/')) {
+                          // For images, preserve existing content and append new content
+                          const existingContent = assistantMessageElement.innerHTML;
+                          const badge = assistantMessageElement.querySelector(".message-badge");
+                          const timestamp = assistantMessageElement.querySelector(".timestamp");
+                          const expandButton = assistantMessageElement.querySelector(".expand-button");
+
+                          // Remove badge, timestamp, and expand button temporarily
+                          if (badge) badge.remove();
+                          if (timestamp) timestamp.remove();
+                          if (expandButton) expandButton.remove();
+
+                          // Convert to thumbnails
+                          const thumbnailContent = formattedMessage.replace(
+                            /<img([^>]*?)src="(data:image[^"]*?)"([^>]*?)>/g,
+                            `<img$1src="$2"$3 style="max-width: 200px; max-height: 150px; cursor: pointer; border: 2px solid #ddd; border-radius: 8px;" onclick="openImageModal('$2')" title="Click to view full size">`,
+                          );
+                          assistantMessageElement.innerHTML = DOMPurify.sanitize(thumbnailContent);
+
+                          // Re-add badge, timestamp, and expand button
+                          if (badge) assistantMessageElement.appendChild(badge);
+                          if (timestamp) assistantMessageElement.appendChild(timestamp);
+                          if (expandButton) assistantMessageElement.appendChild(expandButton);
+
+                          // Re-add badge and timestamp
+                          if (badge) assistantMessageElement.appendChild(badge);
+                          if (timestamp) assistantMessageElement.appendChild(timestamp);
+                        } else {
+                          // Preserve expand button for markdown content
+                          const expandButton = assistantMessageElement.querySelector(".expand-button");
+                          const badge = assistantMessageElement.querySelector(".message-badge");
+                          const timestamp = assistantMessageElement.querySelector(".timestamp");
+
+                          assistantMessageElement.innerHTML = DOMPurify.sanitize(marked.parse(formattedMessage));
+
+                          // Re-add preserved elements
+                          if (expandButton) assistantMessageElement.appendChild(expandButton);
+                          if (badge) assistantMessageElement.appendChild(badge);
+                          if (timestamp) assistantMessageElement.appendChild(timestamp);
+                        }
+
+                        // Re-add badge (innerHTML overwrites it)
+                        if (!assistantMessageElement.querySelector(".message-badge")) {
+                          const badge = document.createElement("div");
+                          badge.className = "message-badge";
+                          badge.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({ width: 24, height: 24 }));
+                          assistantMessageElement.appendChild(badge);
+                        }
+
+                        // Add timestamp to streaming message
+                        const existingTimestamp = assistantMessageElement.querySelector(".timestamp");
+                        if (!existingTimestamp) {
+                          const now = new Date();
+                          const timeString = now.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          });
+                          const timestampDiv = document.createElement("div");
+                          timestampDiv.className = "timestamp";
+                          timestampDiv.textContent = timeString;
+                          assistantMessageElement.appendChild(timestampDiv);
+                        }
+
+                        scrollToBottom();
+                      } else if (data.type === "event") {
+                        // Handle Strands callback events
+
+                        // Always capture events, regardless of debug mode
+                        addEventToPanel(data.event);
+
+                        // Handle special assistant_message events as chat messages
+                        if (data.event.type === "assistant_message") {
+                          // Check if this is an image message
+                          if (data.event.content && data.event.content.includes('<img src="/query-get-image/')) {
+                            // Extract ALL filenames from the content
+                            const imgMatches = data.event.content.match(/\/query-get-image\/([^"]+)/g);
+                            if (imgMatches) {
+                              imgMatches.forEach((match) => {
+                                const filename = match.replace("/query-get-image/", "");
+                                if (!window.pendingImages) window.pendingImages = [];
+                                if (!window.pendingImages.includes(filename)) {
+                                  window.pendingImages.push(filename);
+                                }
+                              });
+                            }
+                          } else {
+                            // Regular text message
+                            addMessage(data.event.content, "assistant");
+                          }
+                        }
+                      } else if (data.type === "error") {
+                        hideTyping();
+                        addMessage(`Error: ${data.message}`, "assistant");
+                        button.disabled = false;
+                        return;
+                      }
+                    } catch (e) {
+                      console.error("Error parsing SSE data:", e);
+                    }
+                  }
+                }
+
+                readStream();
+              })
+              .catch((error) => {
+                console.error("Stream reading error:", error);
+                hideTyping();
+                addMessage("Sorry, there was an error processing your request.", "assistant");
+                button.disabled = false;
+              });
+          }
+
+          readStream();
+        } catch (error) {
+          console.error("Error:", error);
+          hideTyping();
+          addMessage("Sorry, there was an error processing your request.", "assistant");
+          button.disabled = false;
+        }
+      }
+
+      async function sendMessageWithFile(message, fileData, fileName, fileType, mimeType) {
+        const button = document.getElementById("sendButton");
+        const fileInput = document.getElementById("fileInput");
+
+        // Clear input and disable button
+        document.getElementById("messageInput").value = "";
+        button.disabled = true;
+        fileInput.value = "";
+
+        // Add user message with file indicator
+        const userMessage = message + (fileName ? `\n\n📄 Processing file: ${fileName}` : "");
+        addMessage(userMessage, "user");
+
+        // Show typing indicator
+        showTyping();
+
+        try {
+          const requestBody = {
+            prompt: message,
+            file_content: fileData,
+            file_name: fileName,
+            file_type: fileType,
+          };
+
+          if (mimeType) {
+            requestBody.mime_type = mimeType;
+          }
+
+          const response = await fetch("/explorer", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // Handle streaming response same as sendMessage
+          const reader = response.body.getReader();
+          let assistantMessage = "";
+          let assistantMessageElement = null;
+          let buffer = "";
+
+          function readStream() {
+            reader
+              .read()
+              .then(({ done, value }) => {
+                if (done) {
+                  hideTyping();
+                  button.disabled = false;
+                  processPendingImages();
+                  return;
+                }
+
+                const chunk = new TextDecoder().decode(value);
+                buffer += chunk;
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+                for (const line of lines) {
+                  if (line.startsWith("data: ")) {
+                    try {
+                      const data = JSON.parse(line.slice(6));
+
+                      if (data.type === "content") {
+                        if (!assistantMessageElement) {
+                          assistantMessageElement = addMessage("", "assistant");
+                        }
+                        assistantMessage += data.message;
+
+                        // Check for base64 images and handle them as thumbnails
+                        if (assistantMessage.includes('<img src="data:image/')) {
+                          const thumbnailContent = assistantMessage.replace(
+                            /<img([^>]*?)src="(data:image[^"]*?)"([^>]*?)>/g,
+                            `<img$1src="$2"$3 style="max-width: 200px; max-height: 150px; cursor: pointer; border: 2px solid #ddd; border-radius: 8px;" onclick="openImageModal('$2')" title="Click to view full size">`,
+                          );
+                          assistantMessageElement.innerHTML = DOMPurify.sanitize(thumbnailContent);
+                        } else {
+                          // Preserve expand button for markdown content
+                          const expandButton = assistantMessageElement.querySelector(".expand-button");
+                          const badge = assistantMessageElement.querySelector(".message-badge");
+                          const timestamp = assistantMessageElement.querySelector(".timestamp");
+
+                          assistantMessageElement.innerHTML = DOMPurify.sanitize(marked.parse(assistantMessage));
+
+                          // Re-add preserved elements
+                          if (expandButton) assistantMessageElement.appendChild(expandButton);
+                          if (badge) assistantMessageElement.appendChild(badge);
+                          if (timestamp) assistantMessageElement.appendChild(timestamp);
+                        }
+                        scrollToBottom();
+                      } else if (data.type === "error") {
+                        hideTyping();
+                        addMessage(`Error: ${data.message}`, "assistant");
+                        button.disabled = false;
+                        return;
+                      }
+                    } catch (e) {
+                      console.error("Error parsing SSE data:", e);
+                    }
+                  }
+                }
+
+                readStream();
+              })
+              .catch((error) => {
+                console.error("Stream reading error:", error);
+                hideTyping();
+                addMessage("Sorry, there was an error processing your request.", "assistant");
+                button.disabled = false;
+              });
+          }
+
+          readStream();
+        } catch (error) {
+          console.error("Error:", error);
+          hideTyping();
+          addMessage("Sorry, there was an error processing your request.", "assistant");
+          button.disabled = false;
+        }
+      }
+
+      // Handle Enter key
+      document.getElementById("messageInput").addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Event delegation for image thumbnails - handles multiple images
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("image-thumbnail")) {
+          const imageUrl = e.target.getAttribute("data-image-url");
+          openImageModal(imageUrl);
+        }
+      });
+    </script>
+
+    <!-- Hidden file input -->
+    <input
+      type="file"
+      id="fileInput"
+      style="display: none"
+      accept=".txt,.sql,.py,.js,.json,.csv,.md,.pdf,image/*"
+      multiple
+    />
+  </body>
+</html>

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "supervisor-routing-1",
+    "query": "What's the weather in Seattle?",
+    "expected_agent": "supply_chain_assistant",
+    "category": "agent_routing",
+    "expected_contains": ["weather", "Seattle"]
+  },
+  {
+    "id": "supervisor-routing-2", 
+    "query": "Convert this SQL to a graph model: CREATE TABLE users (id INT, name VARCHAR(50));",
+    "expected_agent": "schema_assistant",
+    "category": "agent_routing",
+    "expected_contains": ["graph", "node", "relationship"]
+  },
+  {
+    "id": "supervisor-routing-3",
+    "query": "Create a bar chart showing sales by month",
+    "expected_agent": "data_visualizer_assistant", 
+    "category": "agent_routing",
+    "expected_contains": ["chart", "visualization"]
+  },
+  {
+    "id": "supervisor-routing-4",
+    "query": "What is the status of SAP order 12345?",
+    "expected_agent": "sap_order_assistant",
+    "category": "agent_routing", 
+    "expected_contains": ["order", "status"]
+  },
+  {
+    "id": "supervisor-routing-5",
+    "query": "How do I deploy this application?",
+    "expected_agent": "help_assistant",
+    "category": "agent_routing",
+    "expected_contains": ["deploy", "application"]
+  },
+  {
+    "id": "knowledge-1",
+    "query": "What is machine learning?",
+    "expected_agent": "general_assistant",
+    "category": "knowledge",
+    "expected_contains": ["machine learning", "algorithm", "data"]
+  },
+  {
+    "id": "edge-case-1",
+    "query": "asdfghjkl random text 12345",
+    "expected_agent": "general_assistant", 
+    "category": "edge_cases",
+    "expected_contains": ["clarify", "understand", "help"]
+  },
+  {
+    "id": "multi-turn-1",
+    "query": "What's the weather in New York?",
+    "follow_up": "What about tomorrow?",
+    "expected_agent": "supply_chain_assistant",
+    "category": "conversation",
+    "expected_contains": ["weather", "New York"]
+  }
+]

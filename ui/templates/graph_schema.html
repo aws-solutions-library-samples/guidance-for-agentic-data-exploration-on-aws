@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Schema Editor | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/d3.v7.9.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='graph-renderer.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    <style>
+        .schema-container {
+            padding: 6rem 1rem;
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .editor-container {
+            position: relative;
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+            overflow: hidden;
+            resize: vertical;
+            height: 42vh;
+        }
+        
+        .line-numbers {
+            background: #e9ecef;
+            color: #6c757d;
+            padding: 1rem 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: right;
+            user-select: none;
+            min-width: 40px;
+            border-right: 1px solid #ddd;
+            white-space: pre;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .schema-editor {
+            width: 100%;
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: none;
+            padding: 1rem;
+            background: transparent;
+            line-height: 1.5;
+            outline: none;
+            resize: none;
+        }
+        
+        .editor-container.unsaved {
+            border-color: #dc3545 !important;
+            border-width: 2px !important;
+        }
+        
+        .editor-container.unsaved:focus-within {
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+        
+        .unsaved-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-left: 1rem;
+            display: none;
+        }
+        .save-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .save-button:hover {
+            background: #0056b3;
+        }
+        .save-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .alert {
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 6px;
+            border: 1px solid transparent;
+        }
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="schema-container">
+        <h2>Graph Schema Editor</h2>
+        <p style="color: #666; margin-bottom: 1rem;">Edit the schema that defines the structure of your knowledge graph.</p>
+        
+        <div id="loading-indicator" style="display: none; text-align: center; margin: 1rem 0;">
+            <div class="spinner"></div>
+            <span style="margin-left: 8px;">Loading...</span>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div id="validation-errors" style="display: none; margin-bottom: 1rem;">
+            <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; border-radius: 6px;">
+                <strong>Schema Validation Errors:</strong>
+                <ul id="error-list" style="margin: 8px 0 0 20px;"></ul>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <div id="editor-container" class="editor-container">
+                <div id="line-numbers" class="line-numbers">1</div>
+                <textarea 
+                    id="schema-editor" 
+                    class="schema-editor" 
+                    placeholder="Loading schema..."
+                    disabled
+                ></textarea>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button 
+                id="validate-button" 
+                class="save-button" 
+                style="background: #28a745;"
+                disabled
+            >
+                Validate Schema
+            </button>
+            <button 
+                id="preview-button" 
+                class="save-button" 
+                style="background: #17a2b8;"
+                disabled
+            >
+                Preview Graph
+            </button>
+            <button 
+                id="save-button" 
+                class="save-button" 
+                disabled
+            >
+                Save
+            </button>
+            <span id="unsaved-message" class="unsaved-message">You have unsaved changes</span>
+        </div>
+
+        <div id="graph-preview" style="display: none; margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Schema Preview</h3>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                    <input type="checkbox" id="show-link-labels" style="margin: 0;">
+                    Show relationship labels
+                </label>
+            </div>
+            <div id="graph-container" style="width: 100%; height: 480px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+                <div id="graph-canvas" style="width: 100%; height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const schemaEditor = document.getElementById('schema-editor');
+        const saveButton = document.getElementById('save-button');
+        const validateButton = document.getElementById('validate-button');
+        const previewButton = document.getElementById('preview-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const alertContainer = document.getElementById('alert-container');
+        const unsavedMessage = document.getElementById('unsaved-message');
+        const editorContainer = document.getElementById('editor-container');
+        const lineNumbers = document.getElementById('line-numbers');
+        
+        let originalContent = '';
+        let hasUnsavedChanges = false;
+
+        // Update line numbers
+        function updateLineNumbers() {
+            const lines = schemaEditor.value.split('\n').length;
+            const numbers = [];
+            for (let i = 1; i <= lines; i++) {
+                numbers.push(i);
+            }
+            lineNumbers.textContent = numbers.join('\n');
+        }
+
+        // Track changes to show unsaved indicators
+        schemaEditor.addEventListener('input', function() {
+            const currentContent = schemaEditor.value;
+            hasUnsavedChanges = currentContent !== originalContent;
+            
+            updateLineNumbers();
+            
+            if (hasUnsavedChanges) {
+                editorContainer.classList.add('unsaved');
+                unsavedMessage.style.display = 'inline';
+                saveButton.disabled = false; // Enable save button when changes are made
+            } else {
+                editorContainer.classList.remove('unsaved');
+                unsavedMessage.style.display = 'none';
+                saveButton.disabled = true; // Disable save button when no changes
+            }
+        });
+
+        // Update line numbers on scroll
+        schemaEditor.addEventListener('scroll', function() {
+            lineNumbers.scrollTop = schemaEditor.scrollTop;
+        });
+        const validationErrors = document.getElementById('validation-errors');
+        const errorList = document.getElementById('error-list');
+        const graphPreview = document.getElementById('graph-preview');
+        const graphCanvas = document.getElementById('graph-canvas');
+        const showLinkLabelsToggle = document.getElementById('show-link-labels');
+
+        let currentSimulation = null;
+        let currentGraphData = null;
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = DOMPurify.sanitize(`
+                ${message}
+                <button type="button" style="float: right; background: none; border: none; font-size: 18px; cursor: pointer;" onclick="this.parentElement.remove()">&times;</button>
+            `);
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showValidationErrors(errors) {
+            if (errors.length === 0) {
+                validationErrors.style.display = 'none';
+                saveButton.disabled = false;
+                return;
+            }
+
+            errorList.innerHTML = DOMPurify.sanitize('');
+            errors.forEach(error => {
+                const li = document.createElement('li');
+                li.innerHTML = DOMPurify.sanitize(`<strong>Line ${error.line}:</strong> ${error.messages.join(', ')}`);
+                errorList.appendChild(li);
+            });
+            validationErrors.style.display = 'block';
+            saveButton.disabled = true;
+        }
+
+        function setLoading(loading) {
+            if (loading) {
+                loadingIndicator.style.display = 'block';
+                document.body.classList.add('loading');
+            } else {
+                loadingIndicator.style.display = 'none';
+                document.body.classList.remove('loading');
+            }
+        }
+
+        // Validate schema
+        async function validateSchema() {
+            try {
+                setLoading(true);
+                const response = await fetch('/graph-schema/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        schema: schemaEditor.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.isValid) {
+                        showAlert('Schema is valid!', 'success');
+                        showValidationErrors([]);
+                        // Optionally update editor with normalized content
+                        if (data.normalizedContent && data.normalizedContent !== schemaEditor.value) {
+                            schemaEditor.value = data.normalizedContent;
+                            showAlert('Schema normalized and validated successfully!', 'success');
+                        }
+                    } else {
+                        showAlert(`Schema has ${data.errors.length} validation error(s)`, 'danger');
+                        showValidationErrors(data.errors);
+                    }
+                } else {
+                    showAlert(`Error validating schema: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Error validating schema: ${error.message}`, 'danger');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Load schema on page load
+        async function loadSchema() {
+            try {
+                setLoading(true);
+                const response = await fetch('/graph-schema/load');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    schemaEditor.value = data.schema;
+                    originalContent = data.schema; // Set original content
+                    schemaEditor.disabled = false;
+                    // Keep save button disabled until changes are made
+                    validateButton.disabled = false;
+                    previewButton.disabled = false;
+                    schemaEditor.placeholder = 'Enter your graph schema here...';
+                    
+                    // Update line numbers and clear unsaved indicators
+                    updateLineNumbers();
+                    editorContainer.classList.remove('unsaved');
+                    unsavedMessage.style.display = 'none';
+                    hasUnsavedChanges = false;
+                } else {
+                    showAlert(`Error loading schema: ${data.error}`, 'danger');
+                    schemaEditor.placeholder = 'Error loading schema';
+                }
+            } catch (error) {
+                showAlert(`Error loading schema: ${error.message}`, 'danger');
+                schemaEditor.placeholder = 'Error loading schema';
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Save schema (with validation first)
+        async function saveSchema() {
+            try {
+                setLoading(true);
+                
+                // First validate the schema
+                const validateResponse = await fetch('/graph-schema/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        schema: schemaEditor.value
+                    })
+                });
+                
+                const validateData = await validateResponse.json();
+                
+                if (!validateResponse.ok) {
+                    showAlert(`Error validating schema: ${validateData.error}`, 'danger');
+                    return;
+                }
+                
+                if (!validateData.isValid) {
+                    showAlert(`Schema is invalid and cannot be saved. Please fix ${validateData.errors.length} error(s) first.`, 'danger');
+                    showValidationErrors(validateData.errors);
+                    return;
+                }
+                
+                // Schema is valid, proceed with save
+                const response = await fetch('/graph-schema/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        schema: validateData.normalizedContent || schemaEditor.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Schema validated and saved successfully!', 'success');
+                    showValidationErrors([]);
+                    // Update editor with normalized content if different
+                    if (validateData.normalizedContent && validateData.normalizedContent !== schemaEditor.value) {
+                        schemaEditor.value = validateData.normalizedContent;
+                    }
+                    
+                    // Clear unsaved indicators after successful save
+                    originalContent = schemaEditor.value;
+                    updateLineNumbers();
+                    editorContainer.classList.remove('unsaved');
+                    unsavedMessage.style.display = 'none';
+                    saveButton.disabled = true; // Disable save button after successful save
+                    hasUnsavedChanges = false;
+                } else {
+                    showAlert(`Error saving schema: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Error saving schema: ${error.message}`, 'danger');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Event listeners
+        saveButton.addEventListener('click', saveSchema);
+        validateButton.addEventListener('click', validateSchema);
+        previewButton.addEventListener('click', previewGraph);
+        
+        // Toggle link labels
+        showLinkLabelsToggle.addEventListener('change', function() {
+            if (currentGraphData) {
+                renderGraph(currentGraphData);
+            }
+        });
+
+        // Load schema when page loads
+        document.addEventListener('DOMContentLoaded', loadSchema);
+
+        // Preview graph
+        async function previewGraph() {
+            console.log('Preview graph clicked');
+            try {
+                setLoading(true);
+                console.log('Sending schema:', schemaEditor.value);
+                
+                const response = await fetch('/graph-schema/preview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        schema: schemaEditor.value
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    currentGraphData = data;
+                    graphPreview.style.display = 'block';
+                    // Small delay to ensure container is rendered
+                    setTimeout(() => renderGraph(data), 50);
+                } else {
+                    showAlert(`Error generating preview: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Preview error:', error);
+                showAlert(`Error generating preview: ${error.message}`, 'danger');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Render graph using shared D3.js renderer
+        function renderGraph(graphData) {
+            console.log('Rendering graph with data:', graphData);
+            window.graphRenderer.renderGraph(graphData, graphCanvas, { 
+                showLinkLabels: showLinkLabelsToggle.checked 
+            });
+        }
+    </script>
+
+</body>
+</html>
+    </script>
+
+</body>
+</html>

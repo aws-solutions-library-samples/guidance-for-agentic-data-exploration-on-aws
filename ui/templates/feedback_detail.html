@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Detail | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="page-container">
+        <a href="/feedback" class="back-link">← Back to User Feedback</a>
+        
+        <h1>Feedback Detail</h1>
+        
+        <div id="loading" class="loading">Loading feedback details...</div>
+        
+        <div id="feedback-detail" style="display: none;">
+            <div class="detail-section">
+                <h2>Feedback Information</h2>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Feedback ID:</label>
+                        <span id="feedback-id"></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>User ID:</label>
+                        <span id="user-id"></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Sentiment:</label>
+                        <span id="sentiment"></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Timestamp:</label>
+                        <span id="timestamp"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h2>User Message</h2>
+                <div class="message-content" id="user-message"></div>
+            </div>
+
+            <div class="detail-section">
+                <h2>Assistant Response</h2>
+                <div class="message-content" id="assistant-message"></div>
+            </div>
+
+            <div class="detail-section">
+                <h2>User Feedback</h2>
+                <div class="message-content" id="feedback-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const feedbackId = "{{ feedback_id }}";
+        const loading = document.getElementById('loading');
+        const detailElement = document.getElementById('feedback-detail');
+
+        async function loadFeedbackDetail() {
+            try {
+                const response = await fetch(`/feedback/${feedbackId}/data`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayFeedbackDetail(data);
+                    loading.style.display = 'none';
+                    detailElement.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Failed to load feedback detail');
+                }
+            } catch (error) {
+                loading.innerHTML = DOMPurify.sanitize(`Error loading feedback detail: ${error.message}`);
+            }
+        }
+
+        function displayFeedbackDetail(data) {
+            document.getElementById('feedback-id').textContent = data.feedback_id || 'N/A';
+            document.getElementById('user-id').textContent = data.user_id || 'N/A';
+            
+            const sentimentElement = document.getElementById('sentiment');
+            sentimentElement.innerHTML = `<span class="status-badge ${data.sentiment === 'positive' ? 'status-success' : 'status-error'}">${data.sentiment || 'N/A'}</span>`;
+            
+            document.getElementById('created-at').textContent = data.created_at ? new Date(data.created_at).toLocaleString() : 'N/A';
+            document.getElementById('timestamp').textContent = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A';
+            
+            document.getElementById('user-message').textContent = data.user_message || 'No user message';
+            document.getElementById('assistant-message').textContent = data.assistant_message || 'No assistant message';
+            document.getElementById('feedback-content').textContent = data.feedback || 'No feedback provided';
+        }
+
+        loadFeedbackDetail();
+    </script>
+
+    <style>
+        .detail-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-section h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.25rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-item label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .detail-item span {
+            color: #333;
+            word-break: break-word;
+        }
+
+        .message-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</body>
+</html>

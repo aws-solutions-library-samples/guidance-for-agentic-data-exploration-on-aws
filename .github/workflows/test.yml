@@ -1,0 +1,40 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./docker/requirements.txt
+          pip install -r ./ui/requirements.txt
+
+      - name: Run agent unit tests
+        working-directory: ./docker/app/tests
+        run: python -m pytest test_fast.py test_supervisor.py -v
+
+      - name: Run UI tests
+        working-directory: ./ui/tests
+        run: ./run_tests.sh

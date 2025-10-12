@@ -1,5 +1,0 @@
-[tool.poetry]
-name="schema-translator"
-version="1.0"
-description=""
-authors=["Amazon Web Services"]

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Processor Results | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/buttons.dataTables.2.4.2.min.css') }}">
+    <script src="{{ url_for('static', filename='ext/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dataTables.buttons.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/buttons.html5.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jszip.3.10.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    {% include 'includes/datatable_styles.html' %}
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="page-container">
+        <h1>ETL Processor Results</h1>
+        <p>View and analyze ETL processing results from the data pipeline.</p>
+
+        <div class="table-container">
+            <div id="loading" class="loading">Loading ETL results...</div>
+            <table id="etl-table" class="display" style="width:100%; display: none;">
+                <thead>
+                    <tr>
+                        <th>Processed</th>
+                        <th>File Name</th>
+                        <th>Rows</th>
+                        <th>Edges</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ETL Results functionality with DataTables
+        let etlTable;
+        const loading = document.getElementById('loading');
+        const tableElement = document.getElementById('etl-table');
+
+        async function loadData() {
+            try {
+                const response = await fetch('/etl-processor/data?per_page=1000'); // Load all data for client-side processing
+                const data = await response.json();
+
+                if (response.ok) {
+                    initializeDataTable(data.items);
+                    loading.style.display = 'none';
+                    tableElement.style.display = 'table';
+                } else {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+            } catch (error) {
+                loading.innerHTML = DOMPurify.sanitize(`Error loading data: ${error.message}`);
+            }
+        }
+
+        function initializeDataTable(items) {
+            // Prepare data for DataTables
+            const tableData = items.map(item => [
+                item.timestamp ? `<span class="timestamp">${new Date(item.timestamp).toLocaleString()}</span>` : 'Unknown',
+                `<a href="/etl-processor/${item.id}" style="color: #007bff; text-decoration: none;">${item.file_name || 'Unknown'}</a>`,
+                parseInt(item.row_count || 0).toLocaleString(),
+                parseInt(item.edge_count || 0),
+                `<span class="status-badge ${parseInt(item.status_code) === 200 ? 'status-success' : 'status-error'}">
+                    ${parseInt(item.status_code) === 200 ? 'Success' : `Error ${item.status_code}`}
+                </span>`,
+                item.status_message || 'N/A'
+            ]);
+
+            // Initialize DataTable
+            etlTable = $('#etl-table').DataTable({
+                data: tableData,
+                pageLength: 25,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                order: [[0, 'desc']], // Sort by timestamp descending
+                columnDefs: [
+                    { targets: [0], type: 'date', className: 'no-wrap' },   // Date sorting for timestamp with no wrap
+                    { targets: [2, 3], type: 'num' } // Numeric sorting for rows and edges
+                ],
+                dom: '<"top"fl>rt<"bottom"iBp>', // f = search, l = length, r = processing, t = table, i = info (bottom left), B = buttons (bottom center), p = pagination (bottom right)
+                buttons: [
+                    'copy',
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        filename: function() {
+                            return 'etl-processor-' + new Date().toISOString().split('T')[0];
+                        },
+                        exportOptions: {
+                            columns: ':visible',
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    'excel'
+                ],
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        }
+
+        // Load initial data
+        loadData();
+    </script>
+</body>
+</html>

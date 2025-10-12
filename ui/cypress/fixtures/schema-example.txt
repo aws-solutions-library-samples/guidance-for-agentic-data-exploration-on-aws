@@ -1,3 +1,0 @@
-[Node1]—(RELATES_TO)→[Node2]
-[Node2]—(CONNECTS_TO)→[Node3]
-[Node3]—(LINKS_TO)→[Node1]

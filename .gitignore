@@ -1,28 +1,54 @@
-esbuild.js
 !jest.config.js
 *.d.ts
 node_modules
-dist
+.venv/
+output.json
+docker/app/*.log
+# Installed dependencies for container image
+_dependencies
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
 cdk.context.json
+packaging/
 
-!postcss.config.js
-!vite-env.d.ts
-!download.js
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Mac OS system files
-**/.DS_Store
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
-aws-exports*
-ui/build/*
-ui/cypress/screenshots
-package-lock.json
+# Mac
+*.DS_Store
 
-# TypeScript compilation artifacts
-lib/*.js
-bin/*.js
-test/*.js
-!lambda/**/node_modules/**/*.js
+# Custom
+dev-tools/deploy-local.sh
+docker/app/repl_state/repl_state.pkl
+docker/app/output/*
+docker/app/tests/output/*
+**/.**.drawio.bkp
+.ash/ash_output/*
+evaluation/evaluation_results/*
+evaluation/continuous_evaluation/*

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Result Detail | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/prism-core.1.29.0.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/prism.1.29.0.min.css') }}">
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    <style>
+        .detail-container {
+            padding: 2.5rem 1rem;
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .back-link {
+            color: #007bff;
+            text-decoration: none;
+            margin: 3rem 0 1rem;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .page-title {
+            margin: 0;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .detail-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #333;
+            text-align: right;
+        }
+        
+        .full-width-section {
+            grid-column: 1 / -1;
+        }
+        
+        .collapsible {
+            background-color: #f8f9fa;
+            color: #495057;
+            cursor: pointer;
+            padding: 1rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            margin-top: 2rem;
+            transition: background-color 0.3s;
+        }
+        
+        .collapsible:hover {
+            background-color: #e9ecef;
+        }
+        
+        .collapsible-content {
+            padding: 1rem;
+            display: none;
+            background-color: #f8f9fa;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        
+        .json-viewer {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="detail-container">
+        <a href="/etl-processor" class="back-link">← Back to ETL Processor Results</a>
+                
+        <div id="loading" class="loading">Loading ETL result details...</div>
+        <div id="error" class="error" style="display: none;">
+            <span id="error-message">Failed to load data</span>
+        </div>
+        
+        <div id="detail-content" style="display: none;">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title" id="file-name-header">ETL Result Details</h1>
+                <span id="status-badge" class="status-badge"></span>
+            </div>
+            
+            <!-- Key Metrics -->
+            <div class="metrics-grid" id="metrics-grid">
+                <!-- Metrics will be populated here -->
+            </div>
+            
+            <!-- Detail Sections -->
+            <div class="section-grid">
+                <div class="detail-card">
+                    <h3 class="card-title">Processing Details</h3>
+                    <ul class="detail-list" id="processing-details">
+                        <!-- Processing details will be populated here -->
+                    </ul>
+                </div>
+                
+                <div class="detail-card">
+                    <h3 class="card-title">File Information</h3>
+                    <ul class="detail-list" id="file-details">
+                        <!-- File details will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Message Section (Full Width) -->
+            <div class="section-grid" id="message-section" style="display: none;">
+                <div class="detail-card full-width-section">
+                    <h3 class="card-title">Processing Message</h3>
+                    <div id="processing-message" style="padding: 1rem; background-color: #f8f9fa; border-radius: 4px; font-family: monospace; white-space: pre-wrap;">
+                        <!-- Message will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Raw Data -->
+            <button class="collapsible">📄 Raw ETL Data</button>
+            <div class="collapsible-content">
+                <pre><code id="raw-data-content" class="language-json">
+                    <!-- Raw data will be populated here -->
+                </code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+       
+        const itemId = window.location.pathname.split('/').pop();
+        
+        // Collapsible functionality
+        document.querySelectorAll('.collapsible').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+        });      
+        
+        function loadDetails() {
+            fetch(`/etl-processor/${itemId}/data`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    populateDetails(data);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('detail-content').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading details:', error);
+                    showError('Failed to load ETL result details');
+                    document.getElementById('loading').style.display = 'none';
+                });
+        }
+        
+        function populateDetails(data) {
+            // Update breadcrumb and header
+            const fileName = data.file_name || 'Unknown File';
+            document.getElementById('file-name-header').textContent = fileName;
+            
+            // Update status badge
+            const status = data.status_code === '200' ? 'Success' : 'Error';
+            updateStatusBadge(status);
+            
+            // Populate metrics
+            populateMetrics(data);
+            
+            // Populate detail sections
+            populateProcessingDetails(data);
+            populateFileDetails(data);
+            
+            // Show message if available
+            if (data.status_message && data.status_message.trim()) {
+                document.getElementById('processing-message').textContent = data.status_message;
+                document.getElementById('message-section').style.display = 'block';
+            }
+            
+            // Populate raw data
+            populateRawData(data);
+        }
+        
+        function updateStatusBadge(status) {
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = status;
+            statusBadge.className = 'status-badge';
+            
+            if (status === 'Success') {
+                statusBadge.classList.add('status-success');
+            } else {
+                statusBadge.classList.add('status-error');
+            }
+        }
+        
+        function populateMetrics(data) {
+            const metrics = [
+                {
+                    value: data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'N/A',
+                    label: 'Processed Date'
+                },
+                {
+                    value: (parseInt(data.row_count) || 0).toLocaleString(),
+                    label: 'Total Rows'
+                },
+                {
+                    value: (parseInt(data.edge_count) || 0).toLocaleString(),
+                    label: 'Edges Created'
+                },
+                {
+                    value: data.status_code || 'Unknown',
+                    label: 'Status Code'
+                }
+            ];
+            
+            const metricsHtml = metrics.map(metric => `
+                <div class="metric-card">
+                    <div class="metric-value">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('metrics-grid').innerHTML = DOMPurify.sanitize(metricsHtml);
+        }
+        
+        function populateProcessingDetails(data) {
+            const items = [
+                { label: 'Processed Time', value: data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A' },
+                { label: 'Node Label', value: data.node_label || 'N/A' },
+                { label: 'Unique ID Field', value: data.unique_id || 'N/A' },
+                { label: 'ETL Log ID', value: data.id || 'N/A' }
+
+            ];
+            
+            const listHtml = items.map(item => `
+                <li>
+                    <span class="detail-label">${item.label}:</span>
+                    <span class="detail-value">${item.value}</span>
+                </li>
+            `).join('');
+            
+            document.getElementById('processing-details').innerHTML = DOMPurify.sanitize(listHtml);
+        }
+        
+        function populateFileDetails(data) {
+            const items = [
+                { label: 'File Name', value: data.file_name || 'N/A' },
+                { label: 'Output Key', value: data.output_key || 'N/A' },
+                { label: 'Edge Output Key', value: data.edge_output_key || 'None' }
+            ];
+            
+            const listHtml = items.map(item => `
+                <li>
+                    <span class="detail-label">${item.label}:</span>
+                    <span class="detail-value">${item.value}</span>
+                </li>
+            `).join('');
+            
+            document.getElementById('file-details').innerHTML = DOMPurify.sanitize(listHtml);
+        }
+        
+        function populateRawData(data) {
+            const jsonString = JSON.stringify(data, null, 2);
+            const codeElement = document.getElementById('raw-data-content');
+            codeElement.textContent = jsonString;
+            
+            // Apply syntax highlighting
+            if (window.Prism) {
+                Prism.highlightElement(codeElement);
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        // Load details on page load
+        loadDetails();
+    });
+    </script>
+</body>
+</html>

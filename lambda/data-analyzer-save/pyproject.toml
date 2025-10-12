@@ -1,5 +1,0 @@
-[tool.poetry]
-name="data-analyzer-save"
-version="1.0"
-description=""
-authors=["Amazon Web Services"]

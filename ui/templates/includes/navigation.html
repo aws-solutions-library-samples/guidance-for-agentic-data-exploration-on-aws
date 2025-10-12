@@ -1,0 +1,87 @@
+<!-- Header hamburger button for all pages -->
+{% if user %}
+<div class="hamburger-nav">
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSideMenu()">
+        <span id="hamburger-icon"></span>
+    </button>
+</div>
+{% endif %}
+
+<!-- Side menu overlay (for all pages) -->
+{% if user %}
+<div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+
+<!-- Side menu panel (for all pages) -->
+<div class="side-menu" id="sideMenu">
+    <div class="side-menu-header">
+        <div class="side-menu-user">
+            <div class="user-avatar">
+                <span id="side-user-icon"></span>
+            </div>
+            <div class="user-info">
+                <div class="user-name">{{ user.email or user.name or 'User' }}</div>
+            </div>
+        </div>
+        <button class="side-menu-close" onclick="closeSideMenu()">
+            <span id="close-icon"></span>
+        </button>
+    </div>
+
+    <nav class="side-menu-nav">
+        <a href="/explorer" class="side-menu-item">
+            <span class="menu-icon" id="explorer-icon"></span>
+            Data Explorer
+        </a>
+
+        {% if user.role == 'Admin' %}
+        <a href="/feedback" class="side-menu-item">
+            <span class="menu-icon" id="feedback-icon"></span>
+            User Feedback
+        </a>
+        {% endif %}
+
+        {% if neptune_enabled %}
+        <div class="side-menu-separator"></div>
+
+        {% if user.role == 'Admin' %}
+        <a href="/graph-schema" class="side-menu-item">
+            <span class="menu-icon" id="schema-icon"></span>
+            Set Graph Schema
+        </a>
+        {% endif %}
+
+        <a href="/data-analyzer" class="side-menu-item">
+            <span class="menu-icon" id="analyzer-icon"></span>
+            Data Analyzer
+        </a>
+
+        <a href="/schema-translator" class="side-menu-item">
+            <span class="menu-icon" id="translator-icon"></span>
+            Schema Translator
+        </a>
+
+        <a href="/etl-processor" class="side-menu-item">
+            <span class="menu-icon" id="etl-icon"></span>
+            ETL Processor
+        </a>
+
+        <a href="/data-loader" class="side-menu-item">
+            <span class="menu-icon" id="loader-icon"></span>
+            Data Loader
+        </a>
+        {% endif %}
+
+        <div class="side-menu-separator"></div>
+
+        <a href="/profile" class="side-menu-item">
+            <span class="menu-icon" id="profile-icon"></span>
+            Profile
+        </a>
+
+        <a href="/logout" class="side-menu-item">
+            <span class="menu-icon" id="logout-icon"></span>
+            Logout
+        </a>
+    </nav>
+</div>
+{% endif %}

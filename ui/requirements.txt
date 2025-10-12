@@ -1,0 +1,6 @@
+Flask==3.0.0
+requests>=2.32.0
+Werkzeug>=3.0.6
+python-jose[cryptography]>=3.3.1
+boto3==1.40.28
+Pillow>=10.0.0

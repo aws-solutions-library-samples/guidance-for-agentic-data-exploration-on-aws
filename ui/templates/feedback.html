@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Feedback | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/buttons.dataTables.2.4.2.min.css') }}">
+    <script src="{{ url_for('static', filename='ext/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dataTables.buttons.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/buttons.html5.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jszip.3.10.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    {% include 'includes/datatable_styles.html' %}
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="page-container">
+        <h1>User Feedback</h1>
+        <p>View and analyze user feedback submitted through the application.</p>
+
+        <div class="table-container">
+            <div id="loading" class="loading">Loading feedback...</div>
+            <table id="feedback-table" class="display" style="width:100%; display: none;">
+                <thead>
+                    <tr>
+                        <th>Submitted</th>
+                        <th>User</th>
+                        <th>Sentiment</th>
+                        <th>User Message</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let feedbackTable;
+        const loading = document.getElementById('loading');
+        const tableElement = document.getElementById('feedback-table');
+
+        async function loadData() {
+            try {
+                const response = await fetch('/feedback/data?per_page=1000');
+                const data = await response.json();
+
+                if (response.ok) {
+                    initializeDataTable(data.items);
+                    loading.style.display = 'none';
+                    tableElement.style.display = 'table';
+                } else {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+            } catch (error) {
+                loading.innerHTML = DOMPurify.sanitize(`Error loading data: ${error.message}`);
+            }
+        }
+
+        function initializeDataTable(items) {
+            const tableData = items.map(item => [
+                item.created_at ? `<span class="timestamp">${new Date(item.created_at).toLocaleString()}</span>` : 'Unknown',
+                `<a href="/feedback/${item.feedback_id}" style="color: #007bff; text-decoration: none;">${item.user_id || 'Unknown'}</a>`,
+                `<span class="status-badge ${item.sentiment === 'positive' ? 'status-success' : 'status-error'}">
+                    ${item.sentiment || 'N/A'}
+                </span>`,
+                item.user_message ? (item.user_message.length > 100 ? item.user_message.substring(0, 100) + '...' : item.user_message) : 'N/A',
+                item.feedback ? (item.feedback.length > 100 ? item.feedback.substring(0, 100) + '...' : item.feedback) : 'N/A'
+            ]);
+
+            feedbackTable = $('#feedback-table').DataTable({
+                data: tableData,
+                pageLength: 25,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                order: [[0, 'desc']],
+                columnDefs: [
+                    { targets: [0], type: 'date', className: 'no-wrap' }
+                ],
+                dom: '<"top"fl>rt<"bottom"iBp>',
+                buttons: [
+                    'copy',
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        filename: function() {
+                            return 'feedback-' + new Date().toISOString().split('T')[0];
+                        },
+                        exportOptions: {
+                            columns: ':visible',
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    'excel'
+                ],
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

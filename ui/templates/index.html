@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Panoptic | AI Data Explorer</title>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% include 'includes/header_styles.html' %} 
+    {% include 'includes/header_scripts.html' %}
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+    .floating-hamburger {
+        top: 15px;
+        left: auto;
+        right: 20px;
+    }
+
+    .floating-hamburger-btn {
+        background: none;
+        color: white;
+        width: 30px;
+        height: 30px;        
+    }
+
+
+    .floating-hamburger-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .floating-hamburger-btn:hover {
+      background: var(--muted-purple);
+      border-color: var(--light-purple);
+      transform: none;
+    }
+
+      /* Fix header logo styling */
+      .header h1 {
+        color: white !important;
+        text-decoration: none !important;
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+
+      .header h1 a {
+        color: white !important;
+        text-decoration: none !important;
+      }
+
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .header-logo {
+        width: 32px;
+        height: 32px;
+      }
+
+      .app-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .hero-section {
+        background:
+          radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+          linear-gradient(135deg, #1a1c7f 0%, #1a1c7f 25%, #4216ae 50%, #630dd9 75%, #4216ae 100%);
+        background-size:
+          30px 30px,
+          100% 100%;
+        color: white;
+        padding-top: 5rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .features-section {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 4rem 0;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(45deg, #ffffff, #f0f0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        margin-bottom: 3rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cta-button {
+        background: linear-gradient(45deg, #e6086a, #b906ac);
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(233, 8, 106, 0.3);
+      }
+
+      .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(233, 8, 106, 0.4);
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 4rem 0;
+      }
+
+      .feature {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        border: 1px solid #e1e5e9;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature h3 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        color: #1a1c7f;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .feature p {
+        color: #666;
+        line-height: 1.6;
+      }
+
+      .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        margin-right: 0.75rem;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero p {
+          font-size: 1.1rem;
+        }
+
+        .container {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'includes/header.html' %}
+
+    <div class="hero-section">
+      <div class="container">
+        <div class="hero">
+          <h1>AI Data Explorer</h1>
+          <p>
+            Accelerating access to data insights with intelligent multi-agent analysis and exploration powered by AWS AI
+            services.
+          </p>
+          <div class="hero-actions">
+            {% if user %}
+            <a href="/explorer" class="cta-button primary">Start Exploring →</a>
+            {% else %}
+            <a href="/login" class="cta-button">Start Exploring →</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-section">
+      <div class="container">
+        <div class="features">
+          <div class="feature">
+            <span class="feature-icon">🤖</span>
+            <h3>Multi-Agent Intelligence</h3>
+            <p>
+              Specialized agents for weather, math, data visualization, schema analysis, and more. Each agent is
+              optimized for specific tasks to provide accurate results.
+            </p>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">💬</span>
+            <h3>Natural Language Chat</h3>
+            <p>
+              Ask questions in plain English. Upload files, request analysis, or explore complex datasets through
+              conversational AI interactions.
+            </p>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">⚡</span>
+            <h3>Real-time Streaming</h3>
+            <p>
+              Get instant responses with streaming AI interactions. Watch as insights are generated in real-time with
+              detailed progress tracking.
+            </p>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">🗄️</span>
+            <h3>Schema Analysis</h3>
+            <p>
+              Convert database schemas to graph models, analyze relationships, and optimize your data structures with
+              intelligent recommendations.
+            </p>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">🔄</span>
+            <h3>Data Transformation</h3>
+            <p>
+              Transform raw data into actionable insights with intelligent processing. Convert formats, clean datasets,
+              and extract meaningful patterns automatically.
+            </p>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">📊</span>
+            <h3>Data Visualization</h3>
+            <p>
+              Create charts, graphs, word clouds, and interactive maps from your data. Upload CSV files or describe your
+              data needs in natural language.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

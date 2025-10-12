@@ -3,92 +3,6 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 /**
- * Creates an IAM role for a Bedrock Agent with necessary permissions for agent collaboration,
- * guardrails, foundation model access, and inference profiles
- * @param scope The CDK construct scope in which to create the role
- * @param id The unique identifier for the role construct
- * @param agentName The name of the Bedrock agent
- * @param guardrails The ARN of the guardrails to apply
- * @returns An IAM Role configured with Bedrock Agent permissions
- */
-export function createBedrockAgentRole(scope: Construct, id: string, agentAliasId: string, guardrails: string): iam.Role {
-
-  // Bedrock Agent Role
-  const role = new iam.Role(scope, id, {
-    description: `Amazon Bedrock Execution Role`,
-    assumedBy: new iam.ServicePrincipal('bedrock.amazonaws.com'),
-  });
-
-  // Guardrails policy
-  role.addToPolicy(
-    new iam.PolicyStatement({
-      sid: 'GuardrailPolicy',
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "bedrock:GetGuardrail",
-        "bedrock:ApplyGuardrail",
-        "bedrock:UpdateGuardrail",
-      ],
-      resources: [ guardrails ],
-    })
-  );
-
-  // Foundation Model policy
-  role.addToPolicy(
-    new iam.PolicyStatement({
-      sid: 'FoundationModelPolicy',
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream",
-      ],
-      resources: [
-        `arn:aws:bedrock:${cdk.Aws.REGION}::foundation-model/*`,
-      ],
-    })
-  );
-
-  // Inference Profile policy
-  role.addToPolicy(
-    new iam.PolicyStatement({
-      sid: 'CrossRegionInferenceProfilePolicy',
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream",
-        "bedrock:GetInferenceProfile",
-        "bedrock:GetFoundationModel",
-      ],
-      resources: [
-        `arn:aws:bedrock:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:inference-profile/*`,
-        `arn:aws:bedrock:*::foundation-model/*`,
-      ],
-    })
-  );
-
-  return role;
-}
-
-/**
- * Creates a IAM permissions for Bedrock agent collaboration
- * @param agentAliasId The id of the Bedrock agent alias
- * @returns An IAM Role configured with Bedrock Agent permissions
- */
-export function createAgentCollaborationPolicy(agentAliasId: string): iam.PolicyStatement {
-  return new iam.PolicyStatement({
-    sid: 'AgentCollaborationPolicy', 
-    effect: iam.Effect.ALLOW,
-    actions: [
-      'bedrock:GetAgentAlias',
-      'bedrock:InvokeAgent',
-    ],
-    resources: [
-      `arn:aws:bedrock:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:agent-alias/${agentAliasId}`,
-    ]
-  });
-}
-
-/**
  * Creates an IAM role for a Lambda function with appropriate permissions for CloudWatch Logs and VPC networking
  * @param scope The CDK construct scope in which to create the role
  * @param id The unique identifier for the role construct
@@ -98,7 +12,7 @@ export function createAgentCollaborationPolicy(agentAliasId: string): iam.Policy
  */
 export function createLambdaExecRole(scope: Construct, id: string, lambdaName: string, vpcId?: string): iam.Role {
   const role = new iam.Role(scope, id, {
-    description: `Panoptic Lambda Execution Role`,
+    description: `Lambda Execution Role`,
     assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
   });
 
@@ -111,8 +25,8 @@ export function createLambdaExecRole(scope: Construct, id: string, lambdaName: s
       "logs:PutLogEvents",
     ],
     resources: [
-      `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/lambda/panoptic/${lambdaName}`,
-      `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/lambda/panoptic/${lambdaName}:*`,
+      `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/lambda/${lambdaName}`,
+      `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/lambda/${lambdaName}:*`,
     ],
   }));
 

@@ -1,0 +1,14 @@
+fastapi==0.115.12
+uvicorn==0.34.2
+pydantic==2.11.4
+strands-agents[otel]
+strands-agents-tools
+langchain-community
+langchain-aws
+boto3
+bedrock-agentcore
+pytest==8.3.2
+httpx==0.27.0
+pytest-cov==6.0.0
+wordcloud
+matplotlib

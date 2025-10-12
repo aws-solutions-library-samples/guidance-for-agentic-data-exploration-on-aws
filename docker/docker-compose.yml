@@ -1,0 +1,39 @@
+services:
+  # OTEL Collector for local development
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ../lib/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+    environment:
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+    depends_on:
+      - jaeger
+
+  # Jaeger for local trace visualization
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # Jaeger gRPC
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  # AI Data Explorer Agent Service
+  agent-service:
+    build: 
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=local
+      - TRACING_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_SERVICE_NAME=ai-data-explorer
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+    depends_on:
+      - otel-collector

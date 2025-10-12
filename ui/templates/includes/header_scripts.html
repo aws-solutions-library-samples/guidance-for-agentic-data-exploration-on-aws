@@ -1,0 +1,21 @@
+<script src="{{ url_for('static', filename='hamburger-menu.js') }}"></script>
+<script>
+// Initialize feather icons and navigation
+feather.replace();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const headerIcon = document.getElementById('header-icon');
+    if (headerIcon) {
+        headerIcon.innerHTML = DOMPurify.sanitize(feather.icons.zap.toSvg({width: 20, height: 20})); //nosemgrep: insecure-document-method
+    }
+});
+
+function safeSetHTML(element, html) {
+    if (typeof element === 'string') {
+        element = document.getElementById(element);
+    }
+    if (element) {
+        element.innerHTML = DOMPurify.sanitize(html);
+    }
+}
+</script>

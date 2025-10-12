@@ -1,0 +1,7 @@
+pandas>=1.5.0
+matplotlib>=3.5.0
+strands-agents[otel]
+strands-agents-tools
+boto3
+fastapi
+uvicorn

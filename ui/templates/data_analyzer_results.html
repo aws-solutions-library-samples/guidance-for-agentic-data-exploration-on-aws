@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analyzer Results | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/buttons.dataTables.2.4.2.min.css') }}">
+    <script src="{{ url_for('static', filename='ext/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dataTables.buttons.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/buttons.html5.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jszip.3.10.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    {% include 'includes/datatable_styles.html' %}
+</head>
+<body>
+    {% include 'includes/header.html' %}
+    
+    <div class="page-container">
+        <h1>Data Analyzer Results</h1>
+        <p>View and analyze data analysis operations performed by the Schema Assistant.</p>
+        
+        <div class="table-container">
+            <table id="analyzerTable" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Contents</th>
+                        <th>Preview</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const table = $('#analyzerTable').DataTable({
+                pageLength: 25,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                order: [[0, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: [4] },
+                    { width: "20%", targets: 0, type: "date" },
+                    { width: "25%", targets: 1 },
+                    { width: "30%", targets: 2 },
+                    { width: "15%", targets: 3 },
+                    { width: "10%", targets: 4 }
+                ],
+                dom: '<"top"fl>rt<"bottom"iBp>',
+                buttons: [
+                    'copy', 'csv', 'excel'
+                ],
+                ajax: {
+                    url: '/data-analyzer/data',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { 
+                        data: 'timestamp',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            // For sorting, return the raw timestamp
+                            if (type === 'sort' || type === 'type') {
+                                return data;
+                            }
+                            // For display, format the date
+                            try {
+                                // Handle ISO format timestamps from DynamoDB
+                                const date = new Date(data);
+                                if (isNaN(date.getTime())) {
+                                    return 'Invalid Date';
+                                }
+                                return `<span class="timestamp">${date.toLocaleString()}</span>`;
+                            } catch (e) {
+                                return 'Invalid Date';
+                            }
+                        }
+                    },
+                    { 
+                        data: 'file_name',
+                        render: function(data) {
+                            let displayName = data || 'N/A';
+                            if (displayName.toLowerCase() === 'unknown') {
+                                displayName = 'N/A';
+                            }
+                            return `<span class="file-name">${displayName}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'input_data',
+                        render: function(data) {
+                            const preview = data ? data.substring(0, 40) : '';
+                            const ellipsis = data && data.length > 40 ? '...' : '';
+                            return `<span class="query-preview" title="${data || ''}">${preview}${ellipsis}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'status',
+                        render: function(data) {
+                            return `<span class="status-${data}">${data.charAt(0).toUpperCase() + data.slice(1)}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'id',
+                        render: function(data) {
+                            return `<a href="/data-analyzer/${data}" class="btn btn-sm btn-primary">View Details</a>`;
+                        }
+                    }
+                ]
+            });
+
+            $('#searchInput').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            $('#sortSelect').on('change', function() {
+                const value = this.value;
+                switch(value) {
+                    case 'timestamp_desc':
+                        table.order([0, 'desc']).draw();
+                        break;
+                    case 'timestamp_asc':
+                        table.order([0, 'asc']).draw();
+                        break;
+                    case 'file_name_asc':
+                        table.order([1, 'asc']).draw();
+                        break;
+                    case 'status_asc':
+                        table.order([3, 'asc']).draw();
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

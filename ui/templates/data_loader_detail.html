@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Loader Detail | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.css') }}">
+    <script src="{{ url_for('static', filename='ext/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/prism-core.1.29.0.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/prism.1.29.0.min.css') }}">
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+
+    <style>
+        .detail-container {
+            padding: 2.5rem 1rem;
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .back-link {
+            color: #007bff;
+            text-decoration: none;
+            margin: 3rem 0 1rem;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .page-title {
+            margin: 0;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-completed { background-color: #28a745; }
+        .status-failed { background-color: #dc3545; }
+        .status-in-progress { background-color: #007bff; }
+        .status-warning { background-color: #ffc107; color: #212529; }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .detail-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #333;
+            text-align: right;
+        }
+        
+        .error-section {
+            grid-column: 1 / -1;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .collapsible {
+            background-color: #f8f9fa;
+            color: #495057;
+            cursor: pointer;
+            padding: 1rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            margin-top: 2rem;
+            transition: background-color 0.3s;
+        }
+        
+        .collapsible:hover {
+            background-color: #e9ecef;
+        }
+        
+        .collapsible-content {
+            padding: 1rem;
+            display: none;
+            background-color: #f8f9fa;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        
+        .json-viewer {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="detail-container">
+        <a href="/data-loader" class="back-link">← Back to Data Loader Results</a>
+
+        <div id="loading" class="loading">Loading bulk load details...</div>
+        <div id="error" class="error" style="display: none;">
+            <span id="error-message">Failed to load data</span>
+        </div>
+        
+        <div id="detail-content" style="display: none;">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title" id="source-path-header">Bulk Load Details</h1>
+                <span id="status-badge" class="status-badge"></span>
+            </div>
+            
+            <!-- Key Metrics -->
+            <div class="metrics-grid" id="metrics-grid">
+                <!-- Metrics will be populated here -->
+            </div>
+            
+            <!-- Detail Sections -->
+            <div class="section-grid">
+                <div class="detail-card" id="overall-status-card" style="display: none;">
+                    <h3 class="card-title">Overall Status</h3>
+                    <ul class="detail-list" id="overall-status-list">
+                        <!-- Overall status details will be populated here -->
+                    </ul>
+                </div>
+                
+                <div class="detail-card" id="feed-count-card" style="display: none;">
+                    <h3 class="card-title">Feed Summary</h3>
+                    <ul class="detail-list" id="feed-count-list">
+                        <!-- Feed count details will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Error Section (Full Width) -->
+            <div class="section-grid">
+                <div class="detail-card error-section" id="error-info-card" style="display: none;">
+                    <h3 class="card-title">Error Information</h3>
+                    <div class="alert alert-danger" id="error-alert">
+                        <span id="error-count-message">Errors detected during processing</span>
+                    </div>
+                    <div id="error-logs-table-container" style="display: none;">
+                        <table id="error-logs-table" class="display" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th>Error Code</th>
+                                    <th>Error Message</th>
+                                    <th>File Name</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Raw Data -->
+            <button class="collapsible">📄 Raw Response Data</button>
+            <div class="collapsible-content">
+                <pre><code id="raw-response-content" class="language-json">
+                    <!-- Raw response will be populated here -->
+                </code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        const loadId = window.location.pathname.split('/').pop();
+        let errorLogsTable;
+        
+        // Collapsible functionality
+        $('.collapsible').click(function() {
+            this.classList.toggle('active');
+            const content = this.nextElementSibling;
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        });
+        
+        function loadDetails() {
+            $.ajax({
+                url: `/api/data-loader-detail/${loadId}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.error) {
+                        showError(response.error);
+                        return;
+                    }
+                    
+                    populateDetails(response.data);
+                    $('#loading').hide();
+                    $('#detail-content').show();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading details:', error);
+                    showError('Failed to load bulk load details');
+                    $('#loading').hide();
+                }
+            });
+        }
+        
+        function populateDetails(data) {
+            // Update header
+            $('#source-path-header').text(data.sourcePath || 'Unknown Path');
+            
+            // Update status badge
+            updateStatusBadge(data.loadStatus);
+            
+            // Populate metrics
+            populateMetrics(data);
+            
+            // Populate sections if available
+            if (data.parsedResponse) {
+                populateOverallStatus(data.parsedResponse.overallStatus);
+                populateFeedCount(data.parsedResponse.feedCount);
+                populateErrorInfo(data.parsedResponse.errors);
+            }
+            
+            // Populate raw response
+            populateRawResponse(data.parsedResponse || data.loaderResponse);
+        }
+        
+        function updateStatusBadge(status) {
+            const statusBadge = $('#status-badge');
+            statusBadge.text(status || 'Unknown');
+            statusBadge.removeClass().addClass('status-badge');
+            
+            switch((status || '').toUpperCase()) {
+                case 'LOAD_COMPLETED':
+                    statusBadge.addClass('status-completed');
+                    break;
+                case 'LOAD_FAILED':
+                case 'LOAD_FAILED_INVALID_REQUEST':
+                    statusBadge.addClass('status-failed');
+                    break;
+                case 'LOAD_IN_PROGRESS':
+                    statusBadge.addClass('status-in-progress');
+                    break;
+                case 'LOAD_COMPLETE_W_ERRORS':
+                    statusBadge.addClass('status-warning');
+                    break;
+                default:
+                    statusBadge.addClass('status-in-progress');
+            }
+        }
+        
+        function populateMetrics(data) {
+            const metrics = [
+                {
+                    value: (data.totalRecords || 0).toLocaleString(),
+                    label: 'Total Records'
+                },
+                {
+                    value: data.timeSpent || '0',
+                    label: 'Time Spent (s)'
+                },
+                {
+                    value: data.startTime ? new Date(data.startTime).toLocaleDateString() : 'N/A',
+                    label: 'Start Date'
+                },
+                {
+                    value: calculateSuccessRate(data),
+                    label: 'Success Rate'
+                }
+            ];
+            
+            const metricsHtml = metrics.map(metric => `
+                <div class="metric-card">
+                    <div class="metric-value">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                </div>
+            `).join('');
+            
+            $('#metrics-grid').html(metricsHtml);
+        }
+        
+        function populateOverallStatus(overallStatus) {
+            if (!overallStatus) return;
+            
+            const items = [
+                { label: 'Insert Errors', value: (overallStatus.insertErrors || 0).toLocaleString() },
+                { label: 'Duplicates', value: (overallStatus.totalDuplicates || 0).toLocaleString() },
+                { label: 'Datatype Errors', value: (overallStatus.datatypeMismatchErrors || 0).toLocaleString() },
+                { label: 'Parsing Errors', value: (overallStatus.parsingErrors || 0).toLocaleString() },
+                { label: 'Retry Number', value: overallStatus.retryNumber || 0 }
+            ];
+            
+            const listHtml = items.map(item => `
+                <li>
+                    <span class="detail-label">${item.label}:</span>
+                    <span class="detail-value">${item.value}</span>
+                </li>
+            `).join('');
+            
+            $('#overall-status-list').html(listHtml);
+            $('#overall-status-card').show();
+        }
+        
+        function populateFeedCount(feedCount) {
+            if (!feedCount || !Array.isArray(feedCount)) return;
+            
+            const listHtml = feedCount.map(countObj => {
+                const status = Object.keys(countObj)[0];
+                const count = countObj[status];
+                return `
+                    <li>
+                        <span class="detail-label">${status}:</span>
+                        <span class="detail-value">${count}</span>
+                    </li>
+                `;
+            }).join('');
+            
+            $('#feed-count-list').html(listHtml);
+            $('#feed-count-card').show();
+        }
+        
+        function populateErrorInfo(errors) {
+            if (!errors || !errors.errorLogs || errors.errorLogs.length === 0) return;
+            
+            $('#error-count-message').text(`${errors.errorLogs.length} error(s) encountered during processing`);
+            
+            // Initialize error logs table
+            errorLogsTable = $('#error-logs-table').DataTable({
+                data: errors.errorLogs,
+                columns: [
+                    { data: 'errorCode' },
+                    { data: 'errorMessage' },
+                    { data: 'fileName' }
+                ],
+                pageLength: 10,
+                language: {
+                    emptyTable: "No error logs found"
+                }
+            });
+            
+            $('#error-logs-table-container').show();
+            $('#error-info-card').show();
+        }
+        
+        function populateRawResponse(rawData) {
+            if (!rawData) {
+                $('#raw-response-content').text('No raw response data available');
+                return;
+            }
+            
+            const jsonString = typeof rawData === 'string' ? rawData : JSON.stringify(rawData, null, 2);
+            const codeElement = document.getElementById('raw-response-content');
+            codeElement.textContent = jsonString;
+            
+            // Apply syntax highlighting
+            if (window.Prism) {
+                Prism.highlightElement(codeElement);
+            }
+        }
+        
+        function calculateSuccessRate(data) {
+            if (data.parsedResponse && data.parsedResponse.overallStatus) {
+                const total = data.parsedResponse.overallStatus.totalRecords || 0;
+                const errors = (data.parsedResponse.overallStatus.insertErrors || 0) + 
+                              (data.parsedResponse.overallStatus.datatypeMismatchErrors || 0) + 
+                              (data.parsedResponse.overallStatus.parsingErrors || 0);
+                
+                if (total === 0) return "0%";
+                const successRate = ((total - errors) / total) * 100;
+                return `${successRate.toFixed(1)}%`;
+            }
+            return "N/A";
+        }
+        
+        function showError(message) {
+            $('#error-message').text(message);
+            $('#error').show();
+        }
+        
+        // Load details on page load
+        loadDetails();
+    });
+    </script>
+</body>
+</html>

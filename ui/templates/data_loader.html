@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Loader Status | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ext/buttons.dataTables.2.4.2.min.css') }}">
+    <script src="{{ url_for('static', filename='ext/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jquery.dataTables.1.13.7.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dataTables.buttons.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/buttons.html5.2.4.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/jszip.3.10.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    {% include 'includes/datatable_styles.html' %}
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="page-container">
+        <h1>Data Loader Results</h1>
+        <p>View and analyze bulk data loading operations from Neptune.</p>
+
+        <div class="table-container">
+            <div id="loading" class="loading">Loading data loader status...</div>
+            <table id="data-loader-table" class="display" style="width:100%; display: none;">
+                <thead>
+                    <tr>
+                        <th>Start Time</th>
+                        <th>Source Path</th>
+                        <th>Status</th>
+                        <th>Records</th>
+                        <th>Load Time (s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        let table;
+        
+        function initializeTable() {
+            table = $('#data-loader-table').DataTable({
+                processing: false,
+                serverSide: false,
+                ajax: {
+                    url: '/api/data-loader-data',
+                    dataSrc: function(json) {
+                        if (json.error) {
+                            console.error('API Error:', json.error);
+                            return [];
+                        }
+                        return json.data || [];
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('DataTables error:', error, thrown);
+                    }
+                },
+                columns: [
+                    {
+                        data: 'startTime',
+                        render: function(data) {
+                            if (!data) return '';
+                            const date = new Date(data);
+                            return `<span class="timestamp">${date.toLocaleString()}</span>`;
+                        }
+                    },
+                    {
+                        data: 'sourcePath',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            return `<a href="/data-loader/${row.loadId}">${data}</a>`;
+                        }
+                    },
+                    {
+                        data: 'loadStatus',
+                        render: function(data) {
+                            if (!data) return '';
+                            let badgeClass = 'status-badge ';
+                            
+                            switch(data.toUpperCase()) {
+                                case 'LOAD_COMPLETED':
+                                    badgeClass += 'status-completed';
+                                    break;
+                                case 'LOAD_FAILED':
+                                case 'LOAD_FAILED_INVALID_REQUEST':
+                                    badgeClass += 'status-failed';
+                                    break;
+                                case 'LOAD_IN_PROGRESS':
+                                    badgeClass += 'status-in-progress';
+                                    break;
+                                case 'LOAD_COMPLETE_W_ERRORS':
+                                    badgeClass += 'status-warning';
+                                    break;
+                                default:
+                                    badgeClass += 'status-in-progress';
+                            }
+                            
+                            return `<span class="${badgeClass}">${data}</span>`;
+                        }
+                    },
+                    {
+                        data: 'totalRecords',
+                        render: function(data) {
+                            return data ? data.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        data: 'timeSpent',
+                        render: function(data) {
+                            return data || '0';
+                        }
+                    }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25,
+                dom: '<"top"fl>rt<"bottom"iBp>',
+                buttons: [
+                    'copy',
+                    {
+                        extend: 'csv',
+                        text: 'CSV'
+                    },
+                    'excel'
+                ],
+                language: {
+                    processing: "Loading data loader status...",
+                    emptyTable: "No data loader operations found",
+                    zeroRecords: "No matching data loader operations found"
+                }
+            });
+            
+            $('#loading').hide();
+            $('#data-loader-table').show();
+        }
+        
+        // Initialize table
+        initializeTable();
+    });
+    </script>
+</body>
+</html>

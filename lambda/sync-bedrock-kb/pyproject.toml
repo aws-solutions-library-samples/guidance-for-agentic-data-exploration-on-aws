@@ -1,5 +1,0 @@
-[tool.poetry]
-name="sync-bedrock-kb"
-version="1.0"
-description=""
-authors=["Amazon Web Services"]

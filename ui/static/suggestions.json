@@ -1,0 +1,113 @@
+{
+  "suggestions": [
+    {
+      "text": "Hello, how can you help me?",
+      "category": "help"
+    },
+    {
+      "text": "What's the current tariff rate on solar panels??",
+      "category": "tariff"
+    },
+    {
+      "text": "Are there any special duty rates for textiles from Mexico?",
+      "category": "tariff"
+    },
+    {
+      "text": "Check the UV index for Phoenix, Arizona and recommend safety measures for our outdoor warehouse workers",
+      "category": "supply chain"
+    },
+    {
+      "text": "List our manufacturing facilities, get weather conditions, and assess operational impact.",
+      "category": "supply chain"
+    },
+    {
+      "text": "Convert this SQL to graph: CREATE TABLE users (id INT PRIMARY KEY); CREATE TABLE orders (id INT, user_id INT, FOREIGN KEY (user_id) REFERENCES users(id));",
+      "category": "schema"
+    },
+    {
+      "text": "Summarize my graph database.",
+      "category": "graph"
+    },
+    {
+      "text": "Bulk load data from output-edges/",
+      "category": "graph"
+    },
+    {
+      "text": "What is the status of my last bulk load?",
+      "category": "graph"
+    },
+    {
+      "text": "What's the HTS code for steel pipes?",
+      "category": "tariff"
+    },
+    {
+      "text": "first_name,last_name,email,street_address,secondary_address,city,state,zip,country,job,company,phone_number\r\nDennis,Boone,scotttyler@example.com,\"631 Johnson Village Suite 690\",,Adamsbury,Pennsylvania,13900,US,\"Investment banker, corporate\",\"Johnson Ltd\",\"+1-906-536-0837\"\r\nMichael,Rhodes,bfarley@example.com,\"41586 Kevin Radial\",,Chapmanton,\"New Mexico\",32317,US,\"Operations geologist\",\"Ortega-Richardson\",\"001-951-278-1286x570\"\r\nKyle,Charles,kholland@example.net,\"38836 Farley Ports\",\"Suite 489\",\"South Kristenhaven\",Florida,68485,US,\"Surveyor, mining\",\"Simmons Inc\",\"759.983.8675x6508\"\r\nCarol,Ballard,andreawhite@example.org,\"11070 Wright Creek Apt. 541\",\"Apt. 482\",Deborahport,\"New Jersey\",92595,US,\"IT technical support officer\",\"Wells-Johnson\",\"(256)834-1483x9603\"\r\nDwayne,Higgins,seanhunter@example.com,\"873 Ralph Ports\",\"Suite 042\",\"North Kirk\",California,41180,US,\"Hydrogeologist\",\"Moore, Cunningham and Anderson\",\"+1-209-839-7298\"\r\nJames,Garcia,fvargas@example.org,\"8705 Yoder Brook Apt. 359\",\"Suite 634\",\"Port Nicholasside\",Minnesota,90561,US,\"Social researcher\",\"Tate-Patel\",\"701-622-2834\"\r\nMicheal,Peterson,joe97@example.org,\"0616 Maria Junctions\",\"Suite 198\",\"New Christopher\",Louisiana,48328,US,\"Hotel manager\",\"Ferguson, Wilson and Mosley\",\"204-509-0161\"\r\nJohn,Mcneil,cmartin@example.org,\"16684 Dawson Island\",\"Apt. 500\",\"Port Toniport\",Washington,78694,US,\"IT consultant\",\"Myers-Ross\",\"959-771-4398\"\r\nJonathon,Weaver,james51@example.com,\"1953 Levy Canyon\",\"Apt. 594\",\"West Craig\",\"South Carolina\",76389,US,\"Therapist, occupational\",\"Sanchez Inc\",\"661.748.1100\"\r\n",
+      "category": "schema"
+    },
+    {
+      "text": "Create a bar chart showing sales data: Q1: 100, Q2: 150, Q3: 120, Q4: 180",
+      "category": "visualization"
+    },
+    {
+      "text": "Check the high temperature in Cleveland each day this week. Then plot the values on a line graph.",
+      "category": "visualization"
+    },
+    {
+      "text": "Generate a word cloud from this text: data science machine machine machine machine learning data science data science artificial intelligence intelligence",
+      "category": "visualization"
+    },
+    {
+      "text": "Generate an image depicting the inside of an amazon fulfillment center.",
+      "category": "image"
+    },
+    {
+      "text": "Generate a compact cartoon frog image.",
+      "category": "image"
+    },
+    {
+      "text": "Name all of the planets in the solar system",
+      "category": "general"
+    },
+    {
+      "text": "Explain how internal combustion engines work",
+      "category": "general"
+    },
+
+    {
+      "text": "List facilities in the graph",
+      "category": "demo data"
+    },
+    {
+      "text": "List Supplier nodes by Country",
+      "category": "demo data"
+    },
+    {
+      "text": "List products with the most warranty claims and then find customer reviews related to that product.",
+      "category": "demo data"
+    },
+    {
+      "text": "Analyze the product catalog for oil filters",
+      "category": "demo data"
+    },
+    {
+      "text": "What are the top SupplierKPI scores for Supplier in Japan. List names and scores.",
+      "category": "demo data"
+    },
+    {
+      "text": "Search warranty claim nodes. Which product has the most claims?",
+      "category": "demo data"
+    },
+    {
+      "text": "List Production Lines in my DB that were used to make the Premium Oil Filters",
+      "category": "demo data"
+    },
+    {
+      "text": "Can you determine which Production Line is related to the most Warranty Claims?",
+      "category": "demo data"
+    },
+    {
+      "text": "What Machines are on PL001?",
+      "category": "demo data"
+    }
+  ]
+}

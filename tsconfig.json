@@ -1,15 +1,9 @@
 {
   "compilerOptions": {
-    "jsx": "react",
     "target": "ES2020",
     "module": "commonjs",
-    "lib": [
-      "es2020",
-      "dom",
-      "WebWorker"
-    ],
-    "declaration": false,
-    "noEmit": true,
+    "lib": ["es2020"],
+    "declaration": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -23,14 +17,7 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "types": [
-      "node"    ]
+    "typeRoots": ["./node_modules/@types"]
   },
-  "exclude": [
-    "node_modules",
-    "cdk.out"
-  ]
+  "exclude": ["node_modules", "cdk.out"]
 }

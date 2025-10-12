@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | AI Data Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ext/marked.12.0.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/dompurify-3.0.5.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='ext/feather.4.29.2.min.js') }}"></script>
+    {% include 'includes/header_styles.html' %}
+    {% include 'includes/header_scripts.html' %}
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .profile-header {
+            background: var(--deep-blue);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+                
+        .profile-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .profile-details {
+            padding: 2rem;
+        }
+        
+        .profile-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-field:last-child {
+            border-bottom: none;
+        }
+        
+        .profile-field label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .profile-field span {
+            color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-field {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+        
+        .conversation-history {
+            margin-top: 2rem;
+        }
+        
+        .conversation-history h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .conversation-item {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--pink-magenta);
+        }
+        
+        .conversation-item.user {
+            border-left-color: var(--medium-blue-purple);
+        }
+                
+        .conversation-meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .conversation-text {
+            color: #333;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        
+        .conversation-text li {
+            margin-left: 2rem;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+        }
+    </style>
+ 
+</head>
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="page-container">
+        <h1>User Profile</h1>
+        
+        <div class="profile-container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h2>{{ user.email or user.name or 'User' }}</h2>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-field">
+                        <label>Email:</label>
+                        <span>{{ user.email or 'local@dev' }}</span>
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>Role:</label>
+                        <span>{{ user.role or 'Admin' }}</span>
+                    </div>
+                    
+                    {% if user.sub %}
+                    <div class="profile-field">
+                        <label>User ID:</label>
+                        <span>{{ user.sub }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.given_name or user.family_name %}
+                    <div class="profile-field">
+                        <label>Name:</label>
+                        <span>{{ user.given_name or '' }} {{ user.family_name or '' }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.phone_number %}
+                    <div class="profile-field">
+                        <label>Phone:</label>
+                        <span>{{ user.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="conversation-history">
+                <h3>Today's Conversation Memory</h3>
+                <div id="conversation-loading" class="loading">Loading conversation memory...</div>
+                <div id="conversation-content" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configure marked for markdown parsing
+        marked.setOptions({
+            gfm: true,
+            tables: true,
+            breaks: false,
+            pedantic: false,
+            sanitize: false,
+            smartLists: true,
+            smartypants: false
+        });
+        
+        // Load conversation history
+        const userEmail = '{{ user.email or "local@dev" }}';
+        fetch(`/conversation?user_id=${encodeURIComponent(userEmail)}`, {
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                const loading = document.getElementById('conversation-loading');
+                const content = document.getElementById('conversation-content');
+                
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                
+                if (data.messages && data.messages.length > 0) {
+                    content.innerHTML = data.messages.reverse().map(item => `
+                        <div class="conversation-item ${item.role}">
+                            <div class="conversation-meta">
+                                <strong>${item.role === 'user' ? 'You' : 'Assistant'}</strong>
+                            </div>
+                            <div class="conversation-text">${DOMPurify.sanitize(marked.parse(item.content))}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    content.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No conversation memory found.<br><small>Start a conversation in the <a href="/explorer">Data Explorer</a> to see history here.</small></p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('conversation-loading').innerHTML = 'Error loading conversation memory.';
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

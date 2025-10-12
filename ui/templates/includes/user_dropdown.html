@@ -1,0 +1,12 @@
+{% if user %}
+<div class="user-dropdown">
+    <button class="user-dropdown-btn" id="userDropdownBtn">
+        <span id="user-icon"></span>
+    </button>
+    <div class="user-dropdown-menu" id="userDropdownMenu">
+        <div class="user-email">{{ user.email or user.name or 'User' }}</div>
+        <a href="/profile" class="dropdown-item">Profile</a>
+        <a href="/logout" class="dropdown-item">Logout</a>
+    </div>
+</div>
+{% endif %}

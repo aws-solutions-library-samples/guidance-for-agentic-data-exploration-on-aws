@@ -1,0 +1,61 @@
+{
+  "models": [
+    {
+      "id": "us.amazon.nova-premier-v1:0",
+      "name": "Nova Premier", 
+      "provider": "Amazon"
+    },
+    {
+      "id": "us.amazon.nova-pro-v1:0",
+      "name": "Nova Pro", 
+      "provider": "Amazon"
+    },
+    {
+      "id": "us.amazon.nova-lite-v1:0",
+      "name": "Nova Lite",
+      "provider": "Amazon"
+    },
+    {
+      "id": "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "name": "Claude Sonnet 4.5",
+      "provider": "Anthropic"
+    },    
+    {
+      "id": "global.anthropic.claude-sonnet-4-20250514-v1:0",
+      "name": "Claude Sonnet 4",
+      "provider": "Anthropic"
+    },
+    {
+      "id": "us.anthropic.claude-3-7-sonnet-20250219-v1:0", 
+      "name": "Claude 3.7 Sonnet",
+      "provider": "Anthropic"
+    },
+    {
+      "id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "name": "Claude 3.5 Sonnet v2",
+      "provider": "Anthropic"
+    }
+  ],
+  "image_models": [
+    {
+      "id": "stability.stable-image-core-v1:1",
+      "name": "Stable Image Core",
+      "provider": "Stability AI"
+    },
+    {
+      "id": "stability.sd3-5-large-v1:0",
+      "name": "Stable Diffusion 3.5 Large",
+      "provider": "Stability AI"
+    },
+    {
+      "id": "stability.stable-image-ultra-v1:1",
+      "name": "Stable Image Ultra",
+      "provider": "Stability AI"
+    }
+  ],
+  "defaults": {
+    "chat": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    "neptune": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    "image": "stability.stable-image-core-v1:1"
+  }
+}
