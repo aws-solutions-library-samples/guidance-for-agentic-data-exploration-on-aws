@@ -94,31 +94,23 @@ echo "📦 Installing Node.js dependencies..."
 mkdir -p /tmp/npm-global
 export npm_config_prefix=/tmp/npm-global
 export PATH=/tmp/npm-global/bin:$PATH
-sudo npm install -g npm@latest --no-cache
+npm config delete python 2>/dev/null || true  # Remove problematic python config
+sudo npm install -g npm@latest --no-cache --silent
 
 # Install AWS CDK globally
-sudo npm install -g aws-cdk@latest --no-cache
+sudo npm install -g aws-cdk@latest --no-cache --silent
 echo "✅ AWS CDK installed: $(cdk --version)"
 
 # Install project dependencies with minimal footprint
-npm install --omit=dev --no-cache --prefer-offline --no-audit --no-fund
+npm config delete python 2>/dev/null || true  # Remove problematic python config
+npm install --omit=dev --no-cache --prefer-offline --no-audit --no-fund --silent
 echo "✅ Project dependencies installed (production only, no cache)"
 
 # Clean up immediately
 rm -rf /tmp/npm-cache 2>/dev/null || true
 npm cache clean --force 2>/dev/null || true
 
-# Step 6: Bootstrap CDK
-echo "🏗️  Bootstrapping AWS CDK..."
-if npx cdk bootstrap; then
-    echo "✅ CDK bootstrap completed"
-    # Clean up any bootstrap artifacts
-    rm -rf cdk.out 2>/dev/null || true
-else
-    echo "⚠️  CDK bootstrap may have already been done or failed"
-fi
-
-# Step 7: Verify environment
+# Step 6: Verify environment
 echo "🔍 Verifying environment..."
 echo "  Node.js: $(node --version)"
 echo "  npm: $(npm --version)"
@@ -127,7 +119,7 @@ echo "  AWS CDK: $(npx cdk --version)"
 echo "  AWS CLI: $(aws --version)"
 echo "  Current directory: $(pwd)"
 
-# Step 8: Cleanup   
+# Step 7: Cleanup   
 PYTHON_PATH="$HOME/.pyenv/versions/$PYTHON_VERSION"
 
 echo ""

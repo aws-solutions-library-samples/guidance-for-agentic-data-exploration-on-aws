@@ -13,6 +13,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { aws_bedrock as bedrock } from 'aws-cdk-lib';
 import * as path from 'path';
+import * as fs from 'fs';
 import { Construct } from 'constructs';
 import { createDynamoDBPolicy, createLambdaExecRole, createNeptunePolicy, createS3Policy } from './bedrock-utils';
 
@@ -692,32 +693,34 @@ export class GraphDbStack extends cdk.Stack {
   }
 
   private saveOutputsToFiles(): void {
-    const fs = require('fs');
-    const path = require('path');
-    
-    // Ensure output directory exists
-    const outputDir = '/tmp/graph-db-outputs';
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    try {
+      // Ensure output directory exists
+      const outputDir = '/tmp/graph-db-outputs';
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
+      // Save Neptune cluster ID
+      fs.writeFileSync(
+        path.join(outputDir, 'neptune-cluster-id.txt'),
+        this.neptuneCluster.ref
+      );
+
+      // Save Neptune endpoint
+      fs.writeFileSync(
+        path.join(outputDir, 'neptune-endpoint.txt'),
+        this.neptuneHost
+      );
+
+      // Save Neptune security group ID
+      fs.writeFileSync(
+        path.join(outputDir, 'neptune-sg-id.txt'),
+        this.neptuneSecurityGroup.securityGroupId
+      );
+    } catch (error) {
+      console.warn('Could not save outputs to files:', error);
+      // Don't fail the deployment if file writing fails
     }
-
-    // Save Neptune cluster ID
-    fs.writeFileSync(
-      path.join(outputDir, 'neptune-cluster-id.txt'),
-      this.neptuneCluster.ref
-    );
-
-    // Save Neptune endpoint
-    fs.writeFileSync(
-      path.join(outputDir, 'neptune-endpoint.txt'),
-      this.neptuneHost
-    );
-
-    // Save Neptune security group ID
-    fs.writeFileSync(
-      path.join(outputDir, 'neptune-sg-id.txt'),
-      this.neptuneSecurityGroup.securityGroupId
-    );
   }
 }
 
