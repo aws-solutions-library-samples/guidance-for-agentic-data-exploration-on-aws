@@ -2,6 +2,7 @@
 
 # AI Data Explorer - CloudShell Deployment Script
 # Combined deployment script for CloudShell environment
+# This script continuously cleans up during deployment to prevent space issues
 set -e
 
 # disable the use of a pager that requires user interaction
@@ -12,6 +13,10 @@ if [ -z "$AWS_REGION" ]; then
   AWS_REGION=$(aws configure get region)
   export AWS_REGION
 fi
+
+# Configure CDK to minimize build artifacts
+export CDK_DISABLE_VERSION_CHECK=1
+export CDK_NEW_BOOTSTRAP=1
 
 # Default values
 VPC_ID=""
@@ -87,6 +92,72 @@ echo "============================================"
 echo "🚀 AI Data Explorer - CloudShell Deployment"
 echo "============================================"
 
+# Function to continuously monitor and clean space
+start_space_monitor() {
+  (
+    while true; do
+      sleep 30
+      
+      # Clean CDK artifacts if they get too large
+      if [ -d "cdk.out" ]; then
+        CDK_SIZE=$(du -sm cdk.out 2>/dev/null | cut -f1 || echo "0")
+        if [ "$CDK_SIZE" -gt 200 ]; then
+          echo "🧹 CDK artifacts getting large (${CDK_SIZE}MB), cleaning old files..."
+          find cdk.out -name "*.js" -mmin +5 -delete 2>/dev/null || true
+          find cdk.out -name "*.d.ts" -delete 2>/dev/null || true
+          find cdk.out -name "*.js.map" -delete 2>/dev/null || true
+        fi
+      fi
+      
+      # Clean npm cache if it exists
+      npm cache clean --force 2>/dev/null || true
+      
+      # Clean pip cache
+      python -m pip cache purge 2>/dev/null || true
+      
+      # Clean temp files
+      rm -rf /tmp/npm-* 2>/dev/null || true
+      rm -rf /tmp/cdk-* 2>/dev/null || true
+      
+    done
+  ) &
+  MONITOR_PID=$!
+  echo "✅ Started background space monitor (PID: $MONITOR_PID)"
+}
+
+# Function to stop space monitor
+stop_space_monitor() {
+  if [ -n "$MONITOR_PID" ]; then
+    kill $MONITOR_PID 2>/dev/null || true
+    echo "✅ Stopped background space monitor"
+  fi
+}
+
+# Trap to ensure cleanup on exit
+trap 'stop_space_monitor; rm -rf cdk.out 2>/dev/null || true' EXIT
+
+# Function for aggressive cleanup
+cleanup_space() {
+  echo "🧹 Space cleanup..."
+  
+  # Clean CDK artifacts
+  rm -rf cdk.out 2>/dev/null || true
+  
+  # Clean npm cache
+  npm cache clean --force 2>/dev/null || true
+  
+  # Clean pip cache
+  python -m pip cache purge 2>/dev/null || true
+  
+  # Clean yum cache
+  sudo yum clean all 2>/dev/null || true
+  
+  # Clean temporary files
+  rm -rf /tmp/* 2>/dev/null || true
+  
+  echo "✅ Space cleanup completed"
+}
+
 # Validate Neptune configuration
 if [ -n "$NEPTUNE_HOST" ]; then
   if [ -z "$NEPTUNE_SG" ]; then
@@ -96,12 +167,26 @@ if [ -n "$NEPTUNE_HOST" ]; then
   fi
 fi
 
+# Initial cleanup
+cleanup_space
+
+# Start continuous space monitoring
+start_space_monitor
+
+# Check if dependencies are installed, install minimally if needed
+if [ ! -d "node_modules" ]; then
+  echo "📦 Installing minimal dependencies..."
+  npm install --omit=dev --no-cache --no-audit --no-fund --prefer-offline
+  cleanup_space
+fi
+
 # Ensure CDK is bootstrapped
 echo "🏗️  Checking CDK bootstrap status..."
 if ! npx cdk bootstrap --show-template > /dev/null 2>&1; then
   echo "📦 Bootstrapping CDK environment..."
   npx cdk bootstrap
   echo "✅ CDK bootstrap completed"
+  cleanup_space
 else
   echo "✅ CDK already bootstrapped"
 fi
@@ -110,7 +195,6 @@ fi
 if [ "$DEPLOY_GRAPH_DB" = true ]; then
   echo "📊 Deploying Graph Database Stack..."
   
-  # Build graph DB deploy command
   GRAPH_CDK_COMMAND="npx cdk deploy DataExplorerGraphDbStack --app \"npx tsx bin/graph-db-app.ts\""
   
   if [ -n "$VPC_ID" ]; then
@@ -125,6 +209,9 @@ if [ "$DEPLOY_GRAPH_DB" = true ]; then
   echo "Executing: $GRAPH_CDK_COMMAND"
   eval $GRAPH_CDK_COMMAND
   
+  # Clean up immediately after graph DB deployment
+  cleanup_space
+  
   # Get Neptune outputs
   NEPTUNE_CLUSTER_ID=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbNeptuneClusterId'].OutputValue" --output text 2>/dev/null || echo "")
   NEPTUNE_HOST=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbNeptuneEndpoint'].OutputValue" --output text 2>/dev/null || echo "")
@@ -138,7 +225,6 @@ if [ "$DEPLOY_GRAPH_DB" = true ]; then
     echo "   Security Group: $NEPTUNE_SG"
     echo "   VPC ID: $NEPTUNE_VPC_ID"
     
-    # Use Neptune's VPC for the main application
     if [ -n "$NEPTUNE_VPC_ID" ]; then
       VPC_ID="$NEPTUNE_VPC_ID"
       echo "✅ Using Neptune VPC for main application: $VPC_ID"
@@ -151,6 +237,9 @@ fi
 # Create Knowledge Bases
 echo "🧠 Creating Bedrock Knowledge Bases..."
 ./scripts/kb-create.sh
+
+# Clean up after KB creation
+cleanup_space
 
 # Get Knowledge Base IDs
 HELP_KB_ID=$(cat /tmp/kb-outputs/help-kb-id.txt 2>/dev/null || echo "")
@@ -170,7 +259,7 @@ else
   echo "⚠️  Warning: Could not retrieve Products Knowledge Base ID"
 fi
 
-# Deploy Main Application Stack
+# Deploy Main Application Stack with streaming cleanup
 echo "🏗️  Deploying Main Application Stack..."
 
 CDK_COMMAND="npx cdk deploy --app \"npx tsx bin/cdk-app.ts\""
@@ -183,7 +272,7 @@ else
   echo "** Creating new VPC for Application"
 fi
 
-# Add Neptune context if available (from either existing or newly deployed Neptune)
+# Add Neptune context if available
 if [ -n "$NEPTUNE_SG" ]; then
   CDK_COMMAND="$CDK_COMMAND --context neptuneSgId=$NEPTUNE_SG"
 fi
@@ -206,6 +295,13 @@ CDK_COMMAND="$CDK_COMMAND --require-approval never"
 
 echo "Executing: $CDK_COMMAND"
 eval $CDK_COMMAND
+
+# Stop the space monitor
+stop_space_monitor
+
+# Final cleanup
+echo "🧹 Final cleanup..."
+cleanup_space
 
 # Get deployment URLs
 echo "🔍 Retrieving deployment URLs..."

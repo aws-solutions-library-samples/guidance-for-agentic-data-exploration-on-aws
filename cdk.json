@@ -14,6 +14,9 @@
       "test"
     ]
   },
+  "build": {
+    "exclude": ["**/*.d.ts", "**/*.js.map", "**/test/**", "**/tests/**"]
+  },
   "context": {
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,

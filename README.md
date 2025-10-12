@@ -132,7 +132,7 @@ This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vector
 2. Clone the repository in your CloudShell home directory
 
    ```bash
-   git clone https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws
+   git clone -b v2 https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws
    ```
 
 3. **Setup environment:**
@@ -212,7 +212,7 @@ This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vector
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws.git
+   git -b v2 clone https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws.git
    cd guidance-for-agentic-data-exploration-on-aws
    ```
 
