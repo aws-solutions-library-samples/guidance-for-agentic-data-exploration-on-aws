@@ -182,7 +182,7 @@ start_space_monitor
 # Check if dependencies are installed, install minimally if needed
 if [ ! -d "node_modules" ]; then
   echo "📦 Installing minimal dependencies..."
-  npm install --omit=dev --no-cache --no-audit --no-fund --prefer-offline --silent
+  npm install --omit=dev --no-cache --no-audit --no-fund --prefer-offline
   cleanup_space
 fi
 
