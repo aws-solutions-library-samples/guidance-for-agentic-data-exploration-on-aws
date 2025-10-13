@@ -5,6 +5,10 @@
 
 set -e
 
+# Update version information before deployment
+echo "Updating version information..."
+npm run version:update
+
 # Default values
 VPC_ID=""
 NEPTUNE_SG=""

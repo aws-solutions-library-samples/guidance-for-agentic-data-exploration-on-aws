@@ -208,7 +208,7 @@ export class GraphDbStack extends cdk.Stack {
 
     // Deploy graph schema
     new s3deploy.BucketDeployment(this, 'DxInitGraphSchema', {
-      sources: [s3deploy.Source.data('graph.txt', '')],
+      sources: [s3deploy.Source.data('graph.txt', '# Graph schema placeholder')],
       destinationBucket: etlDataBucket,
       destinationKeyPrefix: 'public/schema',
       prune: false,

@@ -1,6 +1,6 @@
 {
   "name": "panoptic-agent-app",
-  "version": "2.0.3",
+  "version": "2.0.0",
   "description": "Panoptic AI Data Explorer",
   "private": true,
   "bin": {
@@ -10,7 +10,11 @@
     "format": "prettier --write .",
     "watch": "tsc -w",
     "test": "vitest run",
-    "cdk": "cdk"
+    "test:version": "npm run version:update && echo 'Version script test passed'",
+    "cdk": "cdk",
+    "version:update": "node scripts/update-version.js",
+    "prebuild": "npm run version:update",
+    "predeploy": "npm run version:update"
   },
   "devDependencies": {
     "@types/node": "22.15.3",

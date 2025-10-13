@@ -13,6 +13,7 @@ from strands import tool
 import requests
 
 
+
 @tool
 def openmeteo_weather_tool(query: str) -> str:
     """
@@ -370,7 +371,7 @@ def _validate_us_coordinates(lat: float, lon: float) -> bool:
     )
 
 @tool
-def uv_index_tool(location: str) -> str:
+def uv_index_tool(location_or_lat, longitude=None) -> str:
     """
     Get real-time UV index information for a specified location.
     
@@ -378,18 +379,24 @@ def uv_index_tool(location: str) -> str:
     using the currentuvindex.com API.
     
     Args:
-        location: Location string (city, state) or coordinates (lat,lon)
+        location_or_lat: Location string (city, state) or latitude coordinate
+        longitude: Longitude coordinate (if first arg is latitude)
         
     Returns:
         UV index information with safety recommendations
     """
     try:
-        # Get coordinates for the location
-        coords = _get_coordinates_for_location(location)
-        if not coords:
-            return f"I couldn't find coordinates for '{location}'. Please provide a more specific location or coordinates."
-        
-        latitude, longitude = coords
+        # Handle both signatures: uv_index_tool("New York") and uv_index_tool(40.7, -74.0)
+        if longitude is not None:
+            # Called with lat, lon coordinates
+            latitude, longitude = float(location_or_lat), float(longitude)
+        else:
+            # Called with location string
+            location = str(location_or_lat)
+            coords = _get_coordinates_for_location(location)
+            if not coords:
+                return f"I couldn't find coordinates for '{location}'. Please provide a more specific location or coordinates."
+            latitude, longitude = coords
         
         # Validate coordinates
         if not _validate_coordinates(latitude, longitude):
@@ -400,7 +407,7 @@ def uv_index_tool(location: str) -> str:
         
         response = requests.get(uv_url, timeout=10)
         if response.status_code != 200:
-            return f"Unable to retrieve UV index data. Status: {response.status_code}"
+            return f"Unable to retrieve UV index data - service may be temporarily unavailable. Status: {response.status_code}"
         
         try:
             uv_data = response.json()

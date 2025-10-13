@@ -77,8 +77,19 @@ NEPTUNE_ENABLED = bool(os.environ.get('NEPTUNE_ETL_BUCKET')) or not all([COGNITO
 @app.context_processor
 def inject_globals():
     """Make global variables available to all templates"""
+    # Load version info
+    version_info = {'version': 'unknown'}
+    try:
+        version_file = os.path.join(os.path.dirname(__file__), 'version.json')
+        if os.path.exists(version_file):
+            with open(version_file, 'r') as f:
+                version_info = json.load(f)
+    except Exception:
+        pass
+    
     return {
-        'neptune_enabled': NEPTUNE_ENABLED
+        'neptune_enabled': NEPTUNE_ENABLED,
+        'app_version': version_info.get('version', 'unknown')
     }
 
 def get_cognito_public_keys():
@@ -150,6 +161,19 @@ def favicon_svg():
 def health():
     """Health check endpoint for load balancer"""
     return {'status': 'healthy', 'auth_available': AUTH_AVAILABLE}
+
+@app.route('/version')
+def version():
+    """Version information endpoint"""
+    try:
+        version_file = os.path.join(os.path.dirname(__file__), 'version.json')
+        if os.path.exists(version_file):
+            with open(version_file, 'r') as f:
+                return json.load(f)
+        else:
+            return {'version': 'unknown', 'build_date': 'unknown', 'git_commit': 'unknown'}
+    except Exception:
+        return {'version': 'unknown', 'build_date': 'unknown', 'git_commit': 'unknown'}
 
 @app.route('/')
 def index():

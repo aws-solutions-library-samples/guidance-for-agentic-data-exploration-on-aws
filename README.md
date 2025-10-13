@@ -79,11 +79,9 @@ If used in place of Claude Sonnet 4:
 
 ## Prequisites
 
-### AWS account requirements
-
 **Required AWS services and configurations:**
 
-1. **Bedrock Model Access**: Enable foundation models in your AWS account/region:
+### 1. **Bedrock Model Access**: Enable foundation models in your AWS account/region:
    - Amazon Nova Premier \*
    - Amazon Nova Pro \*
    - Amazon Nova Lite \*
@@ -93,30 +91,18 @@ If used in place of Claude Sonnet 4:
    - Claude 3.5 Sonnet v2 \*
    - Amazon Titan Text Embeddings v2 \*\*
 
-**\*** At Least One Required
+   **\*** At Least One Required
 
-**\*\*** Required
+   **\*\*** Required
 
-2. **Bedrock Model Invocation Logging**:
+### 2. **Bedrock Model Invocation Logging**:
 
    - Enable [Bedrock model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html)
    - Set CloudWatch Logs destination to `/aws/bedrock/ModelInvocation`
 
-3. **IAM Permissions**: See [IAM Requirements](docs/kb/IAM_REQUIREMENTS.md) for comprehensive permissions guide.
+### 3. **IAM Permissions**: See [IAM Requirements](docs/kb/IAM_REQUIREMENTS.md) for comprehensive permissions guide.
 
-### aws cdk bootstrap
-
-This Guidance uses AWS CDK. If you are using AWS CDK for the first time, please perform the following bootstrapping in your target AWS account and region:
-
-```bash
-cdk bootstrap aws://ACCOUNT-NUMBER/REGION
-```
-
-Replace `ACCOUNT-NUMBER` with your AWS account ID and `REGION` with your target deployment region.
-
-### Service Limits
-
-See [Amazon Bedrock Quotas](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html) for more details on default limits for Amazon Bedrock Model and Agent usage. Please request service limit increases if you need higher throughput.
+## Notes
 
 ### Supported Regions
 
@@ -128,6 +114,13 @@ This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vector
 - EU Central 1 (Frankfurt) - eu-central-1
 - Asia Pacific (Sydney)	- ap-southeast-2
 
+### Service Limits
+
+See [Amazon Bedrock Quotas](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html) for more details on default limits for Amazon Bedrock Model and Agent usage. Please request service limit increases if you need higher throughput.
+
+### aws cdk bootstrap
+
+This Guidance uses AWS CDK. If you are using AWS CDK for the first time, CDK will automatically be bootstrapped in your target AWS account and region:
 
 ## CloudShell Deployment
 
@@ -149,19 +142,19 @@ This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vector
 4. **Deploy the application:**
 
    ```bash
-   # Basic deployment
+   # In new VPC without Neptune database
    ./scripts/cloudshell-deploy.sh
 
-   # With existing VPC
+   # In existing VPC without Neptune database
    ./scripts/cloudshell-deploy.sh --vpc-id vpc-00000000
 
-   # With existing VPC and Neptune database
-   ./scripts/cloudshell-deploy.sh --vpc-id vpc-12345678 --neptune-sg sg-abcdef12 --neptune-host my-cluster.cluster-xyz.us-east-1.neptune.amazonaws.com
-
-   # With a new VPC and new Neptune graph database
+   # In new VPC with new Neptune graph database
    ./scripts/cloudshell-deploy.sh --with-graph-db
 
-   # With enforced guardrails - other option (--guardrail-mode shadow)
+   # In existing VPC with existing Neptune database
+   ./scripts/cloudshell-deploy.sh --vpc-id vpc-12345678 --neptune-sg sg-abcdef12 --neptune-host my-cluster.cluster-xyz.us-east-1.neptune.amazonaws.com
+
+   # With enforced guardrails (or use --guardrail-mode shadow to warn only)
    ./scripts/cloudshell-deploy.sh --guardrail-mode enforce
    ```
 
@@ -934,7 +927,7 @@ docker info
 
 | Version | Date         | Changes                                       |
 | ------- | ------------ | --------------------------------------------- |
-| 2.0.0   | 2024-12-15   | Initial release with multi-agent architecture |
+| 2.0.0   | October 13 2025 | Now built on Strands + AgentCore |
 | 1.0.3   | July 23 2025 | Bug fixes                                     |
 | 1.0.2   | July 11 2025 | Bug fixes                                     |
 | 1.0.1   | May 23 2025  | Bug fixes                                     |

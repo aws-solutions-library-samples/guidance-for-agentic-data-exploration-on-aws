@@ -1388,6 +1388,20 @@ div.side-menu nav.side-menu-nav a.side-menu-item:link {
   color: #2c3e50 !important;
 }
 
+/* Side Menu Footer */
+.side-menu-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--medium-gray);
+  background: #f8f9fa;
+}
+
+.version-info {
+  font-size: 0.75rem;
+  color: var(--text-lightgray);
+  text-align: center;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
 /* User Dropdown (for index page) */
 .user-dropdown {
   position: relative;

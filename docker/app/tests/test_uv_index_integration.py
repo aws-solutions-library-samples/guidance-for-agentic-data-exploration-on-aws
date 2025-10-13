@@ -9,7 +9,7 @@ import pytest
 import json
 import sys
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 # Add parent directory to path to import modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -28,8 +28,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(40.7128, -74.0060)
             
@@ -49,8 +52,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(45.5152, -122.6784)  # Portland
             
@@ -66,8 +72,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(34.0522, -118.2437)  # Los Angeles
             
@@ -83,8 +92,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(25.7617, -80.1918)  # Miami
             
@@ -100,8 +112,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(-23.5505, -46.6333)  # São Paulo (for extreme UV testing)
             
@@ -134,8 +149,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             # Test boundary values
             result = uv_index_tool(90.0, 180.0)
@@ -149,8 +167,10 @@ class TestUVIndexAPIIntegration:
     
     def test_uv_index_api_failure(self):
         """Test UV index API when API call fails."""
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = None
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(40.7128, -74.0060)
             
@@ -159,8 +179,11 @@ class TestUVIndexAPIIntegration:
     
     def test_uv_index_api_invalid_response(self):
         """Test UV index API with invalid JSON response."""
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = "invalid json"
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(40.7128, -74.0060)
             
@@ -175,8 +198,11 @@ class TestUVIndexAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(40.7128, -74.0060)
             
@@ -186,8 +212,11 @@ class TestUVIndexAPIIntegration:
         """Test UV index API with empty response."""
         mock_uv_response = {}
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_uv_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_uv_response
+            mock_http.return_value = mock_response
             
             result = uv_index_tool(40.7128, -74.0060)
             
@@ -195,7 +224,7 @@ class TestUVIndexAPIIntegration:
     
     def test_uv_index_api_exception_handling(self):
         """Test UV index API exception handling."""
-        with patch('agents.weather_tools.http_request') as mock_http:
+        with patch('agents.weather_tools.requests.get') as mock_http:
             mock_http.side_effect = Exception("Network error")
             
             result = uv_index_tool(40.7128, -74.0060)
@@ -330,14 +359,16 @@ class TestUVAPIEndpoints:
     
     def test_uv_api_endpoint_construction(self):
         """Test that UV API endpoint URLs are constructed correctly."""
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = None
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_http.return_value = mock_response
             
             uv_index_tool(40.7128, -74.0060)
             
             # Verify the correct endpoint was called
             expected_url = "https://currentuvindex.com/api/v1/uvi?latitude=40.7128&longitude=-74.006"
-            mock_http.assert_called_with(expected_url)
+            mock_http.assert_called_with(expected_url, timeout=10)
     
     def test_uv_api_endpoint_with_different_coordinates(self):
         """Test UV API endpoint construction with various coordinates."""
@@ -348,12 +379,14 @@ class TestUVAPIEndpoints:
         ]
         
         for lat, lon, expected_url in test_cases:
-            with patch('agents.weather_tools.http_request') as mock_http:
-                mock_http.return_value = None
+            with patch('agents.weather_tools.requests.get') as mock_http:
+                mock_response = MagicMock()
+                mock_response.status_code = 500
+                mock_http.return_value = mock_response
                 
                 uv_index_tool(lat, lon)
                 
-                mock_http.assert_called_with(expected_url)
+                mock_http.assert_called_with(expected_url, timeout=10)
 
 
 if __name__ == "__main__":

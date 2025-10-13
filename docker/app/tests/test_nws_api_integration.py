@@ -51,11 +51,16 @@ class TestNWSAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                json.dumps(mock_forecast_response)
-            ]
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 200
+            mock_forecast_resp.json.return_value = mock_forecast_response
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             result = nws_weather_tool("New York")
             
@@ -87,11 +92,16 @@ class TestNWSAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                json.dumps(mock_forecast_response)
-            ]
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 200
+            mock_forecast_resp.json.return_value = mock_forecast_response
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             result = nws_weather_tool("40.7128, -74.0060")
             
@@ -108,8 +118,10 @@ class TestNWSAPIIntegration:
     
     def test_nws_api_points_endpoint_failure(self):
         """Test NWS API when points endpoint fails."""
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = None
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_http.return_value = mock_response
             
             result = nws_weather_tool("New York")
             
@@ -117,8 +129,11 @@ class TestNWSAPIIntegration:
     
     def test_nws_api_invalid_points_response(self):
         """Test NWS API with invalid points response."""
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = "invalid json"
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+            mock_http.return_value = mock_response
             
             result = nws_weather_tool("New York")
             
@@ -130,8 +145,11 @@ class TestNWSAPIIntegration:
             "properties": {}
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.return_value = json.dumps(mock_points_response)
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = mock_points_response
+            mock_http.return_value = mock_response
             
             result = nws_weather_tool("New York")
             
@@ -145,11 +163,15 @@ class TestNWSAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                None  # Forecast request fails
-            ]
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 500  # Simulate failure
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             result = nws_weather_tool("New York")
             
@@ -163,11 +185,16 @@ class TestNWSAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                "invalid json"  # Invalid forecast response
-            ]
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 200
+            mock_forecast_resp.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             result = nws_weather_tool("New York")
             
@@ -187,11 +214,16 @@ class TestNWSAPIIntegration:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                json.dumps(mock_forecast_response)
-            ]
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 200
+            mock_forecast_resp.json.return_value = mock_forecast_response
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             result = nws_weather_tool("New York")
             
@@ -199,7 +231,7 @@ class TestNWSAPIIntegration:
     
     def test_nws_api_exception_handling(self):
         """Test NWS API exception handling."""
-        with patch('agents.weather_tools.http_request') as mock_http:
+        with patch('agents.weather_tools.requests.get') as mock_http:
             mock_http.side_effect = Exception("Network error")
             
             result = nws_weather_tool("New York")
@@ -279,14 +311,14 @@ class TestNWSAPIEndpoints:
     
     def test_points_endpoint_construction(self):
         """Test that points endpoint URLs are constructed correctly."""
-        with patch('agents.weather_tools.http_request') as mock_http:
+        with patch('agents.weather_tools.requests.get') as mock_http:
             mock_http.return_value = None
             
             nws_weather_tool("New York")
             
             # Verify the points endpoint was called with correct URL
             expected_url = "https://api.weather.gov/points/40.7128,-74.006"
-            mock_http.assert_called_with(expected_url)
+            mock_http.assert_called_with(expected_url, timeout=10)
     
     def test_forecast_endpoint_usage(self):
         """Test that forecast endpoint from points response is used correctly."""
@@ -296,11 +328,29 @@ class TestNWSAPIEndpoints:
             }
         }
         
-        with patch('agents.weather_tools.http_request') as mock_http:
-            mock_http.side_effect = [
-                json.dumps(mock_points_response),
-                None  # Forecast response
-            ]
+        mock_forecast_response = {
+            "properties": {
+                "periods": [
+                    {
+                        "name": "Today",
+                        "temperature": 70,
+                        "temperatureUnit": "F",
+                        "shortForecast": "Sunny"
+                    }
+                ]
+            }
+        }
+        
+        with patch('agents.weather_tools.requests.get') as mock_http:
+            mock_points_resp = MagicMock()
+            mock_points_resp.status_code = 200
+            mock_points_resp.json.return_value = mock_points_response
+            
+            mock_forecast_resp = MagicMock()
+            mock_forecast_resp.status_code = 200
+            mock_forecast_resp.json.return_value = mock_forecast_response
+            
+            mock_http.side_effect = [mock_points_resp, mock_forecast_resp]
             
             nws_weather_tool("New York")
             

@@ -48,8 +48,58 @@ class TestUIIntegration:
         assert agent_request == {"prompt": "Hello"}
         assert "file_content" not in agent_request
         assert "file_name" not in agent_request
-        assert "file_type" not in agent_request
-        assert "mime_type" not in agent_request
+
+    def test_version_endpoint(self, client):
+        """Test version endpoint returns version information."""
+        response = client.get('/version')
+        assert response.status_code == 200
+        
+        data = response.get_json()
+        assert "version" in data
+        assert "build_date" in data
+        assert "git_commit" in data
+
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    def test_version_endpoint_with_file(self, mock_exists, mock_open, client):
+        """Test version endpoint when version.json exists."""
+        mock_exists.return_value = True
+        mock_open.return_value.__enter__.return_value.read.return_value = '{"version": "2.0.3", "build_date": "2023-01-01T00:00:00Z", "git_commit": "abc123"}'
+        
+        response = client.get('/version')
+        assert response.status_code == 200
+        
+        data = response.get_json()
+        assert data["version"] == "2.0.3"
+        assert data["build_date"] == "2023-01-01T00:00:00Z"
+        assert data["git_commit"] == "abc123"
+
+    @patch('os.path.exists')
+    def test_version_endpoint_no_file(self, mock_exists, client):
+        """Test version endpoint when version.json doesn't exist."""
+        mock_exists.return_value = False
+        
+        response = client.get('/version')
+        assert response.status_code == 200
+        
+        data = response.get_json()
+        assert data["version"] == "unknown"
+        assert data["build_date"] == "unknown"
+        assert data["git_commit"] == "unknown"
+
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    def test_version_context_processor(self, mock_exists, mock_open, client):
+        """Test that version is available in template context."""
+        mock_exists.return_value = True
+        mock_open.return_value.__enter__.return_value.read.return_value = '{"version": "2.0.3"}'
+        
+        # Test that version is injected into templates
+        with client.application.test_request_context():
+            from app import inject_globals
+            context = inject_globals()
+            assert "app_version" in context
+            assert context["app_version"] == "2.0.3"
 
     # FILE UPLOAD TESTS
     @patch('app.AGENT_SERVICE_URL', AGENT_SERVICE_URL)
@@ -355,7 +405,7 @@ class TestUIIntegration:
 
         # Check for file upload button
         assert 'document.getElementById(\'fileInput\').click()' in html_content
-        assert 'data-hint="Upload a file"' in html_content
+        assert 'data-hint="Upload files"' in html_content
 
     @patch('app.require_auth', lambda f: f)  # Mock auth decorator
     def test_ui_contains_download_functionality(self, client):

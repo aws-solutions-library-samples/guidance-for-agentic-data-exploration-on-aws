@@ -54,6 +54,19 @@ def health_check():
     """Health check endpoint for the load balancer."""
     return {"status": "healthy"}
 
+@app.get('/version')
+def get_version():
+    """Get version information"""
+    try:
+        version_file = os.path.join(os.path.dirname(__file__), 'version.json')
+        if os.path.exists(version_file):
+            with open(version_file, 'r') as f:
+                return json.load(f)
+        else:
+            return {'version': 'unknown', 'build_date': 'unknown', 'git_commit': 'unknown'}
+    except Exception:
+        return {'version': 'unknown', 'build_date': 'unknown', 'git_commit': 'unknown'}
+
 # Global model configuration
 current_chat_model = os.getenv("AGENT_MODEL", "us.anthropic.claude-sonnet-4-20250514-v1:0")
 current_neptune_model = "us.anthropic.claude-sonnet-4-20250514-v1:0"
