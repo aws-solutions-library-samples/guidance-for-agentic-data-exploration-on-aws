@@ -123,7 +123,11 @@ See [Amazon Bedrock Quotas](https://docs.aws.amazon.com/bedrock/latest/userguide
 This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vectors, and Amazon Neptune are available. Recommended regions include:
 
 - US East (N. Virginia) - us-east-1
+- US East (Ohio) - us-east-2
 - US West (Oregon) - us-west-2
+- EU Central 1 (Frankfurt) - eu-central-1
+- Asia Pacific (Sydney)	- ap-southeast-2
+
 
 ## CloudShell Deployment
 

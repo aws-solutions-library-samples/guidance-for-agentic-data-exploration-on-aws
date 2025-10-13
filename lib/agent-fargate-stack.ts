@@ -618,8 +618,17 @@ def handler(event, context):
         "us-east-1": {
           PrefixListId: "pl-3b927c52",
         },
+        "us-east-2": {
+          PrefixListId: "pl-b6a144df",
+        },
         "us-west-2": {
           PrefixListId: "pl-82a045eb",
+        },
+        "eu-central-1": {
+          PrefixListId: "pl-a3a144ca",
+        },
+        "ap-southeast-2": {
+          PrefixListId: "pl-b8a742d1",
         },
       },
     });

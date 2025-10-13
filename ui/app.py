@@ -1363,7 +1363,10 @@ def proxy_get_image(filename):
             r'^http://localhost:\d+$', 
             r'^http://internal-.*\.elb\.amazonaws\.com$',
             r'^http://.*\.us-east-1\.elb\.amazonaws\.com$',
-            r'^http://.*\.us-west-2\.elb\.amazonaws\.com$'
+            r'^http://.*\.us-east-2\.elb\.amazonaws\.com$',
+            r'^http://.*\.us-west-2\.elb\.amazonaws\.com$',
+            r'^http://.*\.eu-central-1\.elb\.amazonaws\.com$',
+            r'^http://.*\.ap-southeast-2\.elb\.amazonaws\.com$'
         ]
         
         import re

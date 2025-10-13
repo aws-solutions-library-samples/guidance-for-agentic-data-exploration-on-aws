@@ -92,6 +92,12 @@ echo "============================================"
 echo "🚀 AI Data Explorer - CloudShell Deployment"
 echo "============================================"
 
+# Clean up npm configuration issues early
+echo "🔧 Cleaning npm configuration..."
+npm config delete python 2>/dev/null || true
+npm config delete python3 2>/dev/null || true
+echo "✅ npm configuration cleaned"
+
 # Function to continuously monitor and clean space
 start_space_monitor() {
   (
@@ -176,8 +182,6 @@ start_space_monitor
 # Check if dependencies are installed, install minimally if needed
 if [ ! -d "node_modules" ]; then
   echo "📦 Installing minimal dependencies..."
-  # Remove problematic npm config
-  npm config delete python 2>/dev/null || true
   npm install --omit=dev --no-cache --no-audit --no-fund --prefer-offline --silent
   cleanup_space
 fi
@@ -185,9 +189,8 @@ fi
 # Ensure CDK is bootstrapped
 echo "🏗️  Checking CDK bootstrap status..."
 if ! aws cloudformation describe-stacks --stack-name CDKToolkit > /dev/null 2>&1; then
-  echo "📦 Bootstrapping CDK environment (no user interaction)..."
-  # Use --force to avoid prompts and specify execution policies
-  npx cdk bootstrap --force --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess
+  echo "📦 Bootstrapping CDK environment..."
+  npx cdk bootstrap --require-approval never
   echo "✅ CDK bootstrap completed"
   cleanup_space
 else
@@ -197,9 +200,6 @@ fi
 # Deploy Graph Database Stack if requested
 if [ "$DEPLOY_GRAPH_DB" = true ]; then
   echo "📊 Deploying Graph Database Stack..."
-  
-  # Clean npm config before CDK commands
-  npm config delete python 2>/dev/null || true
   
   GRAPH_CDK_COMMAND="npx cdk deploy DataExplorerGraphDbStack --app \"npx tsx bin/graph-db-app.ts\""
   
@@ -265,11 +265,8 @@ else
   echo "⚠️  Warning: Could not retrieve Products Knowledge Base ID"
 fi
 
-# Deploy Main Application Stack with streaming cleanup
+# Deploy Main Application Stack
 echo "🏗️  Deploying Main Application Stack..."
-
-# Clean npm config before main CDK deployment
-npm config delete python 2>/dev/null || true
 
 CDK_COMMAND="npx cdk deploy --app \"npx tsx bin/cdk-app.ts\""
 

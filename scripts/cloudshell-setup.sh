@@ -54,7 +54,7 @@ fi
 
 # Step 4: Install Python 3.13.6
 PYTHON_VERSION=3.13.6
-echo "🐍 Installing Python $PYTHON_VERSION (this may take a few minutes)..."
+echo "🐍 Installing Python $PYTHON_VERSION (this may take up to 20 minutes)..."
 if ! pyenv versions | grep -q "$PYTHON_VERSION"; then
     # Configure Python build to minimize size
     export PYTHON_CONFIGURE_OPTS="--enable-optimizations --disable-test-modules --without-ensurepip"
@@ -115,7 +115,7 @@ echo "🔍 Verifying environment..."
 echo "  Node.js: $(node --version)"
 echo "  npm: $(npm --version)"
 echo "  Python: $(python --version)"
-echo "  AWS CDK: $(npx cdk --version)"
+echo "  AWS CDK: $(cdk --version)"
 echo "  AWS CLI: $(aws --version)"
 echo "  Current directory: $(pwd)"
 
