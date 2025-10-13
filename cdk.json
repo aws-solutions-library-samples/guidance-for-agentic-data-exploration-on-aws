@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/panoptic-agent-app.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/cdk-app.ts",
   "watch": {
     "include": [
       "**"
