@@ -1153,56 +1153,72 @@ def validate_graph_schema():
 @app.route('/graph-schema/load', methods=['GET'])
 @require_auth
 def load_graph_schema():
-    """Load graph schema from S3"""
+    """Load graph schema from S3 or local fallback for development"""
     try:
-        import boto3
-        s3_client = boto3.client('s3')
-        
-        # Get bucket name from environment or construct it
-        bucket_name = os.environ.get('NEPTUNE_ETL_BUCKET')
-        if not bucket_name:
-            # Construct bucket name if not in environment
-            account_id = boto3.client('sts').get_caller_identity()['Account']
-            region = boto3.Session().region_name or 'us-east-1'
-            bucket_name = f'ai-data-explorer-graph-etl-{account_id}-{region}'
-        
-        # Load schema file
-        response = s3_client.get_object(Bucket=bucket_name, Key='public/schema/graph.txt')
-        schema_content = response['Body'].read().decode('utf-8')
-        
-        return jsonify({'schema': schema_content})
+        # Try to load from S3 first (for deployed environments)
+        if os.environ.get('NEPTUNE_ETL_BUCKET'):
+            import boto3
+            s3_client = boto3.client('s3')
+            bucket_name = os.environ.get('NEPTUNE_ETL_BUCKET')
+            
+            response = s3_client.get_object(Bucket=bucket_name, Key='public/schema/graph.txt')
+            schema_content = response['Body'].read().decode('utf-8')
+            return jsonify({'schema': schema_content})
+        else:
+            # Fallback to local demo file for development
+            local_schema_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'demo_graph.txt')
+            if os.path.exists(local_schema_path):
+                with open(local_schema_path, 'r') as f:
+                    schema_content = f.read()
+                return jsonify({'schema': schema_content})
+            else:
+                return jsonify({'error': 'No graph schema available. Deploy with --with-graph-db or ensure demo_graph.txt exists.'}), 404
+                
     except Exception as e:
+        # If S3 file doesn't exist, return empty schema for user to fill in
+        if 'NoSuchKey' in str(e):
+            return jsonify({'schema': ''})
+        # For other S3 errors, return the error
         return jsonify({'error': str(e)}), 500
 
 @app.route('/graph-schema/save', methods=['POST'])
 @require_auth
 def save_graph_schema():
-    """Save graph schema to S3"""
+    """Save graph schema to S3 or local file for development"""
     try:
-        import boto3
         data = request.get_json()
         schema_content = data.get('schema', '')
         
-        s3_client = boto3.client('s3')
-        
-        # Get bucket name from environment or construct it
-        bucket_name = os.environ.get('NEPTUNE_ETL_BUCKET')
-        if not bucket_name:
-            # Construct bucket name if not in environment
-            account_id = boto3.client('sts').get_caller_identity()['Account']
-            region = boto3.Session().region_name or 'us-east-1'
-            bucket_name = f'ai-data-explorer-graph-etl-{account_id}-{region}'
-        
-        # Save schema file
-        s3_client.put_object(
-            Bucket=bucket_name,
-            Key='public/schema/graph.txt',
-            Body=schema_content.encode('utf-8'),
-            ContentType='text/plain'
-        )
-        
-        return jsonify({'success': True, 'message': 'Schema saved successfully'})
+        # Try to save to S3 first (for deployed environments)
+        if os.environ.get('NEPTUNE_ETL_BUCKET'):
+            import boto3
+            s3_client = boto3.client('s3')
+            bucket_name = os.environ.get('NEPTUNE_ETL_BUCKET')
+            
+            s3_client.put_object(
+                Bucket=bucket_name,
+                Key='public/schema/graph.txt',
+                Body=schema_content.encode('utf-8'),
+                ContentType='text/plain'
+            )
+            return jsonify({'success': True, 'message': 'Schema saved to S3 successfully'})
+        else:
+            # Fallback to local file for development
+            local_schema_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'demo_graph.txt')
+            with open(local_schema_path, 'w') as f:
+                f.write(schema_content)
+            return jsonify({'success': True, 'message': 'Schema saved locally for development'})
+            
     except Exception as e:
+        # If S3 fails, try local fallback
+        try:
+            if not os.environ.get('NEPTUNE_ETL_BUCKET'):
+                local_schema_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'demo_graph.txt')
+                with open(local_schema_path, 'w') as f:
+                    f.write(schema_content)
+                return jsonify({'success': True, 'message': 'Schema saved locally (S3 unavailable)'})
+        except:
+            pass
         return jsonify({'error': str(e)}), 500
 
 @app.route('/upload-to-kb', methods=['POST'])

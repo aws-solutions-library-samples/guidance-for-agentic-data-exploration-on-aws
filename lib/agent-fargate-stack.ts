@@ -515,6 +515,11 @@ def handler(event, context):
               actions: ["s3:GetObject", "s3:PutObject"],
               resources: [`arn:aws:s3:::ai-data-explorer-graph-etl-${this.account}-${this.region}/public/schema/*`],
             }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ["s3:ListBucket"],
+              resources: [`arn:aws:s3:::ai-data-explorer-graph-etl-${this.account}-${this.region}`],
+            }),
 
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
