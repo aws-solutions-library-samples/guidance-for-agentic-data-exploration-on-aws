@@ -6,7 +6,7 @@
 set -e
 
 # Default values
-VPC_ID="vpc-0af137533d471cd3b"
+VPC_ID=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
