@@ -39,7 +39,7 @@ done
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-echo "Deploying Graph Database Stack..."
+echo "📊 Deploying Graph Database Stack..."
 
 # Set CDK environment variables
 export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)

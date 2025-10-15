@@ -169,7 +169,7 @@ This Guidance uses AWS CDK. If you are using AWS CDK for the first time, CDK wil
    brew install node
    ```
 
-2. **AWS CLI** (version 2.x)
+2. **AWS CLI** (version 2.27.51 or higher)
 
    ```bash
    # For macOS
@@ -906,6 +906,21 @@ npx cdk destroy
 
 ```bash
 npx cdk bootstrap
+```
+
+**AWS CLI Errors**
+
+If you see an error like this, confirm your AWS CLI version by running `aws --version`. You must have AWS CLI version 2.27.51 or greater to gain `s3vectors` support required by the app.
+
+```
+usage: aws [options] <command> <subcommand> [<subcommand> ...] [parameters]
+To see help text, you can run:
+
+  aws help
+  aws <command> help
+  aws <command> <subcommand> help
+
+aws: error: argument command: Invalid choice, valid choices are:
 ```
 
 **Container Runtime Not Running:**

@@ -5,6 +5,55 @@
 
 set -e
 
+# Configuration
+# Required s3vectors support was added in this version
+MIN_AWS_CLI_VERSION="2.27.51"
+
+
+# Function to compare version numbers
+version_compare() {
+    local version1=$1
+    local version2=$2
+    
+    # Split versions into arrays
+    IFS='.' read -ra V1 <<< "$version1"
+    IFS='.' read -ra V2 <<< "$version2"
+    
+    # Compare each part
+    for i in {0..2}; do
+        local v1_part=${V1[i]:-0}
+        local v2_part=${V2[i]:-0}
+        
+        if (( v1_part > v2_part )); then
+            return 0  # version1 > version2
+        elif (( v1_part < v2_part )); then
+            return 1  # version1 < version2
+        fi
+    done
+    
+    return 0  # versions are equal
+}
+
+# Preflight check: AWS CLI version
+echo "Checking AWS CLI version..."
+if ! command -v aws &> /dev/null; then
+    echo "❌ Error: AWS CLI is not installed or not in PATH"
+    echo "📣 Please install AWS CLI version $MIN_AWS_CLI_VERSION or later"
+    exit 1
+fi
+
+AWS_VERSION=$(aws --version 2>&1 | cut -d/ -f2 | cut -d' ' -f1)
+echo "Found AWS CLI version: $AWS_VERSION"
+
+if ! version_compare "$AWS_VERSION" "$MIN_AWS_CLI_VERSION"; then
+    echo "❌ Error: AWS CLI version $AWS_VERSION is below minimum required version $MIN_AWS_CLI_VERSION"
+    echo "📣 Please upgrade your AWS CLI to version $MIN_AWS_CLI_VERSION or later"
+    echo "⚙️  Visit: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+    exit 1
+fi
+
+echo "✓ AWS CLI version check passed"
+
 # Update version information before deployment
 echo "Updating version information..."
 npm run version:update
