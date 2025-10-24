@@ -62,6 +62,30 @@ else
   echo "No products knowledge base found with name: ${APP_NAME}-products"
 fi
 
+# Find and delete tariffs knowledge base
+existing_tariffs_kb=$(aws bedrock-agent list-knowledge-bases --query "knowledgeBaseSummaries[?name=='${APP_NAME}-tariffs'].knowledgeBaseId" --output text)
+
+if [[ -n "$existing_tariffs_kb" && "$existing_tariffs_kb" != "None" ]]; then
+  echo "Found tariffs knowledge base: $existing_tariffs_kb"
+  
+  # Delete tariffs data sources first
+  echo "Deleting tariffs data sources..."
+  tariffs_data_sources=$(aws bedrock-agent list-data-sources --knowledge-base-id "$existing_tariffs_kb" --query "dataSourceSummaries[].dataSourceId" --output text)
+  
+  for ds_id in $tariffs_data_sources; do
+    if [[ -n "$ds_id" && "$ds_id" != "None" ]]; then
+      echo "Deleting tariffs data source: $ds_id"
+      aws bedrock-agent delete-data-source --knowledge-base-id "$existing_tariffs_kb" --data-source-id "$ds_id" || echo "Failed to delete tariffs data source $ds_id"
+    fi
+  done
+  
+  # Delete tariffs knowledge base
+  echo "Deleting tariffs knowledge base: $existing_tariffs_kb"
+  aws bedrock-agent delete-knowledge-base --knowledge-base-id "$existing_tariffs_kb" || echo "Failed to delete tariffs knowledge base"
+else
+  echo "No tariffs knowledge base found with name: ${APP_NAME}-tariffs"
+fi
+
 # Delete S3 vector resources for help
 echo "Deleting S3 help vector index..."
 HELP_S3_INDEX_NAME="${APP_NAME}-help-index-${AWS_REGION}"
@@ -98,6 +122,24 @@ aws s3vectors delete-vector-bucket \
 
 echo "Deleted products vector bucket: $PRODUCTS_VECTOR_BUCKET_NAME"
 
+# Delete S3 vector resources for tariffs
+echo "Deleting S3 tariffs vector index..."
+TARIFFS_S3_INDEX_NAME="${APP_NAME}-tariffs-index-${AWS_REGION}"
+TARIFFS_VECTOR_BUCKET_NAME="${APP_NAME}-tariffs-vectors-${AWS_REGION}"
+
+# Delete tariffs vector index first
+aws s3vectors delete-index \
+  --vector-bucket-name "$TARIFFS_VECTOR_BUCKET_NAME" \
+  --index-name "$TARIFFS_S3_INDEX_NAME" 2>/dev/null || echo "Tariffs index may not exist or already deleted"
+
+echo "Deleted tariffs vector index: $TARIFFS_S3_INDEX_NAME"
+
+# Delete tariffs vector bucket
+aws s3vectors delete-vector-bucket \
+  --vector-bucket-name "$TARIFFS_VECTOR_BUCKET_NAME" 2>/dev/null || echo "Tariffs vector bucket may not exist or already deleted"
+
+echo "Deleted tariffs vector bucket: $TARIFFS_VECTOR_BUCKET_NAME"
+
 # Delete IAM role
 ROLE_NAME="BedrockKBRole-${APP_NAME}"
 echo "Deleting IAM role: $ROLE_NAME"
@@ -116,6 +158,7 @@ echo "Deleted IAM role: $ROLE_NAME"
 # Clean up temp files
 rm -f /tmp/kb-outputs/help-kb-id.txt /tmp/kb-outputs/help-kb-arn.txt /tmp/kb-outputs/help-data-source-id.txt
 rm -f /tmp/kb-outputs/products-kb-id.txt /tmp/kb-outputs/products-kb-arn.txt /tmp/kb-outputs/products-data-source-id.txt
+rm -f /tmp/kb-outputs/tariffs-kb-id.txt /tmp/kb-outputs/tariffs-kb-arn.txt /tmp/kb-outputs/tariffs-data-source-id.txt
 rm -f /tmp/trust-policy.json /tmp/role-policy.json
 
 echo "Cleanup completed for: $APP_NAME"

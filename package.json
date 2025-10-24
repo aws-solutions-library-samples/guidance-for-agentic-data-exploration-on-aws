@@ -25,9 +25,9 @@
     "vitest": "^3.1.2"
   },
   "dependencies": {
-    "@cdklabs/generative-ai-cdk-constructs": "^0.1.309",
-    "aws-cdk-lib": "2.1030.0",
-    "constructs": "^10.2.0"
+    "@cdklabs/generative-ai-cdk-constructs": "^0.1.311",
+    "aws-cdk-lib": "2.220.0",
+    "constructs": "^10.3.0"
   },
   "prettier": {
     "printWidth": 120

@@ -15,11 +15,9 @@ if [ -z "$AWS_REGION" ]; then
   export AWS_REGION
 fi
 
-# set EMBEDDING_MODEL if not already set
-if [ -z "$EMBEDDING_MODEL" ]; then
-    EMBEDDING_MODEL="arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.titan-embed-text-v2:0"
-    export EMBEDDING_MODEL
-fi
+# set EMBEDDING_MODEL
+EMBEDDING_MODEL="arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.titan-embed-text-v2:0"
+export EMBEDDING_MODEL
 
 # Get account ID and region
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
