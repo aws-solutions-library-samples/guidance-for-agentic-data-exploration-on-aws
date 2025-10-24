@@ -81,26 +81,12 @@ If used in place of Claude Sonnet 4:
 
 **Required AWS services and configurations:**
 
-### 1. **Bedrock Model Access**: Enable foundation models in your AWS account/region:
-   - Amazon Nova Premier \*
-   - Amazon Nova Pro \*
-   - Amazon Nova Lite \*
-   - Claude 4.5 Sonnet \*
-   - Claude 4 Sonnet \*
-   - Claude 3.7 Sonnet \*
-   - Claude 3.5 Sonnet v2 \*
-   - Amazon Titan Text Embeddings v2 \*\*
-
-   **\*** At Least One Required
-
-   **\*\*** Required
-
-### 2. **Bedrock Model Invocation Logging**:
+### 1. **Bedrock Model Invocation Logging**:
 
    - Enable [Bedrock model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html)
    - Set CloudWatch Logs destination to `/aws/bedrock/ModelInvocation`
 
-### 3. **IAM Permissions**: See [IAM Requirements](docs/kb/IAM_REQUIREMENTS.md) for comprehensive permissions guide.
+### 2. **IAM Permissions**: See [IAM Requirements](docs/kb/IAM_REQUIREMENTS.md) for comprehensive permissions guide.
 
 ## Notes
 
