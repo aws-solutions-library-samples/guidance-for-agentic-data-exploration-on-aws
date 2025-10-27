@@ -48,8 +48,9 @@ EOF
 # Create role
 if aws iam create-role \
   --role-name "$ROLE_NAME" \
-  --assume-role-policy-document file:///tmp/trust-policy.json 2>/dev/null; then
-  echo "Created new IAMrole: $ROLE_NAME"
+  --assume-role-policy-document file:///tmp/trust-policy.json \
+  --output json > /dev/null 2>&1; then
+  echo "Created new IAM role: $ROLE_NAME"
   ROLE_CREATED=true
 else
   echo "Role $ROLE_NAME already exists"
@@ -109,10 +110,10 @@ cat > /tmp/role-policy.json <<EOF
         "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-help-vectors-${AWS_REGION}/index/${APP_NAME}-help-index-${AWS_REGION}",
         "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-products-vectors-${AWS_REGION}",
         "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-products-vectors-${AWS_REGION}/*",
-        "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-products-vectors/index/${APP_NAME}-products-index-${AWS_REGION}",
+        "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-products-vectors-${AWS_REGION}/index/${APP_NAME}-products-index-${AWS_REGION}",
         "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-tariffs-vectors-${AWS_REGION}",
         "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-tariffs-vectors-${AWS_REGION}/*",
-        "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-tariffs-vectors/index/${APP_NAME}-tariffs-index-${AWS_REGION}"
+        "arn:aws:s3vectors:${AWS_REGION}:${ACCOUNT}:bucket/${APP_NAME}-tariffs-vectors-${AWS_REGION}/index/${APP_NAME}-tariffs-index-${AWS_REGION}"
       ]
     }
   ]
@@ -287,7 +288,8 @@ EOF
   }
 }
 EOF
-      )" 2>&1)
+      )" \
+      --output json 2>&1)
 
     if [[ $? -eq 0 ]]; then
       echo "Knowledge base created successfully"
@@ -340,7 +342,8 @@ EOF
   }
 }
 EOF
-      )" 2>&1)
+      )" \
+      --output json 2>&1)
 
     if [[ $? -eq 0 ]]; then
       echo "Products knowledge base created successfully"
@@ -361,10 +364,10 @@ fi
 mkdir -p /tmp/kb-outputs
 
 # Help KB outputs
-help_arn=$(echo $help_json | jq '.knowledgeBase.knowledgeBaseArn' -r)
+help_arn=$(echo "$help_json" | jq -r '.knowledgeBase.knowledgeBaseArn')
 echo -n $help_arn > /tmp/kb-outputs/help-kb-arn.txt
 
-help_id=$(echo $help_json | jq '.knowledgeBase.knowledgeBaseId' -r)
+help_id=$(echo "$help_json" | jq -r '.knowledgeBase.knowledgeBaseId')
 echo -n $help_id > /tmp/kb-outputs/help-kb-id.txt
 
 echo "Help Knowledge Base created:"
@@ -372,10 +375,10 @@ echo "  ID: $help_id"
 echo "  ARN: $help_arn"
 
 # Products KB outputs
-products_arn=$(echo $products_json | jq '.knowledgeBase.knowledgeBaseArn' -r)
+products_arn=$(echo "$products_json" | jq -r '.knowledgeBase.knowledgeBaseArn')
 echo -n $products_arn > /tmp/kb-outputs/products-kb-arn.txt
 
-products_id=$(echo $products_json | jq '.knowledgeBase.knowledgeBaseId' -r)
+products_id=$(echo "$products_json" | jq -r '.knowledgeBase.knowledgeBaseId')
 echo -n $products_id > /tmp/kb-outputs/products-kb-id.txt
 
 echo "Products Knowledge Base created:"
@@ -418,7 +421,8 @@ EOF
   }
 }
 EOF
-      )" 2>&1)
+      )" \
+      --output json 2>&1)
 
     if [[ $? -eq 0 ]]; then
       echo "Tariffs knowledge base created successfully"
@@ -436,10 +440,10 @@ EOF
 fi
 
 # Tariffs KB outputs
-tariffs_arn=$(echo $tariffs_json | jq '.knowledgeBase.knowledgeBaseArn' -r)
+tariffs_arn=$(echo "$tariffs_json" | jq -r '.knowledgeBase.knowledgeBaseArn')
 echo -n $tariffs_arn > /tmp/kb-outputs/tariffs-kb-arn.txt
 
-tariffs_id=$(echo $tariffs_json | jq '.knowledgeBase.knowledgeBaseId' -r)
+tariffs_id=$(echo "$tariffs_json" | jq -r '.knowledgeBase.knowledgeBaseId')
 echo -n $tariffs_id > /tmp/kb-outputs/tariffs-kb-id.txt
 
 echo "Tariffs Knowledge Base created:"
@@ -470,9 +474,10 @@ else
 }
 EOF
     )" \
-    --data-deletion-policy "RETAIN")
+    --data-deletion-policy "RETAIN" \
+    --output json)
 
-  help_data_source_id=$(echo $help_data_source_json | jq '.dataSource.dataSourceId' -r)
+  help_data_source_id=$(echo "$help_data_source_json" | jq -r '.dataSource.dataSourceId')
   echo "Help data source created: $help_data_source_id"
 fi
 
@@ -503,9 +508,10 @@ else
 }
 EOF
     )" \
-    --data-deletion-policy "RETAIN")
+    --data-deletion-policy "RETAIN" \
+    --output json)
 
-  products_data_source_id=$(echo $products_data_source_json | jq '.dataSource.dataSourceId' -r)
+  products_data_source_id=$(echo "$products_data_source_json" | jq -r '.dataSource.dataSourceId')
   echo "Products data source created: $products_data_source_id"
 fi
 
@@ -536,9 +542,10 @@ else
 }
 EOF
     )" \
-    --data-deletion-policy "RETAIN")
+    --data-deletion-policy "RETAIN" \
+    --output json)
 
-  tariffs_data_source_id=$(echo $tariffs_data_source_json | jq '.dataSource.dataSourceId' -r)
+  tariffs_data_source_id=$(echo "$tariffs_data_source_json" | jq -r '.dataSource.dataSourceId')
   echo "Tariffs data source created: $tariffs_data_source_id"
 fi
 

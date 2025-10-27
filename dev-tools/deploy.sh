@@ -67,7 +67,7 @@ DEPLOY_GRAPH_DB=false
 
 # Knowledge Base configuration
 export APP_NAME="ai-data-explorer"
-export EMBEDDING_MODEL="arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
+export EMBEDDING_MODEL="arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.titan-embed-text-v2:0"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -148,6 +148,13 @@ if [ "$DEPLOY_GRAPH_DB" = true ]; then
   if [ -f "/tmp/graph-db-outputs/neptune-endpoint.txt" ] && [ -f "/tmp/graph-db-outputs/neptune-sg-id.txt" ]; then
     NEPTUNE_HOST=$(cat /tmp/graph-db-outputs/neptune-endpoint.txt)
     NEPTUNE_SG=$(cat /tmp/graph-db-outputs/neptune-sg-id.txt)
+    
+    # Read VPC ID if not already set and file exists
+    if [ -z "$VPC_ID" ] && [ -f "/tmp/graph-db-outputs/vpc-id.txt" ]; then
+      VPC_ID=$(cat /tmp/graph-db-outputs/vpc-id.txt)
+      echo "Using deployed VPC: $VPC_ID"
+    fi
+    
     echo "Using deployed Neptune: $NEPTUNE_HOST (SG: $NEPTUNE_SG)"
   fi
 fi
@@ -206,22 +213,21 @@ fi
 
 CDK_COMMAND="CDK_DOCKER=podman npx cdk deploy --app \"npx tsx bin/cdk-app.ts\""
 
-# Add VPC/Neptune context if provided
+# Add VPC context if provided
 if [ -n "$VPC_ID" ]; then
   echo "** Deploying with existing VPC"
-  
-  CDK_COMMAND="$CDK_COMMAND \
-    --context vpcId=$VPC_ID \
-    --context neptuneSgId=$NEPTUNE_SG \
-    --context neptuneHost=$NEPTUNE_HOST"
+  CDK_COMMAND="$CDK_COMMAND --context vpcId=$VPC_ID"
 else
   echo "Deploying with new VPC"
 fi
 
-# Add graph database context if Neptune is available
+# Add Neptune/Graph database context if available
 if [ -n "$NEPTUNE_HOST" ]; then
   echo "** Deploying with Graph Database integration"
-  CDK_COMMAND="$CDK_COMMAND --context withGraphDb=true"
+  CDK_COMMAND="$CDK_COMMAND \
+    --context withGraphDb=true \
+    --context neptuneHost=$NEPTUNE_HOST \
+    --context neptuneSgId=$NEPTUNE_SG"
 fi
 
 # Add guardrails context (always enabled now)

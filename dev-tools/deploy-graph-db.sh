@@ -68,6 +68,7 @@ eval $CDK_COMMAND
 NEPTUNE_CLUSTER_ID=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbNeptuneClusterId'].OutputValue" --output text 2>/dev/null || echo "Not available")
 NEPTUNE_ENDPOINT=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbNeptuneEndpoint'].OutputValue" --output text 2>/dev/null || echo "Not available")
 NEPTUNE_SG_ID=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbNeptuneSecurityGroupId'].OutputValue" --output text 2>/dev/null || echo "Not available")
+VPC_ID_OUTPUT=$(aws cloudformation describe-stacks --stack-name DataExplorerGraphDbStack --query "Stacks[0].Outputs[?ExportName=='GraphDbVpcId'].OutputValue" --output text 2>/dev/null || echo "Not available")
 
 echo ""
 echo "🎉 Graph Database Stack Deployment Complete!"
@@ -75,11 +76,13 @@ echo "=============================================="
 echo "  📊 Neptune Cluster ID: $NEPTUNE_CLUSTER_ID"
 echo "  🌐 Neptune Endpoint: $NEPTUNE_ENDPOINT"
 echo "  🔒 Neptune Security Group: $NEPTUNE_SG_ID"
+echo "  🏠 VPC ID: $VPC_ID_OUTPUT"
 echo ""
 
 # Save outputs to files for main deployment script
 echo -n "$NEPTUNE_CLUSTER_ID" > /tmp/graph-db-outputs/neptune-cluster-id.txt
 echo -n "$NEPTUNE_ENDPOINT" > /tmp/graph-db-outputs/neptune-endpoint.txt
 echo -n "$NEPTUNE_SG_ID" > /tmp/graph-db-outputs/neptune-sg-id.txt
+echo -n "$VPC_ID_OUTPUT" > /tmp/graph-db-outputs/vpc-id.txt
 
 echo "Graph DB outputs saved to /tmp/graph-db-outputs/"

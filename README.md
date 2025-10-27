@@ -83,8 +83,8 @@ If used in place of Claude Sonnet 4:
 
 ### 1. **Bedrock Model Invocation Logging**:
 
-   - Enable [Bedrock model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html)
-   - Set CloudWatch Logs destination to `/aws/bedrock/ModelInvocation`
+- Enable [Bedrock model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html)
+- Set CloudWatch Logs destination to `/aws/bedrock/ModelInvocation`
 
 ### 2. **IAM Permissions**: See [IAM Requirements](docs/kb/IAM_REQUIREMENTS.md) for comprehensive permissions guide.
 
@@ -98,7 +98,7 @@ This Guidance is supported in AWS regions where Amazon Bedrock, Amazon S3 Vector
 - US East (Ohio) - us-east-2
 - US West (Oregon) - us-west-2
 - EU Central 1 (Frankfurt) - eu-central-1
-- Asia Pacific (Sydney)	- ap-southeast-2
+- Asia Pacific (Sydney) - ap-southeast-2
 
 ### Service Limits
 
@@ -414,19 +414,6 @@ The application is region-agnostic and can be deployed to any AWS region that su
    ./dev-tools/deploy.sh
    ```
 
-4. **Update Cognito values after deployment:**
-
-   ```bash
-   ./dev-tools/update-cognito-env.sh
-   ```
-
-**Optional: If using Neptune integration:**
-
-- Update `./dev-tools/deploy-local.sh` with your region-specific Neptune cluster endpoint
-- Or pass Neptune parameters directly to the deploy script
-
-The application automatically adapts to the target region using environment variables and CDK's region detection.
-
 ## Deployment Validation
 
 After deployment, verify the system is working correctly:
@@ -448,11 +435,10 @@ After deployment, verify the system is working correctly:
 
    ```bash
    # Test agent service health
-   SERVICE_URL=$(aws cloudformation describe-stacks --stack-name DataExplorerAgentsStack --query "Stacks[0].Outputs[?ExportName=='ALBEndpoint'].OutputValue" --output text)
-   curl $SERVICE_URL/health
+   curl $APP_URL/health
 
    # Test basic query
-   curl -X POST $SERVICE_URL/query \
+   curl -X POST $APP_URL/query-streaming-with-events \
      -H 'Content-Type: application/json' \
      -d '{"prompt": "Hello, can you help me?"}'
    ```
@@ -534,13 +520,13 @@ curl -X POST \
 
 # Call the streaming endpoint
 curl -X POST \
-  $SERVICE_URL/query-streaming \
+  $SERVICE_URL/query-streaming-with-events \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "Solve: 2x + 5 = 15"}'
 
 # Call the schema agent for database conversion
 curl -X POST \
-  $SERVICE_URL/query-streaming \
+  $SERVICE_URL/query-streaming-with-events \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "Convert this SQL schema to a graph model: CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100)); CREATE TABLE orders (id INT PRIMARY KEY, user_id INT, FOREIGN KEY (user_id) REFERENCES users(id));"}'
 ```
@@ -926,13 +912,13 @@ docker info
 
 ## Revisions
 
-| Version | Date         | Changes                                       |
-| ------- | ------------ | --------------------------------------------- |
-| 2.0.0   | October 13 2025 | Now built on Strands + AgentCore |
-| 1.0.3   | July 23 2025 | Bug fixes                                     |
-| 1.0.2   | July 11 2025 | Bug fixes                                     |
-| 1.0.1   | May 23 2025  | Bug fixes                                     |
-| 1.0.0   | May 15 2025  | Initial release with core agent functionality |
+| Version | Date            | Changes                                       |
+| ------- | --------------- | --------------------------------------------- |
+| 2.0.0   | October 13 2025 | Now built on Strands + AgentCore              |
+| 1.0.3   | July 23 2025    | Bug fixes                                     |
+| 1.0.2   | July 11 2025    | Bug fixes                                     |
+| 1.0.1   | May 23 2025     | Bug fixes                                     |
+| 1.0.0   | May 15 2025     | Initial release with core agent functionality |
 
 **Disclaimer:**
 

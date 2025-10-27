@@ -151,12 +151,12 @@ SERVICE_URL=$(aws cloudformation describe-stacks --stack-name DataExplorerAgents
 **Basic API Calls:**
 ```bash
 # Standard query
-curl -X POST http://$SERVICE_URL/query \
+curl -X POST http://$SERVICE_URL/query-streaming-with-events \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in London?"}'
 
 # Streaming response
-curl -X POST http://$SERVICE_URL/query-streaming \
+curl -X POST http://$SERVICE_URL/query-streaming-with-events \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "Solve this equation: 3x + 7 = 22"}'
 ```
@@ -385,10 +385,11 @@ The system uses dynamic configuration loading:
 ### API Reference
 
 **Endpoints:**
-- `POST /query` - Standard query processing
-- `POST /query-streaming` - Streaming response
+- `POST /query-streaming-with-events` - Main query processing with streaming response
 - `GET /conversation` - Get conversation history
 - `POST /clear-conversation` - Clear history
+- `GET /health` - Health check
+- `GET /version` - Version information
 - `GET /health` - Health check
 
 **Request Format:**
