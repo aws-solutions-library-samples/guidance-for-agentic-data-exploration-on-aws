@@ -622,11 +622,18 @@ export class GraphDbStack extends cdk.Stack {
     dataLoaderLambda.addToRolePolicy(createDynamoDBPolicy(bulkLoadLogTable.tableName));
     dataLoaderLambda.addToRolePolicy(createS3Policy(etlDataBucket.bucketName));
 
-    // S3 notification for data loading
+    // S3 notification for data loading - vertices
     etlDataBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
       new s3n.LambdaDestination(dataLoaderLambda),
       { prefix: 'output/' }
+    );
+
+    // S3 notification for data loading - edges
+    etlDataBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3n.LambdaDestination(dataLoaderLambda),
+      { prefix: 'output-edges/' }
     );
 
     // Save outputs to temp files
