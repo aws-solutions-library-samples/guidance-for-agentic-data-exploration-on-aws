@@ -458,10 +458,10 @@ After deployment, verify the system is working correctly:
    - Log in with the Cognito user credentials created during deployment
 
 2. **Load demo graph schema**
-   - Navigate to the Graph Schema Editor from the side navigation
+   - Navigate to Set Graph Schema from the side navigation
    - Open the local file `data/demo_graph.txt`
    - Copy the content into the Graph Schema Editor
-   - Select "Save Schema"
+   - Select "Save"
 
 ![Graph Schema Editor](/docs/docs-schema.png?raw=true "Graph Schema Editor")
 
@@ -469,12 +469,12 @@ After deployment, verify the system is working correctly:
    - Navigate to the Data Explorer
    - Select the File Upload icon in the chat window
    - Upload all CSV files located in the `data/csv` directory
-   - Choose "Save to Graph" after upload
+   - Choose "Add to Graph DB" after upload
 
 ![File Upload](/docs/docs-fupload.png?raw=true "File Upload")
 
 4. **Monitor data processing**
-   - Navigate to the Data Classifier
+   - Navigate to the ETL Processor
    - Monitor the status of uploaded files
    - Wait for all files to show "processed" status
 
@@ -690,7 +690,7 @@ Test the complete system locally with Bedrock Guardrails (optional):
 
 #### UI Development
 
-Run the UI service locally for development against AWS deployed services:
+Run the UI service locally for development:
 
 **Local Development (Default):**
 
@@ -701,6 +701,7 @@ Run the UI service locally for development against AWS deployed services:
 - Automatically starts local agent service on port 8000
 - Starts UI on port 5000
 - UI connects to local agent service
+- Limited functionality (no Neptune, no knowledge base)
 
 **AWS Backend Development:**
 
@@ -708,9 +709,10 @@ Run the UI service locally for development against AWS deployed services:
 ./dev-tools/run-ui-local.sh --aws
 ```
 
-- Uses deployed AWS agent service
+- Uses deployed AWS agent service via CloudFront (HTTPS)
 - Starts only UI on port 5000
-- UI connects to AWS agent service
+- Full functionality including Neptune graph database and knowledge base
+- Requires prior AWS deployment: `./dev-tools/deploy.sh`
 
 #### Agent Service Testing
 
@@ -746,6 +748,21 @@ SERVICE_URL=127.0.0.1:8000
 ```
 
 and you can use the curl commands above to test locally.
+
+**File Upload Testing:**
+
+Test file upload functionality locally:
+
+```bash
+# Start complete local system
+./dev-tools/run-all-local.sh
+
+# Access web interface at http://localhost:5000
+# Upload files from data/csv/ directory
+# Test actions: "Analyze" (works fully), "Add to Graph DB" (simulated locally)
+```
+
+**Note**: "Add to Graph DB" requires Neptune deployment. Locally, files are copied to `data/upload/` with informational messages.
 
 **Guardrails Testing:**
 

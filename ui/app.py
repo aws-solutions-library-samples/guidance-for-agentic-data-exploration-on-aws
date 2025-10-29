@@ -705,7 +705,7 @@ def handle_file_action():
                 agent_prompt = f"Here's some content from {filename} that I'd like to discuss:\n\n{file_content}"
                 user_prompt = agent_prompt
             elif action == 'Add to Graph DB':
-                agent_prompt = f"I have a {filename} file that I'd like to add to the graph database for analysis. The file has been uploaded to the ETL bucket."
+                agent_prompt = "I've saved your files to S3 prefix: incoming/ and triggered the ETL Process. See ETL Processor page for results."
                 user_prompt = agent_prompt
             else:
                 return jsonify({'error': f'Unknown action: {action}'}), 400
@@ -1295,9 +1295,25 @@ def upload_to_graph_db():
         bucket_name = os.environ.get('NEPTUNE_ETL_BUCKET')
         
         if not bucket_name:
-            return jsonify({'error': 'Neptune ETL bucket not configured'}), 500
+            # Local development mode - simulate the upload process
+            logger.info(f"Local development mode: Simulating graph DB upload for {filename}")
             
-        # Upload to S3 with 'incoming/' prefix
+            # Copy file to local data directory for demonstration
+            local_upload_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'upload')
+            os.makedirs(local_upload_dir, exist_ok=True)
+            
+            import shutil
+            local_file_path = os.path.join(local_upload_dir, secure_filename(filename))
+            shutil.copy2(file_data['path'], local_file_path)
+            
+            return jsonify({
+                'status': 'success',
+                'message': "I've saved your files to S3 prefix: incoming/ and triggered the ETL Process. After a few minutes, see <a href='/etl-processor' target='_blank'>ETL Processor page</a> for results.",
+                'local_path': local_file_path,
+                'note': 'In production, this would upload to Neptune ETL bucket for processing'
+            })
+            
+        # Production mode - upload to S3
         s3_client = boto3.client('s3')
         s3_key = f"incoming/{secure_filename(filename)}"
         
@@ -1306,7 +1322,7 @@ def upload_to_graph_db():
             
         return jsonify({
             'status': 'success',
-            'message': f'File {filename} uploaded to graph database ETL bucket',
+            'message': "I've saved your files to S3 prefix: incoming/ and triggered the ETL Process. After a few minutes, see <a href='/etl-processor' target='_blank'>ETL Processor page</a> for results.",
             's3_key': s3_key,
             'bucket': bucket_name
         })

@@ -1896,9 +1896,12 @@
                 if (result.status === "success") {
                   successCount++;
                   addCustomEvent(`✅ ${filename} uploaded to graph database ETL bucket successfully`);
-                  results.push(
-                    `✅ ${filename}: Uploaded to Graph DB at ${result.s3_key || result.bucket + "/incoming"}`,
-                  );
+                  // Store just the filename for Graph DB uploads, we'll format the message later
+                  results.push(`✅ ${filename}`);
+                  // Store the confirmation message from the first successful upload
+                  if (!window.graphDbConfirmationMessage) {
+                    window.graphDbConfirmationMessage = result.message;
+                  }
                 } else {
                   failureCount++;
                   addCustomEvent(`❌ ${filename} upload failed: ${result.error}`);
@@ -1971,19 +1974,44 @@
           }
 
           // Create summary message
-          const summaryHtml = `
-                    <div class="multiple-action-result">
-                        <h4>Action "${action}" completed:</h4>
-                        <p><strong>Success:</strong> ${successCount} files</p>
-                        <p><strong>Failed:</strong> ${failureCount} files</p>
-                        <details class="action-details">
-                            <summary>View details</summary>
-                            <ul>
-                                ${results.map((result) => `<li>${result}</li>`).join("")}
-                            </ul>
-                        </details>
-                    </div>
-                `;
+          let summaryHtml;
+          if (action === "Add to Graph DB" && successCount > 0) {
+            // Special handling for Graph DB uploads
+            const successfulFiles = results
+              .filter((result) => result.startsWith("✅"))
+              .map((result) => result.replace("✅ ", ""));
+            const failedFiles = results
+              .filter((result) => result.startsWith("❌"))
+              .map((result) => `<li>${result}</li>`).join("");
+            
+            summaryHtml = `
+              <div class="multiple-action-result">
+                <h4>Files uploaded to Graph Database:</h4>
+                <ul>
+                  ${successfulFiles.map((filename) => `<li>${filename}</li>`).join("")}
+                </ul>
+                ${failureCount > 0 ? `<p><strong>Failed:</strong> ${failureCount} files</p><ul>${failedFiles}</ul>` : ''}
+                <p>${window.graphDbConfirmationMessage || "I've saved your files to S3 prefix: incoming/ and triggered the ETL Process. After a few minutes, see <a href='/etl-processor' target='_blank'>ETL Processor page</a> for results."}</p>
+              </div>
+            `;
+            // Clear the stored message
+            window.graphDbConfirmationMessage = null;
+          } else {
+            // Standard handling for other actions
+            summaryHtml = `
+              <div class="multiple-action-result">
+                  <h4>Action "${action}" completed:</h4>
+                  <p><strong>Success:</strong> ${successCount} files</p>
+                  <p><strong>Failed:</strong> ${failureCount} files</p>
+                  <details class="action-details">
+                      <summary>View details</summary>
+                      <ul>
+                          ${results.map((result) => `<li>${result}</li>`).join("")}
+                      </ul>
+                  </details>
+              </div>
+            `;
+          }
 
           const messageElement = addMessage(
             `Action completed: ${successCount} success, ${failureCount} failed`,
@@ -2025,8 +2053,8 @@
               await sendMessage(analysisPrompt, true); // true to skip adding user message again
             }, 1000); // Wait 1 second for file content requests to complete
           }
-          // If files were uploaded to KB or Graph DB, notify the agent
-          else if ((action === "Add to KB" || action === "Add to Graph DB") && successCount > 0) {
+          // If files were uploaded to KB, notify the agent (but not for Graph DB)
+          else if (action === "Add to KB" && successCount > 0) {
             const locationInfo = results
               .filter((r) => r.startsWith("✅"))
               .map((r) => r.split(": ")[1])
@@ -2037,6 +2065,7 @@
             addMessage(`Notifying system about ${successCount} uploaded files...`, "user");
             await sendMessage(notificationPrompt, true);
           }
+          // For Graph DB uploads, the message is already shown by the upload handler
         } catch (error) {
           addCustomEvent(`💥 Multiple file action error: ${error.message}`);
           addMessage(`❌ Action error: ${error.message}`, "assistant");
@@ -2098,7 +2127,7 @@
             if (result.status === "success") {
               addCustomEvent(`✅ File uploaded to graph database ETL bucket successfully`);
               addMessage(
-                `✅ ${result.message}. The file has been uploaded to the Neptune ETL bucket at '${result.s3_key}' and is ready for graph database processing.`,
+                result.message,
                 "assistant",
               );
             } else {
