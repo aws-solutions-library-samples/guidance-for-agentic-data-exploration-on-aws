@@ -8,6 +8,7 @@ VPC_ID=""                                   # Your VPC ID
 NEPTUNE_SG=""                               # Your Neptune security group ID
 NEPTUNE_HOST=""                             # Your Neptune endpoint
 GUARDRAIL_MODE="enforce"                    # shadow or enforce
+DEPLOY_GRAPH_DB="true"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -44,9 +45,12 @@ DEPLOY_ARGS=(
     --vpc-id "$VPC_ID"
     --neptune-sg "$NEPTUNE_SG"
     --neptune-host "$NEPTUNE_HOST"
-
     --guardrail-mode "$GUARDRAIL_MODE"
 )
 
+if [[ "$DEPLOY_GRAPH_DB" == true ]]; then
+    DEPLOY_ARGS+=(--with-graph-db)
+    echo $DEPLOY_ARGS
+fi
 # Call the main deploy script with predefined values and pass through any overrides
 "$SCRIPT_DIR/deploy.sh" "${DEPLOY_ARGS[@]}" "$@"

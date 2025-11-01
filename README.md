@@ -5,17 +5,18 @@
 1. [Overview](#overview)
    - [Cost](#cost)
 2. [Prequisites](#prequisites)
-3. [CloudShell Deployment](#cloudshell-deployment)
-4. [Local Deployment (Mac / Linux)](#local-deployment-mac--linux)
-5. [Deployment Validation](#deployment-validation)
-6. [Running the Guidance](#running-the-guidance)
-7. [Evaluation and Testing](#evaluation-and-testing)
-8. [Tracing and Observability](#tracing-and-observability)
-9. [Next Steps](#next-steps)
-10. [Cleanup](#cleanup)
-11. [Common issues, and debugging](#common-issues-and-debugging)
-12. [Revisions](#revisions)
-13. [Authors](#authors)
+3. [Notes](#notes)
+4. [CloudShell Deployment](#cloudshell-deployment)
+5. [Local Deployment (Mac / Linux)](#local-deployment-mac--linux)
+6. [Deployment Validation](#deployment-validation)
+7. [Running the Guidance](#running-the-guidance)
+8. [Evaluation and Testing](#evaluation-and-testing)
+9. [Tracing and Observability](#tracing-and-observability)
+10. [Next Steps](#next-steps)
+11. [Cleanup](#cleanup)
+12. [Common issues, and debugging](#common-issues-and-debugging)
+13. [Revisions](#revisions)
+14. [Authors](#authors)
 
 ## Overview
 
@@ -148,271 +149,88 @@ This Guidance uses AWS CDK. If you are using AWS CDK for the first time, CDK wil
 
 ### Prerequisites
 
-1. **Node.js and npm** (version 21.x or higher)
+- **Node.js 21.x+** and **npm**: `brew install node`
+- **AWS CLI 2.27.51+**: [Install guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) + `aws configure`
+- **AWS CDK CLI**: `npm install -g aws-cdk`
+- **Python 3.13+**: `brew install python`
+- **Container runtime**: [Podman](https://podman.io/) or [Docker](https://www.docker.com/)
 
-   ```bash
-   # For macOS
-   brew install node
-   ```
-
-2. **AWS CLI** (version 2.27.51 or higher)
-
-   ```bash
-   # For macOS
-   curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
-   sudo installer -pkg AWSCLIV2.pkg -target /
-
-   # Configure with your credentials
-   aws configure
-   ```
-
-3. **AWS CDK CLI**
-
-   ```bash
-   npm install -g aws-cdk
-   ```
-
-4. **Python** (version 3.13.x or higher)
-
-   **Without** Homebrew
-
-   ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   python3 --version
-   ```
-
-   **With** Homebrew
-
-   ```bash
-   brew install python
-   python3 --version
-   ```
-
-5. Either **[Podman](https://podman.io/)** or **[Docker](https://www.docker.com/)** installed and running
-
-### Deployment Steps
-
-1. **Clone the repository**
-
-   ```bash
-   git -b v2 clone https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws.git
-   cd guidance-for-agentic-data-exploration-on-aws
-   ```
-
-2. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-3. **Bootstrap AWS environment** (if not already done):
-
-   ```bash
-   npx cdk bootstrap
-   ```
-
-4. **Start container runtime** (one time if not already done):
-
-   ```bash
-   podman machine init
-   podman machine start
-   ```
-
-5. **Deploy:**
-
-   ```bash
-   # Standard deployment
-   ./dev-tools/deploy.sh
-
-   # With Neptune graph database
-   ./dev-tools/deploy.sh --with-graph-db
-   ```
-
-### Deployment Configuration Options
-
-#### Option A: Quick Deployment (New VPC)
+### Quick Start
 
 ```bash
-# Deploy with new VPC, no graph database
+# 1. Clone and setup
+git clone -b v2 https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws.git
+cd guidance-for-agentic-data-exploration-on-aws
+npm install
+
+# 2. Bootstrap AWS (one-time)
+npx cdk bootstrap
+
+# 3. Start container runtime (one-time)
+podman machine init && podman machine start
+
+# 4. Deploy
 ./dev-tools/deploy.sh
-
-# Deploy with new VPC and Neptune graph database
-./dev-tools/deploy.sh --with-graph-db
-
-# Deploy with new VPC, graph database, and guardrails
-./dev-tools/deploy.sh --with-graph-db --guardrail-mode enforce
 ```
 
-#### Option B: Custom Configuration
+### Deployment Options
+
+| Configuration                                                                                    | Command                                                                                                                            |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **New&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                     | `./dev-tools/deploy.sh`                                                                                                            |
+| **New&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                           | `./dev-tools/deploy.sh --with-graph-db`                                                                                            |
+| **Existing&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --vpc-id vpc-123`                                                                                           |
+| **Existing&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                      | `./dev-tools/deploy.sh --vpc-id vpc-123 --with-graph-db`                                                                           |
+| **Existing&nbsp;VPC&nbsp;and&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --vpc-id vpc-123 --neptune-sg sg-456 --neptune-host cluster.neptune.amazonaws.com --guardrail-mode enforce` |
+| **Guardrails&nbsp;Mode**<br/>&nbsp;&nbsp;&nbsp;**enforce** blocks<br/>&nbsp;&nbsp;&nbsp;**shadow** _(default)_ logs only | `./dev-tools/deploy.sh --guardrail-mode enforce`                                                                                   |
+
+### Advanced Configuration
+
+#### Template-based Configuration
 
 ```bash
-# Copy and customize the template
+# Copy and customize the deployment template
 cp ./dev-tools/deploy-local-template.sh ./dev-tools/deploy-local.sh
-
-# Edit deploy-local.sh with your VPC/Neptune/Guardrails settings
-# Then deploy with your custom configuration
+# Edit deploy-local.sh with your settings, then run:
 ./dev-tools/deploy-local.sh
 ```
 
-#### Option C: Manual Parameters
+#### VPC Requirements (for existing VPC)
+
+Your VPC must have:
+
+- **Public subnets** (2+ AZs) with Internet Gateway routes and `aws-cdk:subnet-type = Public` tags
+- **Private subnets** (2+ AZs) with NAT Gateway routes and `aws-cdk:subnet-type = Private` tags
+- **Internet Gateway** and **NAT Gateway(s)** properly configured
+
+#### Neptune Integration
 
 ```bash
-# Deploy with existing VPC and Neptune
-./dev-tools/deploy.sh \
-  --vpc-id vpc-123 \
-  --neptune-sg sg-456 \
-  --neptune-host cluster.neptune.amazonaws.com \
-  --guardrail-mode shadow
+# Get Neptune details for existing cluster
+CLUSTER_NAME="your-cluster-name"
+NEPTUNE_SG=$(aws neptune describe-db-clusters --db-cluster-identifier $CLUSTER_NAME --query "DBClusters[0].VpcSecurityGroups[0].VpcSecurityGroupId" --output text)
+NEPTUNE_HOST=$(aws neptune describe-db-clusters --db-cluster-identifier $CLUSTER_NAME --query "DBClusters[0].ReaderEndpoint" --output text)
 
-# Deploy with new Neptune graph database
-./dev-tools/deploy.sh \
-  --with-graph-db \
-  --guardrail-mode enforce
+# Deploy with Neptune integration
+./dev-tools/deploy.sh --vpc-id vpc-123 --neptune-sg $NEPTUNE_SG --neptune-host $NEPTUNE_HOST
 ```
 
-### VPC Configuration
-
-#### Default Deployment (New VPC)
-
-By default, the stack creates a new VPC with the required infrastructure:
+#### Set Deployment Region
 
 ```bash
-CDK_DOCKER=podman npx cdk deploy --require-approval never
+# Deploy to different region
+export AWS_DEFAULT_REGION=us-west-2
+npx cdk bootstrap  # if not already done in this region
+./dev-tools/deploy.sh
 ```
 
-#### Bring Your Own VPC (Optional)
-
-You can deploy the services into an existing VPC by providing the VPC ID as a context value:
+#### Graph Database Only
 
 ```bash
-CDK_DOCKER=podman npx cdk deploy --context vpcId=vpc-xxxxxxxxx --require-approval never
-```
-
-#### VPC Requirements
-
-When using an existing VPC, it **must** have the following configuration:
-
-**Required Subnets:**
-
-1. **Public Subnets** (for Application Load Balancer):
-
-   - At least 2 subnets in different Availability Zones
-   - Must have routes to an Internet Gateway (`0.0.0.0/0 → igw-xxxxx`)
-   - Must be tagged with `aws-cdk:subnet-type = Public`
-   - Must have `MapPublicIpOnLaunch = true`
-
-2. **Private Subnets** (for Fargate Tasks):
-   - At least 2 subnets in different Availability Zones
-   - Must have routes to NAT Gateway for outbound access (`0.0.0.0/0 → nat-xxxxx`)
-   - Must be tagged with `aws-cdk:subnet-type = Private`
-   - Must have `MapPublicIpOnLaunch = false`
-
-**Required Infrastructure:**
-
-- **Internet Gateway** attached to the VPC
-- **NAT Gateway(s)** in public subnets for private subnet outbound access
-- **Route Tables** properly configured:
-  - Public route table: `0.0.0.0/0 → Internet Gateway`
-  - Private route table: `0.0.0.0/0 → NAT Gateway`
-
-#### Example VPC Structure
-
-```
-VPC (172.30.0.0/16)
-├── Public Subnets (Load Balancer)
-│   ├── subnet-xxxxx (us-east-1a) - 172.30.3.0/24
-│   ├── subnet-xxxxx (us-east-1b) - 172.30.4.0/24
-│   └── subnet-xxxxx (us-east-1c) - 172.30.5.0/24
-├── Private Subnets (Fargate Tasks)
-│   ├── subnet-xxxxx (us-east-1a) - 172.30.0.0/24
-│   ├── subnet-xxxxx (us-east-1b) - 172.30.1.0/24
-│   └── subnet-xxxxx (us-east-1c) - 172.30.2.0/24
-├── Internet Gateway
-└── NAT Gateway(s)
-```
-
-### Graph Database Deployment
-
-The AI Data Explorer can optionally deploy a Neptune graph database for advanced graph analytics and relationship modeling.
-
-**Deploy with Graph Database:**
-
-```bash
-# Deploy everything including Neptune graph database
-./dev-tools/deploy.sh --with-graph-db
-
-# Deploy with existing VPC
-./dev-tools/deploy.sh --with-graph-db --vpc-id vpc-123
-```
-
-**Graph Database Components:**
-
-- **Neptune Cluster**: Serverless Neptune database with auto-scaling
-- **ETL Pipeline**: Bedrock-powered data transformation workflows
-- **Lambda Functions**: ETL processor and bulk data loader
-- **DynamoDB Tables**: Logging for data analysis and schema translation
-- **S3 Buckets**: ETL data storage and access logging
-
-**Deploy Graph Database Only:**
-
-```bash
-# Standalone graph database deployment
+# Deploy standalone Neptune cluster
 ./dev-tools/deploy-graph-db.sh
-
-# With existing VPC
-./dev-tools/deploy-graph-db.sh --vpc-id vpc-123
+./dev-tools/deploy-graph-db.sh --vpc-id vpc-123  # with existing VPC
 ```
-
-### Neptune Integration Setup
-
-For Neptune connectivity in the same VPC:
-
-1. **Get your Neptune cluster details**:
-
-   ```bash
-    CLUSTER_NAME="name-of-your-cluster"
-    NEPTUNE_SG=$(aws neptune describe-db-clusters --db-cluster-identifier $CLUSTER_NAME --query "DBClusters[0].VpcSecurityGroups[0].VpcSecurityGroupId" --output text)
-    NEPTUNE_HOST=$(aws neptune describe-db-clusters --db-cluster-identifier $CLUSTER_NAME --query "DBClusters[0].ReaderEndpoint" --output text)
-    echo "Neptune Security Group ID: $NEPTUNE_SG"
-    echo "Neptune Reader Endpoint: $NEPTUNE_HOST"
-   ```
-
-2. **Deploy with automatic Neptune integration**:
-   ```bash
-   CDK_DOCKER=podman npx cdk deploy \
-     --context vpcId=vpc-0af137533d471cd3b \
-     --context neptuneSgId=$NEPTUNE_SG \
-     --context neptuneHost=$NEPTUNE_HOST \
-     --require-approval never
-   ```
-
-This automatically configures the security group rules and Neptune endpoint for the agent service.
-
-### Multi-Region Deployment
-
-The application is region-agnostic and can be deployed to any AWS region that supports Amazon Bedrock, Amazon S3 Vectors, and the features used by this guidance.
-
-**To deploy in a different region (e.g., us-west-2):**
-
-1. **Set your AWS CLI region:**
-
-   ```bash
-   export AWS_DEFAULT_REGION=us-west-2
-   # or
-   aws configure set region us-west-2
-   ```
-
-2. **Bootstrap CDK in the new region** (if not already done):
-
-   ```bash
-   npx cdk bootstrap
-   ```
-
-3. **Deploy normally:**
-
-   ```bash
-   ./dev-tools/deploy.sh
-   ```
 
 ## Deployment Validation
 

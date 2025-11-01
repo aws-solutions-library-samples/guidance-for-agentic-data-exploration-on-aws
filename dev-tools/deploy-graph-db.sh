@@ -53,7 +53,7 @@ CDK_COMMAND="CDK_DOCKER=podman npx cdk deploy DataExplorerGraphDbStack --app \"n
 
 # Add VPC context if provided
 if [ -n "$VPC_ID" ]; then
-  echo "** Deploying with existing VPC: $VPC_ID"
+  echo "** Deploying to VPC: $VPC_ID"
   CDK_COMMAND="$CDK_COMMAND --context vpcId=$VPC_ID"
 else
   echo "** Deploying with new VPC"
