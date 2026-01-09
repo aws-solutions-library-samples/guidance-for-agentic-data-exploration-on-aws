@@ -30,7 +30,6 @@
 - **TypeScript** - CDK infrastructure code
 - **Node.js 18+** - Build tooling
 - **Prettier** - Code formatting
-- **Vitest** - Testing framework for TypeScript
 - **pytest** - Python testing framework
 
 ## Common Commands
