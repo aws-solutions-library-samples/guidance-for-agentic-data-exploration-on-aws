@@ -206,11 +206,13 @@ def login():
 @app.route('/callback')
 def callback():
     """Handle OAuth callback from Cognito"""
+    from markupsafe import escape
     code = request.args.get('code')
     error = request.args.get('error')
     
     if error:
-        return f"Authentication error: {error}", 400
+        # Escape error to prevent XSS - don't expose raw user input
+        return f"Authentication error: {escape(error)}", 400
     
     if not code:
         return "No authorization code received", 400
