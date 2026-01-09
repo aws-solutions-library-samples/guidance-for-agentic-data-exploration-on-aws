@@ -383,6 +383,24 @@
       }
 
       function openImageModal(imageSrc) {
+        // Validate imageSrc to prevent XSS - only allow data URIs and same-origin URLs
+        if (!imageSrc || typeof imageSrc !== 'string') return;
+        
+        const isDataUri = imageSrc.startsWith('data:image/');
+        const isSameOrigin = (() => {
+          try {
+            const url = new URL(imageSrc, window.location.origin);
+            return url.origin === window.location.origin;
+          } catch {
+            return false;
+          }
+        })();
+        
+        if (!isDataUri && !isSameOrigin) {
+          console.warn('Blocked potentially unsafe image URL');
+          return;
+        }
+
         // Create modal overlay
         const modal = document.createElement("div");
         modal.style.cssText = `
