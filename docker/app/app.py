@@ -344,9 +344,10 @@ async def get_image(filename: str):
         os.makedirs(output_dir, exist_ok=True)
         
         # Validate filename to prevent path traversal attacks
-        # Only allow alphanumeric, dash, underscore, and dot (for extension)
+        # Only allow alphanumeric, dash, underscore, and single dots (for extension)
+        # Reject consecutive dots (..) which could be used for traversal
         import re
-        if not re.match(r'^[\w\-\.]+$', filename):
+        if not re.match(r'^[\w\-]+(\.[\w\-]+)*$', filename) or '..' in filename:
             raise HTTPException(status_code=400, detail="Invalid filename")
         
         # Normalize and verify the path stays within output_dir
