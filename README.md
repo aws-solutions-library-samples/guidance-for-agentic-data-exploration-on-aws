@@ -130,19 +130,25 @@ This Guidance uses AWS CDK. If you are using AWS CDK for the first time, CDK wil
 
    ```bash
    # In new VPC without Neptune database
-   ./scripts/cloudshell-deploy.sh
+   ./scripts/cloudshell-deploy.sh --region us-east-1
+
+   # With specific AWS profile
+   ./scripts/cloudshell-deploy.sh --profile my-profile --region us-east-1
 
    # In existing VPC without Neptune database
-   ./scripts/cloudshell-deploy.sh --vpc-id vpc-00000000
+   ./scripts/cloudshell-deploy.sh --region us-east-1 --vpc-id vpc-00000000
 
    # In new VPC with new Neptune graph database
-   ./scripts/cloudshell-deploy.sh --with-graph-db
+   ./scripts/cloudshell-deploy.sh --region us-east-1 --with-graph-db
 
    # In existing VPC with existing Neptune database
-   ./scripts/cloudshell-deploy.sh --vpc-id vpc-12345678 --neptune-sg sg-abcdef12 --neptune-host my-cluster.cluster-xyz.us-east-1.neptune.amazonaws.com
+   ./scripts/cloudshell-deploy.sh --region us-east-1 --vpc-id vpc-12345678 --neptune-sg sg-abcdef12 --neptune-host my-cluster.cluster-xyz.us-east-1.neptune.amazonaws.com
 
    # With enforced guardrails (or use --guardrail-mode shadow to warn only)
-   ./scripts/cloudshell-deploy.sh --guardrail-mode enforce
+   ./scripts/cloudshell-deploy.sh --region us-east-1 --guardrail-mode enforce
+
+   # Dry-run to validate without deploying
+   ./scripts/cloudshell-deploy.sh --dry-run --region us-east-1
    ```
 
 ## Local Deployment (Mac / Linux)
@@ -163,28 +169,92 @@ git clone -b v2 https://github.com/aws-solutions-library-samples/guidance-for-ag
 cd guidance-for-agentic-data-exploration-on-aws
 npm install
 
-# 2. Bootstrap AWS (one-time)
-npx cdk bootstrap
+# 2. Bootstrap AWS (one-time per region)
+npx cdk bootstrap aws://ACCOUNT_ID/us-east-1
 
 # 3. Start container runtime (one-time)
 podman machine init && podman machine start
 
 # 4. Deploy
-./dev-tools/deploy.sh
+./dev-tools/deploy.sh --region us-east-1
 ```
 
 ### Deployment Options
 
 | Configuration                                                                                    | Command                                                                                                                            |
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **New&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                     | `./dev-tools/deploy.sh`                                                                                                            |
-| **New&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                           | `./dev-tools/deploy.sh --with-graph-db`                                                                                            |
-| **Existing&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --vpc-id vpc-123`                                                                                           |
-| **Existing&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                      | `./dev-tools/deploy.sh --vpc-id vpc-123 --with-graph-db`                                                                           |
-| **Existing&nbsp;VPC&nbsp;and&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --vpc-id vpc-123 --neptune-sg sg-456 --neptune-host cluster.neptune.amazonaws.com --guardrail-mode enforce` |
-| **Guardrails&nbsp;Mode**<br/>&nbsp;&nbsp;&nbsp;**enforce** blocks<br/>&nbsp;&nbsp;&nbsp;**shadow** _(default)_ logs only | `./dev-tools/deploy.sh --guardrail-mode enforce`                                                                                   |
+| **New&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                     | `./dev-tools/deploy.sh --region us-east-1`                                                                                         |
+| **New&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                           | `./dev-tools/deploy.sh --region us-east-1 --with-graph-db`                                                                         |
+| **Existing&nbsp;VPC,&nbsp;No&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --region us-east-1 --vpc-id vpc-123`                                                                        |
+| **Existing&nbsp;VPC&nbsp;with&nbsp;New&nbsp;Graph&nbsp;DB**                                      | `./dev-tools/deploy.sh --region us-east-1 --vpc-id vpc-123 --with-graph-db`                                                        |
+| **Existing&nbsp;VPC&nbsp;and&nbsp;Graph&nbsp;DB**                                                | `./dev-tools/deploy.sh --region us-east-1 --vpc-id vpc-123 --neptune-sg sg-456 --neptune-host cluster.neptune.amazonaws.com`       |
+| **With&nbsp;AWS&nbsp;Profile**                                                                   | `./dev-tools/deploy.sh --profile my-profile --region us-east-1`                                                                    |
+| **Guardrails&nbsp;Mode**<br/>&nbsp;&nbsp;&nbsp;**enforce** blocks<br/>&nbsp;&nbsp;&nbsp;**shadow** _(default)_ logs only | `./dev-tools/deploy.sh --region us-east-1 --guardrail-mode enforce`                                                                |
+| **Dry&nbsp;Run&nbsp;(validate&nbsp;only)**                                                       | `./dev-tools/deploy.sh --dry-run --region us-east-1`                                                                               |
 
 ### Advanced Configuration
+
+#### Enterprise Deployment (Bring Your Own VPC/Subnets/Security Groups)
+
+For enterprise environments with strict segregation of duties where networking resources must be pre-created:
+
+```bash
+# Full enterprise deployment with all pre-created resources
+./dev-tools/deploy.sh \
+  --profile prod \
+  --region us-east-1 \
+  --vpc-id vpc-123 \
+  --public-subnet-ids subnet-pub1,subnet-pub2 \
+  --private-subnet-ids subnet-priv1,subnet-priv2 \
+  --alb-security-group-id sg-alb \
+  --ecs-security-group-id sg-ecs
+
+# Dry-run to validate configuration without deploying
+./dev-tools/deploy.sh --dry-run --vpc-id vpc-123 --region us-east-1
+```
+
+**Available CLI Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--profile PROFILE` | AWS CLI profile to use |
+| `--region REGION` | AWS region (e.g., us-east-1) |
+| `--account ACCOUNT` | AWS account ID (auto-detected if not provided) |
+| `--vpc-id ID` | Existing VPC ID |
+| `--public-subnet-ids IDS` | Comma-separated public subnet IDs |
+| `--private-subnet-ids IDS` | Comma-separated private subnet IDs |
+| `--alb-security-group-id ID` | Security group ID for Application Load Balancer |
+| `--ecs-security-group-id ID` | Security group ID for ECS tasks |
+| `--dry-run` | Validate without deploying |
+| `--skip-bootstrap-check` | Skip CDK bootstrap verification |
+
+#### Required VPC Endpoints (for Private Subnet Deployments)
+
+When deploying ECS tasks in private subnets without NAT Gateway, the following VPC endpoints are required:
+
+| Endpoint | Type | Purpose |
+|----------|------|---------|
+| `com.amazonaws.<region>.ecr.api` | Interface | ECR API calls |
+| `com.amazonaws.<region>.ecr.dkr` | Interface | Docker image pulls |
+| `com.amazonaws.<region>.s3` | Gateway | S3 access (ECR layers, KB bucket) |
+| `com.amazonaws.<region>.logs` | Interface | CloudWatch Logs |
+| `com.amazonaws.<region>.secretsmanager` | Interface | Secrets Manager access |
+| `com.amazonaws.<region>.bedrock-runtime` | Interface | Bedrock model invocation |
+| `com.amazonaws.<region>.bedrock-agent-runtime` | Interface | Bedrock AgentCore |
+| `com.amazonaws.<region>.sts` | Interface | STS for IAM role assumption |
+| `com.amazonaws.<region>.xray` | Interface | X-Ray tracing |
+| `com.amazonaws.<region>.dynamodb` | Gateway | DynamoDB access |
+
+**Security Group Requirements (when using `--alb-security-group-id` and `--ecs-security-group-id`):**
+
+ALB Security Group:
+- Inbound: TCP 80 from CloudFront prefix list (or your allowed sources)
+- Outbound: TCP 8000, 5000 to ECS Security Group
+
+ECS Security Group:
+- Inbound: TCP 8000, 5000 from ALB Security Group
+- Inbound: TCP 8000 from self (for UI to Agent communication)
+- Outbound: TCP 443 to VPC endpoints or 0.0.0.0/0
 
 #### Template-based Configuration
 
@@ -199,9 +269,23 @@ cp ./dev-tools/deploy-local-template.sh ./dev-tools/deploy-local.sh
 
 Your VPC must have:
 
-- **Public subnets** (2+ AZs) with Internet Gateway routes and `aws-cdk:subnet-type = Public` tags
-- **Private subnets** (2+ AZs) with NAT Gateway routes and `aws-cdk:subnet-type = Private` tags
+- **Public subnets** (2+ AZs) with Internet Gateway routes
+- **Private subnets** (2+ AZs) with NAT Gateway routes
 - **Internet Gateway** and **NAT Gateway(s)** properly configured
+
+**Option 1: Tag-based subnet selection (default)**
+If using `--vpc-id` without explicit subnet IDs, subnets must be tagged:
+- `aws-cdk:subnet-type = Public` for public subnets
+- `aws-cdk:subnet-type = Private` for private subnets
+
+**Option 2: Explicit subnet IDs (enterprise)**
+Use `--public-subnet-ids` and `--private-subnet-ids` to bypass tag requirements:
+```bash
+./dev-tools/deploy.sh --region us-east-1 \
+  --vpc-id vpc-123 \
+  --public-subnet-ids subnet-pub1,subnet-pub2 \
+  --private-subnet-ids subnet-priv1,subnet-priv2
+```
 
 #### Neptune Integration
 
@@ -218,10 +302,15 @@ NEPTUNE_HOST=$(aws neptune describe-db-clusters --db-cluster-identifier $CLUSTER
 #### Set Deployment Region
 
 ```bash
-# Deploy to different region
+# Option 1: Use --region flag (recommended)
+./dev-tools/deploy.sh --region us-west-2
+
+# Option 2: Use environment variable
 export AWS_DEFAULT_REGION=us-west-2
-npx cdk bootstrap  # if not already done in this region
 ./dev-tools/deploy.sh
+
+# Bootstrap new region first if needed
+npx cdk bootstrap aws://ACCOUNT_ID/us-west-2
 ```
 
 #### Graph Database Only

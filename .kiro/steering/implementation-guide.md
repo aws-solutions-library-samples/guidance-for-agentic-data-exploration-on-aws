@@ -40,13 +40,19 @@ source .venv/bin/activate
 
 ```bash
 # Deploy to AWS with default settings
-./dev-tools/deploy.sh
+./dev-tools/deploy.sh --region us-east-1
+
+# Deploy with specific AWS profile
+./dev-tools/deploy.sh --profile my-profile --region us-east-1
 
 # Deploy with Neptune graph database
-./dev-tools/deploy.sh --with-graph-db
+./dev-tools/deploy.sh --region us-east-1 --with-graph-db
+
+# Dry-run to validate without deploying
+./dev-tools/deploy.sh --dry-run --region us-east-1
 
 # CloudShell deployment (no local setup required)
-./scripts/cloudshell-deploy.sh
+./scripts/cloudshell-deploy.sh --region us-east-1
 ```
 
 ## Architecture Understanding
@@ -293,18 +299,29 @@ def test_your_agent_functionality():
 
 ```bash
 # Standard deployment
-./dev-tools/deploy.sh
+./dev-tools/deploy.sh --region us-east-1
+
+# With specific AWS profile
+./dev-tools/deploy.sh --profile prod --region us-east-1
 
 # With custom VPC
-./dev-tools/deploy.sh --vpc-id vpc-your-id
+./dev-tools/deploy.sh --region us-east-1 --vpc-id vpc-your-id
+
+# Enterprise deployment with bring-your-own networking
+./dev-tools/deploy.sh --profile prod --region us-east-1 \
+  --vpc-id vpc-123 \
+  --public-subnet-ids subnet-pub1,subnet-pub2 \
+  --private-subnet-ids subnet-priv1,subnet-priv2 \
+  --alb-security-group-id sg-alb \
+  --ecs-security-group-id sg-ecs
 
 # With monitoring and graph database
-./dev-tools/deploy.sh --with-graph-db
+./dev-tools/deploy.sh --region us-east-1 --with-graph-db
 ```
 
 ### CloudShell Deployment
 
-Use `./scripts/cloudshell-deploy.sh` for deployment without local setup requirements.
+Use `./scripts/cloudshell-deploy.sh --region us-east-1` for deployment without local setup requirements.
 
 ## Common Customization Scenarios
 
