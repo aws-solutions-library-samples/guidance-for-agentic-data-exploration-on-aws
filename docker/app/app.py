@@ -343,7 +343,16 @@ async def get_image(filename: str):
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
         
-        image_path = os.path.join(output_dir, filename)
+        # Validate filename to prevent path traversal attacks
+        # Only allow alphanumeric, dash, underscore, and dot (for extension)
+        import re
+        if not re.match(r'^[\w\-\.]+$', filename):
+            raise HTTPException(status_code=400, detail="Invalid filename")
+        
+        # Normalize and verify the path stays within output_dir
+        image_path = os.path.normpath(os.path.join(output_dir, filename))
+        if not image_path.startswith(os.path.normpath(output_dir) + os.sep):
+            raise HTTPException(status_code=400, detail="Invalid filename")
         
         if os.path.exists(image_path):
             # Determine media type
