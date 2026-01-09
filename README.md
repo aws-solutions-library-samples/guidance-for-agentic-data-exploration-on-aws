@@ -8,15 +8,16 @@
 3. [Notes](#notes)
 4. [CloudShell Deployment](#cloudshell-deployment)
 5. [Local Deployment (Mac / Linux)](#local-deployment-mac--linux)
-6. [Deployment Validation](#deployment-validation)
-7. [Running the Guidance](#running-the-guidance)
-8. [Evaluation and Testing](#evaluation-and-testing)
-9. [Tracing and Observability](#tracing-and-observability)
-10. [Next Steps](#next-steps)
-11. [Cleanup](#cleanup)
-12. [Common issues, and debugging](#common-issues-and-debugging)
-13. [Revisions](#revisions)
-14. [Authors](#authors)
+6. [Windows Deployment (PowerShell)](#windows-deployment-powershell)
+7. [Deployment Validation](#deployment-validation)
+8. [Running the Guidance](#running-the-guidance)
+9. [Evaluation and Testing](#evaluation-and-testing)
+10. [Tracing and Observability](#tracing-and-observability)
+11. [Next Steps](#next-steps)
+12. [Cleanup](#cleanup)
+13. [Common issues, and debugging](#common-issues-and-debugging)
+14. [Revisions](#revisions)
+15. [Authors](#authors)
 
 ## Overview
 
@@ -320,6 +321,95 @@ npx cdk bootstrap aws://ACCOUNT_ID/us-west-2
 ./dev-tools/deploy-graph-db.sh
 ./dev-tools/deploy-graph-db.sh --vpc-id vpc-123  # with existing VPC
 ```
+
+## Windows Deployment (PowerShell)
+
+For Windows users who cannot use WSL, PowerShell deployment scripts are available.
+
+### Prerequisites
+
+- **Node.js 21.x+**: [Download](https://nodejs.org/)
+- **AWS CLI 2.27.51+**: [Install guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) + `aws configure`
+- **AWS CDK CLI**: `npm install -g aws-cdk`
+- **Python 3.13+**: [Download](https://www.python.org/downloads/)
+- **Docker Desktop**: [Download](https://www.docker.com/products/docker-desktop/) (required for container builds)
+- **PowerShell 5.1+** (included with Windows 10/11)
+
+### Quick Start
+
+```powershell
+# 1. Clone and setup
+git clone -b v2 https://github.com/aws-solutions-library-samples/guidance-for-agentic-data-exploration-on-aws.git
+cd guidance-for-agentic-data-exploration-on-aws
+npm install
+
+# 2. Bootstrap AWS (one-time per region)
+npx cdk bootstrap aws://ACCOUNT_ID/us-east-1
+
+# 3. Start Docker Desktop (ensure it's running)
+
+# 4. Deploy
+.\dev-tools\deploy.ps1 -Region us-east-1
+```
+
+### Deployment Options
+
+| Configuration | Command |
+|--------------|---------|
+| **New VPC, No Graph DB** | `.\dev-tools\deploy.ps1 -Region us-east-1` |
+| **New VPC with Graph DB** | `.\dev-tools\deploy.ps1 -Region us-east-1 -WithGraphDb` |
+| **Existing VPC** | `.\dev-tools\deploy.ps1 -Region us-east-1 -VpcId vpc-123` |
+| **With AWS Profile** | `.\dev-tools\deploy.ps1 -Profile my-profile -Region us-east-1` |
+| **Guardrails Mode** | `.\dev-tools\deploy.ps1 -Region us-east-1 -GuardrailMode enforce` |
+| **Dry Run** | `.\dev-tools\deploy.ps1 -DryRun -Region us-east-1` |
+
+### Enterprise Deployment
+
+```powershell
+# Full enterprise deployment with pre-created resources
+.\dev-tools\deploy.ps1 `
+  -Profile prod `
+  -Region us-east-1 `
+  -VpcId vpc-123 `
+  -PublicSubnetIds "subnet-pub1,subnet-pub2" `
+  -PrivateSubnetIds "subnet-priv1,subnet-priv2" `
+  -AlbSecurityGroupId sg-alb `
+  -EcsSecurityGroupId sg-ecs
+```
+
+### Available Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `-Profile` | AWS CLI profile to use |
+| `-Region` | AWS region (e.g., us-east-1) |
+| `-Account` | AWS account ID (auto-detected if not provided) |
+| `-VpcId` | Existing VPC ID |
+| `-PublicSubnetIds` | Comma-separated public subnet IDs |
+| `-PrivateSubnetIds` | Comma-separated private subnet IDs |
+| `-AlbSecurityGroupId` | Security group ID for ALB |
+| `-EcsSecurityGroupId` | Security group ID for ECS tasks |
+| `-NeptuneSg` | Neptune security group ID |
+| `-NeptuneHost` | Neptune cluster endpoint |
+| `-WithGraphDb` | Deploy Neptune graph database |
+| `-GuardrailMode` | 'shadow' (default) or 'enforce' |
+| `-DryRun` | Validate without deploying |
+| `-SkipBootstrapCheck` | Skip CDK bootstrap verification |
+
+### Graph Database Only (Windows)
+
+```powershell
+.\dev-tools\deploy-graph-db.ps1 -Region us-east-1
+.\dev-tools\deploy-graph-db.ps1 -Region us-east-1 -VpcId vpc-123
+```
+
+### Notes for Windows Users
+
+- The PowerShell scripts use **Docker** instead of Podman (set via `CDK_DOCKER=docker`)
+- Knowledge base creation (`kb-create.ps1`) runs natively in PowerShell
+- If WSL is available, some scripts may fall back to bash for compatibility
+- Ensure Docker Desktop is running before deployment
+- Use backticks (`) for line continuation in PowerShell, not backslashes
 
 ## Deployment Validation
 
