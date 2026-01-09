@@ -43,6 +43,12 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-change-in-produc
 # Configure logging
 logger = logging.getLogger(__name__)
 
+def safe_error_response(e: Exception, status_code: int = 500):
+    """Return a generic error response without exposing internal details.
+    Logs the full error server-side for debugging."""
+    logger.error(f"Error: {str(e)}", exc_info=True)
+    return jsonify({'error': 'An internal error occurred'}), status_code
+
 def cleanup_old_temp_files():
     """Clean up temporary upload files older than 1 hour"""
     try:
@@ -200,11 +206,13 @@ def login():
 @app.route('/callback')
 def callback():
     """Handle OAuth callback from Cognito"""
+    from markupsafe import escape
     code = request.args.get('code')
     error = request.args.get('error')
     
     if error:
-        return f"Authentication error: {error}", 400
+        # Escape error to prevent XSS - don't expose raw user input
+        return f"Authentication error: {escape(error)}", 400
     
     if not code:
         return "No authorization code received", 400
@@ -285,7 +293,8 @@ def callback():
         return redirect('/explorer')
         
     except Exception as e:
-        return f"Token request failed: {str(e)}", 500
+        logger.error(f"Token request failed: {str(e)}")
+        return "Authentication failed", 500
 
 @app.route('/conversation')
 @require_auth
@@ -303,7 +312,7 @@ def get_conversation():
         return jsonify(data), response.status_code
     except Exception as e:
         print(f"Conversation error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/clear-conversation', methods=['POST'])
 @require_auth
@@ -319,7 +328,7 @@ def clear_conversation():
                                timeout=30)
         return jsonify(response.json()), response.status_code
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/query-streaming-with-events', methods=['POST'])
 @require_auth
@@ -351,8 +360,8 @@ def query_streaming_with_events():
                     if chunk:
                         yield chunk
             except Exception as e:
-                print(f"STREAMING: Generator error: {str(e)}")
-                yield f"data: {{'type': 'error', 'message': '{str(e)}'}}\n\n"
+                logger.error(f"Streaming generator error: {str(e)}", exc_info=True)
+                yield f"data: {{'type': 'error', 'message': 'An error occurred during streaming'}}\n\n"
         
         return app.response_class(
             generate(),
@@ -367,10 +376,8 @@ def query_streaming_with_events():
             }
         )
     except Exception as e:
-        print(f"STREAMING: Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return Response(f"Error: {str(e)}", status=500)
+        logger.error(f"Streaming error: {str(e)}", exc_info=True)
+        return Response("An error occurred", status=500)
 
 @app.route('/streaming-auth-token', methods=['GET'])
 @require_auth  
@@ -504,12 +511,13 @@ def chat():
                     yield f"data: {json.dumps({'type': 'error', 'message': f'Agent service error: {response.status_code}'})}\n\n"
                     
             except Exception as e:
-                yield f"data: {json.dumps({'type': 'error', 'message': f'Connection error: {str(e)}'})}\n\n"
+                logger.error(f"Connection error to agent service: {str(e)}", exc_info=True)
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Connection error to agent service'})}\n\n"
         
         return Response(generate(), mimetype='text/event-stream')
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/upload-file', methods=['POST'])
 @require_auth
@@ -635,7 +643,7 @@ def upload_file_with_actions():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/file-action', methods=['POST'])
 @require_auth
@@ -719,7 +727,7 @@ def handle_file_action():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/graph-schema')
 @require_auth
@@ -842,7 +850,7 @@ def api_data_loader_test():
         return jsonify(result)
         
     except Exception as e:
-        return jsonify({'error': f'Test failed: {str(e)}'}), 500
+        return safe_error_response(e)
 
 @app.route('/api/data-loader-debug')
 @require_auth
@@ -875,7 +883,7 @@ def api_data_loader_debug():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/api/data-loader-data')
 @require_auth
@@ -897,8 +905,8 @@ def api_data_loader_data():
                 response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
                 items.extend(response.get('Items', []))
         except Exception as scan_error:
-            logger.error(f"DynamoDB scan error: {str(scan_error)}")
-            return jsonify({'error': f'Database scan failed: {str(scan_error)}'}), 500
+            logger.error(f"DynamoDB scan error: {str(scan_error)}", exc_info=True)
+            return jsonify({'error': 'Database scan failed'}), 500
         
         # Process items to ensure proper data types
         try:
@@ -917,8 +925,8 @@ def api_data_loader_data():
                         processed_item[key] = value
                 processed_items.append(processed_item)
         except Exception as process_error:
-            logger.error(f"Item processing error: {str(process_error)}")
-            return jsonify({'error': f'Data processing failed: {str(process_error)}'}), 500
+            logger.error(f"Item processing error: {str(process_error)}", exc_info=True)
+            return jsonify({'error': 'Data processing failed'}), 500
         
         return jsonify({
             'data': processed_items,
@@ -928,7 +936,7 @@ def api_data_loader_data():
         
     except Exception as e:
         logger.error(f"Error fetching data loader data: {str(e)}")
-        return jsonify({'error': f'Failed to fetch data: {str(e)}'}), 500
+        return safe_error_response(e)
 
 @app.route('/api/data-loader-detail/<load_id>')
 @require_auth
@@ -1003,7 +1011,7 @@ def api_data_loader_detail(load_id):
         
     except Exception as e:
         logger.error(f"Error fetching data loader detail for {load_id}: {str(e)}")
-        return jsonify({'error': f'Failed to fetch detail: {str(e)}'}), 500
+        return safe_error_response(e)
 
 @app.route('/etl-processor')
 @require_auth
@@ -1068,7 +1076,7 @@ def get_etl_results():
             'total_pages': (total + per_page - 1) // per_page
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/etl-processor/<item_id>')
 @require_auth
@@ -1099,7 +1107,7 @@ def get_etl_result_detail(item_id):
             
         return jsonify(response['Items'][0])
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/graph-schema/preview', methods=['POST'])
 @require_auth
@@ -1115,9 +1123,12 @@ def preview_graph_schema():
         if schema_content.strip():
             lines = schema_content.split('\n')
             for line in lines:
-                # Match pattern: [Block1]—(Relation)→[Block2]
+                # Skip overly long lines to prevent ReDoS
+                if len(line) > 1000:
+                    continue
+                # Match pattern: [Block1] —(Relation)→ [Block2] (with optional spaces)
                 import re
-                match = re.search(r'\[([^\]]+)\]—\(([^\)]+)\)→\[([^\]]+)\]', line)
+                match = re.search(r'\[([^\[\]]{1,200})\]\s*—\(([^\(\)]{1,200})\)→\s*\[([^\[\]]{1,200})\]', line)
                 if match:
                     source, relation, target = match.groups()
                     nodes.add(source)
@@ -1135,7 +1146,7 @@ def preview_graph_schema():
         
         return jsonify(graph_data)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/graph-schema/validate', methods=['POST'])
 @require_auth
@@ -1148,7 +1159,7 @@ def validate_graph_schema():
         validation_result = validate_schema(schema_content)
         return jsonify(validation_result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/graph-schema/load', methods=['GET'])
 @require_auth
@@ -1179,7 +1190,7 @@ def load_graph_schema():
         if 'NoSuchKey' in str(e):
             return jsonify({'schema': ''})
         # For other S3 errors, return the error
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/graph-schema/save', methods=['POST'])
 @require_auth
@@ -1219,7 +1230,7 @@ def save_graph_schema():
                 return jsonify({'success': True, 'message': 'Schema saved locally (S3 unavailable)'})
         except:
             pass
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/upload-to-kb', methods=['POST'])
 @require_auth
@@ -1269,9 +1280,10 @@ def upload_to_kb():
         })
         
     except ClientError as e:
-        return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
+        logger.error(f"S3 upload to KB failed: {str(e)}")
+        return jsonify({'error': 'S3 upload failed'}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/upload-to-graph-db', methods=['POST'])
 @require_auth
@@ -1328,9 +1340,10 @@ def upload_to_graph_db():
         })
         
     except ClientError as e:
-        return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
+        logger.error(f"S3 upload to graph DB failed: {str(e)}")
+        return jsonify({'error': 'S3 upload failed'}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/get-file-content', methods=['POST'])
 @require_auth
@@ -1371,7 +1384,7 @@ def get_file_content():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/upload', methods=['POST'])
 @require_auth  
@@ -1399,7 +1412,7 @@ def upload_file():
         return jsonify({'prompt': prompt})
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/get-image/<filename>')
 def proxy_get_image(filename):
@@ -1452,8 +1465,8 @@ def proxy_get_image(filename):
             return f"Agent service returned {response.status_code}", response.status_code
             
     except Exception as e:
-        print(f"Error proxying image request: {str(e)}")
-        return f"Error loading image: {str(e)}", 500
+        logger.error(f"Error proxying image request: {str(e)}")
+        return "Error loading image", 500
 
 @app.route('/query-get-image/<filename>')
 def proxy_query_get_image(filename):
@@ -1495,7 +1508,7 @@ def get_data_analyzer_results():
             logger.warning(f"Table {table_name} not found")
             return jsonify({'data': []})
         logger.error(f"Error fetching data analyzer results: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
     except Exception as e:
         logger.error(f"Error fetching data analyzer results: {str(e)}")
         return jsonify({'data': []})
@@ -1542,10 +1555,10 @@ def get_data_analyzer_detail(result_id):
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             return jsonify({'error': 'Table not found'}), 404
         logger.error(f"Error fetching data analyzer detail: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
     except Exception as e:
         logger.error(f"Error fetching data analyzer detail: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 # Schema Translator Routes
 @app.route('/schema-translator')
@@ -1582,7 +1595,7 @@ def get_schema_translator_results():
             logger.warning(f"Table {table_name} not found")
             return jsonify({'data': []})
         logger.error(f"Error fetching schema translator results: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
     except Exception as e:
         logger.error(f"Error fetching schema translator results: {str(e)}")
         return jsonify({'data': []})
@@ -1629,10 +1642,10 @@ def get_schema_translator_detail(result_id):
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             return jsonify({'error': 'Table not found'}), 404
         logger.error(f"Error fetching schema translator detail: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
     except Exception as e:
         logger.error(f"Error fetching schema translator detail: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/set-models', methods=['POST'])
 @require_auth
@@ -1643,7 +1656,7 @@ def set_models():
         response = requests.post(f"{AGENT_SERVICE_URL}/set-models", json=data, timeout=10)
         return response.json(), response.status_code
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/get-models', methods=['GET'])
 @require_auth
@@ -1653,7 +1666,7 @@ def get_models():
         response = requests.get(f"{AGENT_SERVICE_URL}/get-models", timeout=10)
         return response.json(), response.status_code
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/feedback')
 @require_auth
@@ -1721,7 +1734,7 @@ def get_feedback():
             'total_pages': (total + per_page - 1) // per_page
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/feedback/<feedback_id>')
 @require_auth
@@ -1756,7 +1769,7 @@ def get_feedback_detail(feedback_id):
         
         return jsonify(response['Items'][0])
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 @app.route('/submit-feedback', methods=['POST'])
 @require_auth
@@ -1789,9 +1802,11 @@ def submit_feedback():
         
     except Exception as e:
         print(f"Error submitting feedback: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return safe_error_response(e)
 
 if __name__ == '__main__':
-    # Reason: This is a development server configuration only used in local environment
-    # Production deployment uses gunicorn with proper host configuration    
-    app.run(host='0.0.0.0', port=5000, debug=True) #nosec B104, B201 # nosemgrep python.flask.security.audit.app-run-param-config.avoid_app_run_with_bad_host,python.flask.security.audit.debug-enabled.debug-enabled
+    import os
+    # Debug mode controlled by FLASK_DEBUG environment variable (default: False for security)
+    # Use ./dev-tools/run-ui-local.sh --debug to enable debug mode
+    debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes')
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode) #nosec B104

@@ -202,8 +202,8 @@ def get_conversation_history(user_id: str = "local@dev"):
         else:
             return {"messages": [], "total": 0, "source": "no_memory"}
     except Exception as e:
-        print(f"🔍 DEBUG: Error in conversation endpoint: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in conversation endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve conversation history")
 
 from pydantic import BaseModel
 
@@ -225,7 +225,8 @@ def clear_conversation(request: ClearRequest = None):
         
         return {"status": "success", "message": "Conversation cleared"}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        logger.error(f"Error clearing conversation: {e}", exc_info=True)
+        return {"status": "error", "message": "Failed to clear conversation"}
 
 @app.post("/query-streaming-with-events")
 async def query_streaming_with_events(request: PromptRequest, http_request: Request):
@@ -325,7 +326,7 @@ async def query_streaming_with_events(request: PromptRequest, http_request: Requ
                 
         except Exception as e:
             logger.error(f"❌ Error in query processing: {str(e)}", exc_info=True)
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': 'An error occurred while processing your request'}, ensure_ascii=False)}\n\n"
 
     logger.info("✅ Query processing completed")
     return StreamingResponse(generate_with_events(), media_type="text/plain")
@@ -343,7 +344,17 @@ async def get_image(filename: str):
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
         
-        image_path = os.path.join(output_dir, filename)
+        # Validate filename to prevent path traversal attacks
+        # Only allow alphanumeric, dash, underscore, and single dots (for extension)
+        # Reject consecutive dots (..) which could be used for traversal
+        import re
+        if not re.match(r'^[\w\-]+(\.[\w\-]+)*$', filename) or '..' in filename:
+            raise HTTPException(status_code=400, detail="Invalid filename")
+        
+        # Normalize and verify the path stays within output_dir
+        image_path = os.path.normpath(os.path.join(output_dir, filename))
+        if not image_path.startswith(os.path.normpath(output_dir) + os.sep):
+            raise HTTPException(status_code=400, detail="Invalid filename")
         
         if os.path.exists(image_path):
             # Determine media type
@@ -367,8 +378,8 @@ async def get_image(filename: str):
             raise HTTPException(status_code=404, detail="Image not found")
             
     except Exception as e:
-        print(f"Error serving image {filename}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error serving image {filename}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to serve image")
 
 @app.get("/query-get-image/{filename}")
 async def query_get_image(filename: str):
