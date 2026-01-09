@@ -1115,9 +1115,12 @@ def preview_graph_schema():
         if schema_content.strip():
             lines = schema_content.split('\n')
             for line in lines:
-                # Match pattern: [Block1]—(Relation)→[Block2]
+                # Skip overly long lines to prevent ReDoS
+                if len(line) > 1000:
+                    continue
+                # Match pattern: [Block1] —(Relation)→ [Block2] (with optional spaces)
                 import re
-                match = re.search(r'\[([^\]]+)\]—\(([^\)]+)\)→\[([^\]]+)\]', line)
+                match = re.search(r'\[([^\[\]]{1,200})\]\s*—\(([^\(\)]{1,200})\)→\s*\[([^\[\]]{1,200})\]', line)
                 if match:
                     source, relation, target = match.groups()
                     nodes.add(source)
