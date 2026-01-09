@@ -401,6 +401,17 @@
           return;
         }
 
+        // Sanitize the URL - for same-origin URLs, use URL object to ensure proper encoding
+        let sanitizedSrc = imageSrc;
+        if (!isDataUri) {
+          try {
+            const url = new URL(imageSrc, window.location.origin);
+            sanitizedSrc = url.href;
+          } catch {
+            return;
+          }
+        }
+
         // Create modal overlay
         const modal = document.createElement("div");
         modal.style.cssText = `
@@ -419,7 +430,7 @@
 
         // Create image element
         const img = document.createElement("img");
-        img.src = imageSrc;
+        img.src = sanitizedSrc;
         img.style.cssText = `
                 max-width: 90%;
                 max-height: 90%;
