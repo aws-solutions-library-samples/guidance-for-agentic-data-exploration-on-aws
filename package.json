@@ -9,7 +9,7 @@
   "scripts": {
     "format": "prettier --write .",
     "watch": "tsc -w",
-    "test": "vitest run",
+    "test": "echo 'TypeScript tests not configured - use ./dev-tools/test-all.sh for Python tests'",
     "test:version": "npm run version:update && echo 'Version script test passed'",
     "cdk": "cdk",
     "version:update": "node scripts/update-version.js",
@@ -21,12 +21,11 @@
     "aws-cdk": "2.1030.0",
     "prettier": "~3.5.3",
     "tsx": "^4.7.0",
-    "typescript": "~5.8.3",
-    "vitest": "^3.1.2"
+    "typescript": "~5.8.3"
   },
   "dependencies": {
     "@cdklabs/generative-ai-cdk-constructs": "^0.1.311",
-    "aws-cdk-lib": "2.220.0",
+    "aws-cdk-lib": "2.221.1",
     "constructs": "^10.3.0"
   },
   "prettier": {
