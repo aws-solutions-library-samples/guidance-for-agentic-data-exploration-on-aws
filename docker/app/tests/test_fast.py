@@ -115,8 +115,8 @@ def test_query_endpoint_mock_error(mock_get_supervisor):
     
     # The endpoint handles errors gracefully and still returns 200 with error message
     assert response.status_code == 200
-    # Check that the error message appears in the SSE response text
-    assert "Test error" in response.text
+    # Check that a generic error message appears (not the raw exception for security)
+    assert "An error occurred while processing your request" in response.text
 
 def test_prompt_request_model():
     """Test PromptRequest model validation."""
