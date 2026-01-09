@@ -360,8 +360,8 @@ def query_streaming_with_events():
                     if chunk:
                         yield chunk
             except Exception as e:
-                print(f"STREAMING: Generator error: {str(e)}")
-                yield f"data: {{'type': 'error', 'message': '{str(e)}'}}\n\n"
+                logger.error(f"Streaming generator error: {str(e)}", exc_info=True)
+                yield f"data: {{'type': 'error', 'message': 'An error occurred during streaming'}}\n\n"
         
         return app.response_class(
             generate(),
@@ -511,7 +511,8 @@ def chat():
                     yield f"data: {json.dumps({'type': 'error', 'message': f'Agent service error: {response.status_code}'})}\n\n"
                     
             except Exception as e:
-                yield f"data: {json.dumps({'type': 'error', 'message': f'Connection error: {str(e)}'})}\n\n"
+                logger.error(f"Connection error to agent service: {str(e)}", exc_info=True)
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Connection error to agent service'})}\n\n"
         
         return Response(generate(), mimetype='text/event-stream')
         
@@ -904,8 +905,8 @@ def api_data_loader_data():
                 response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
                 items.extend(response.get('Items', []))
         except Exception as scan_error:
-            logger.error(f"DynamoDB scan error: {str(scan_error)}")
-            return jsonify({'error': f'Database scan failed: {str(scan_error)}'}), 500
+            logger.error(f"DynamoDB scan error: {str(scan_error)}", exc_info=True)
+            return jsonify({'error': 'Database scan failed'}), 500
         
         # Process items to ensure proper data types
         try:
@@ -924,8 +925,8 @@ def api_data_loader_data():
                         processed_item[key] = value
                 processed_items.append(processed_item)
         except Exception as process_error:
-            logger.error(f"Item processing error: {str(process_error)}")
-            return jsonify({'error': f'Data processing failed: {str(process_error)}'}), 500
+            logger.error(f"Item processing error: {str(process_error)}", exc_info=True)
+            return jsonify({'error': 'Data processing failed'}), 500
         
         return jsonify({
             'data': processed_items,
