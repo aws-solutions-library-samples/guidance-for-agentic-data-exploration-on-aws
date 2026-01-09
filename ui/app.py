@@ -1795,6 +1795,8 @@ def submit_feedback():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Reason: This is a development server configuration only used in local environment
-    # Production deployment uses gunicorn with proper host configuration    
-    app.run(host='0.0.0.0', port=5000, debug=True) #nosec B104, B201 # nosemgrep python.flask.security.audit.app-run-param-config.avoid_app_run_with_bad_host,python.flask.security.audit.debug-enabled.debug-enabled
+    import os
+    # Debug mode controlled by FLASK_DEBUG environment variable (default: False for security)
+    # Use ./dev-tools/run-ui-local.sh --debug to enable debug mode
+    debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes')
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode) #nosec B104

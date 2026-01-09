@@ -4,6 +4,8 @@
 # Usage (run from project root): 
 #   ./dev-tools/run-ui-local.sh           # Run with local backend
 #   ./dev-tools/run-ui-local.sh --aws     # Run with AWS backend
+#   ./dev-tools/run-ui-local.sh --debug   # Run with debug mode enabled
+#   ./dev-tools/run-ui-local.sh --aws --debug  # AWS backend + debug mode
 
 set -e  # Exit on any error
 
@@ -16,13 +18,28 @@ echo "📁 Project root: $PROJECT_ROOT"
 # Change to project root directory
 cd "$PROJECT_ROOT"
 
-# Check for AWS flag
+# Parse arguments
 USE_AWS=false
-if [[ "$1" == "--aws" ]]; then
-    USE_AWS=true
+DEBUG_MODE=false
+for arg in "$@"; do
+    case $arg in
+        --aws)
+            USE_AWS=true
+            ;;
+        --debug)
+            DEBUG_MODE=true
+            ;;
+    esac
+done
+
+if [[ "$USE_AWS" == "true" ]]; then
     echo "🌐 Running UI locally with AWS backend services"
 else
     echo "🏠 Running UI locally with local backend services"
+fi
+
+if [[ "$DEBUG_MODE" == "true" ]]; then
+    echo "🐛 Debug mode enabled"
 fi
 
 # Check if virtual environment exists
@@ -148,12 +165,17 @@ trap cleanup EXIT
 # Run the UI in development mode
 cd "$PROJECT_ROOT/ui"
 export FLASK_ENV=development
-export FLASK_DEBUG=1
+if [[ "$DEBUG_MODE" == "true" ]]; then
+    export FLASK_DEBUG=1
+else
+    export FLASK_DEBUG=0
+fi
 
 echo ""
 echo "🎉 Starting UI server..."
 echo "   UI: http://127.0.0.1:5000"
 echo "   Backend: $AGENT_SERVICE_URL"
+echo "   Debug: ${DEBUG_MODE}"
 if [[ "$USE_AWS" == "true" ]]; then
     echo "   Mode: Local UI + AWS Backend"
     echo "   Graph DB: ${NEPTUNE_ETL_BUCKET:+Enabled}${NEPTUNE_ETL_BUCKET:-Disabled}"
