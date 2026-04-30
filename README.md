@@ -1,5 +1,8 @@
 # Guidance for Agentic Data Exploration on AWS
 
+> [!NOTE]
+> Visit the [**Universal Knowledge Graph for Manufacturing**](https://github.com/aws-samples/sample-ukg-for-mfg) for the related project presented at Hannover Messe 2026.
+
 ## Table of Contents
 
 1. [Overview](#overview)
