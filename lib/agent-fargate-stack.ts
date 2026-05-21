@@ -85,15 +85,69 @@ export class AgentFargateStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // Get VPC ID from context or create new VPC
+    // ===== VPC CONFIGURATION =====
+    // Supports three modes:
+    // 1. Create new VPC (default)
+    // 2. Use existing VPC with tag-based subnet selection (--vpc-id only)
+    // 3. Use existing VPC with explicit subnet IDs (enterprise mode)
     const vpcId = this.node.tryGetContext("vpcId");
+    const publicSubnetIdsContext = this.node.tryGetContext("publicSubnetIds");
+    const privateSubnetIdsContext = this.node.tryGetContext("privateSubnetIds");
 
-    const vpc = vpcId
-      ? ec2.Vpc.fromLookup(this, "ExistingVpc", { vpcId })
-      : new ec2.Vpc(this, "AgentVpc", {
-          maxAzs: 2,
-          natGateways: 1,
+    // Parse comma-separated subnet IDs if provided
+    const publicSubnetIds = publicSubnetIdsContext ? publicSubnetIdsContext.split(",") : [];
+    const privateSubnetIds = privateSubnetIdsContext ? privateSubnetIdsContext.split(",") : [];
+
+    let vpc: ec2.IVpc;
+    let publicSubnets: ec2.ISubnet[] | undefined;
+    let privateSubnets: ec2.ISubnet[] | undefined;
+
+    if (vpcId) {
+      if (publicSubnetIds.length > 0 || privateSubnetIds.length > 0) {
+        // Enterprise mode: explicit subnet IDs provided
+        // Import VPC without subnet lookup to avoid tag dependency
+        vpc = ec2.Vpc.fromVpcAttributes(this, "ExistingVpc", {
+          vpcId: vpcId,
+          availabilityZones: ["dummy-az-1", "dummy-az-2"], // Will be overridden by explicit subnets
         });
+
+        // Import explicit subnets
+        if (publicSubnetIds.length > 0) {
+          publicSubnets = publicSubnetIds.map((subnetId: string, index: number) =>
+            ec2.Subnet.fromSubnetId(this, `PublicSubnet${index}`, subnetId.trim())
+          );
+        }
+        if (privateSubnetIds.length > 0) {
+          privateSubnets = privateSubnetIds.map((subnetId: string, index: number) =>
+            ec2.Subnet.fromSubnetId(this, `PrivateSubnet${index}`, subnetId.trim())
+          );
+        }
+      } else {
+        // Standard mode: use VPC lookup with tag-based subnet selection
+        vpc = ec2.Vpc.fromLookup(this, "ExistingVpc", { vpcId });
+      }
+    } else {
+      // Create new VPC
+      vpc = new ec2.Vpc(this, "AgentVpc", {
+        maxAzs: 2,
+        natGateways: 1,
+      });
+    }
+
+    // Helper to get subnet selection - prefers explicit subnets over tag-based
+    const getPrivateSubnetSelection = (): ec2.SubnetSelection => {
+      if (privateSubnets && privateSubnets.length > 0) {
+        return { subnets: privateSubnets };
+      }
+      return { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS };
+    };
+
+    const getPublicSubnetSelection = (): ec2.SubnetSelection => {
+      if (publicSubnets && publicSubnets.length > 0) {
+        return { subnets: publicSubnets };
+      }
+      return { subnetType: ec2.SubnetType.PUBLIC };
+    };
 
     // Create an ECS cluster
     const cluster = new ecs.Cluster(this, "AgentCluster", {
@@ -596,77 +650,96 @@ def handler(event, context):
       ],
     });
 
-    // Create security groups
-    const agentSG = new ec2.SecurityGroup(this, "AgentServiceSG", {
-      vpc,
-      description: "Security group for Agent Service",
-      allowAllOutbound: true,
-    });
+    // ===== SECURITY GROUP CONFIGURATION =====
+    // Supports two modes:
+    // 1. Create new security groups (default)
+    // 2. Use existing security groups (enterprise mode with --alb-security-group-id and --ecs-security-group-id)
+    const albSecurityGroupId = this.node.tryGetContext("albSecurityGroupId");
+    const ecsSecurityGroupId = this.node.tryGetContext("ecsSecurityGroupId");
 
-    const uiSG = new ec2.SecurityGroup(this, "UIServiceSG", {
-      vpc,
-      description: "Security group for UI Service",
-      allowAllOutbound: true,
-    });
+    let lbSG: ec2.ISecurityGroup;
+    let agentSG: ec2.ISecurityGroup;
+    let uiSG: ec2.ISecurityGroup;
 
-    // Create security group for Load Balancer
-    const lbSG = new ec2.SecurityGroup(this, "LoadBalancerSG", {
-      vpc,
-      description: "Security group for Application Load Balancer",
-      allowAllOutbound: true,
-    });
+    if (albSecurityGroupId && ecsSecurityGroupId) {
+      // Enterprise mode: use existing security groups
+      // Note: When using existing SGs, the user is responsible for configuring ingress/egress rules
+      lbSG = ec2.SecurityGroup.fromSecurityGroupId(this, "ExistingLoadBalancerSG", albSecurityGroupId);
+      agentSG = ec2.SecurityGroup.fromSecurityGroupId(this, "ExistingAgentServiceSG", ecsSecurityGroupId);
+      uiSG = ec2.SecurityGroup.fromSecurityGroupId(this, "ExistingUIServiceSG", ecsSecurityGroupId);
+    } else {
+      // Create new security groups
+      agentSG = new ec2.SecurityGroup(this, "AgentServiceSG", {
+        vpc,
+        description: "Security group for Agent Service",
+        allowAllOutbound: true,
+      });
 
-    // Allow HTTP traffic to load balancer from CloudFront only
-    // CloudFront origin-facing IP ranges by region using CDK Mapping
-    const cloudFrontPrefixMapping = new CfnMapping(this, "CloudFrontPrefixMapping", {
-      mapping: {
-        "us-east-1": {
-          PrefixListId: "pl-3b927c52",
+      uiSG = new ec2.SecurityGroup(this, "UIServiceSG", {
+        vpc,
+        description: "Security group for UI Service",
+        allowAllOutbound: true,
+      });
+
+      lbSG = new ec2.SecurityGroup(this, "LoadBalancerSG", {
+        vpc,
+        description: "Security group for Application Load Balancer",
+        allowAllOutbound: true,
+      });
+
+      // Allow HTTP traffic to load balancer from CloudFront only
+      // CloudFront origin-facing IP ranges by region using CDK Mapping
+      const cloudFrontPrefixMapping = new CfnMapping(this, "CloudFrontPrefixMapping", {
+        mapping: {
+          "us-east-1": {
+            PrefixListId: "pl-3b927c52",
+          },
+          "us-east-2": {
+            PrefixListId: "pl-b6a144df",
+          },
+          "us-west-2": {
+            PrefixListId: "pl-82a045eb",
+          },
+          "eu-central-1": {
+            PrefixListId: "pl-a3a144ca",
+          },
+          "ap-southeast-2": {
+            PrefixListId: "pl-b8a742d1",
+          },
         },
-        "us-east-2": {
-          PrefixListId: "pl-b6a144df",
-        },
-        "us-west-2": {
-          PrefixListId: "pl-82a045eb",
-        },
-        "eu-central-1": {
-          PrefixListId: "pl-a3a144ca",
-        },
-        "ap-southeast-2": {
-          PrefixListId: "pl-b8a742d1",
-        },
-      },
-    });
+      });
 
-    const cloudFrontPrefixList = cloudFrontPrefixMapping.findInMap(Fn.ref("AWS::Region"), "PrefixListId");
+      const cloudFrontPrefixList = cloudFrontPrefixMapping.findInMap(Fn.ref("AWS::Region"), "PrefixListId");
 
-    lbSG.addIngressRule(
-      ec2.Peer.prefixList(cloudFrontPrefixList),
-      ec2.Port.tcp(80),
-      "Allow HTTP traffic from CloudFront only",
-    );
+      (lbSG as ec2.SecurityGroup).addIngressRule(
+        ec2.Peer.prefixList(cloudFrontPrefixList),
+        ec2.Port.tcp(80),
+        "Allow HTTP traffic from CloudFront only",
+      );
 
-    // Allow load balancer to communicate with services
-    agentSG.addIngressRule(lbSG, ec2.Port.tcp(8000), "Allow load balancer to agent service");
-    uiSG.addIngressRule(lbSG, ec2.Port.tcp(5000), "Allow load balancer to UI service");
+      // Allow load balancer to communicate with services
+      (agentSG as ec2.SecurityGroup).addIngressRule(lbSG, ec2.Port.tcp(8000), "Allow load balancer to agent service");
+      (uiSG as ec2.SecurityGroup).addIngressRule(lbSG, ec2.Port.tcp(5000), "Allow load balancer to UI service");
 
-    // Allow UI to communicate with Agent service
-    agentSG.addIngressRule(uiSG, ec2.Port.tcp(8000), "Allow UI to access Agent service");
+      // Allow UI to communicate with Agent service
+      (agentSG as ec2.SecurityGroup).addIngressRule(uiSG, ec2.Port.tcp(8000), "Allow UI to access Agent service");
+    }
 
     // Automatically add Neptune access if Neptune security group ID is provided
+    // Only add rules if we created the security groups (not using existing ones)
     const neptuneSgId = this.node.tryGetContext("neptuneSgId");
-    if (neptuneSgId) {
+    if (neptuneSgId && !ecsSecurityGroupId) {
       const neptuneSG = ec2.SecurityGroup.fromSecurityGroupId(this, "NeptuneSG", neptuneSgId);
       neptuneSG.addIngressRule(agentSG, ec2.Port.tcp(8182), "Allow agent service to Neptune");
     }
 
-    // Create services
+    // Create services with appropriate subnet selection
     const agentService = new ecs.FargateService(this, "AgentService", {
       cluster,
       taskDefinition: agentTaskDefinition,
       desiredCount: 2,
       assignPublicIp: false,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpcSubnets: getPrivateSubnetSelection(),
       securityGroups: [agentSG],
       serviceName: "agent-service",
       circuitBreaker: { rollback: true },
@@ -680,7 +753,7 @@ def handler(event, context):
       taskDefinition: uiTaskDefinition,
       desiredCount: 1,
       assignPublicIp: false,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpcSubnets: getPrivateSubnetSelection(),
       securityGroups: [uiSG],
       serviceName: "ui-service",
       circuitBreaker: { rollback: true },
@@ -689,12 +762,13 @@ def handler(event, context):
       healthCheckGracePeriod: Duration.seconds(60),
     });
 
-    // Create Application Load Balancer
+    // Create Application Load Balancer with appropriate subnet selection
     const lb = new elbv2.ApplicationLoadBalancer(this, "LoadBalancer", {
       vpc,
       internetFacing: true,
-      idleTimeout: Duration.seconds(300), // 5 minutes
+      idleTimeout: Duration.seconds(300),
       securityGroup: lbSG,
+      vpcSubnets: getPublicSubnetSelection(),
     });
 
     // Create listener with open=false to prevent automatic 0.0.0.0/0 rule

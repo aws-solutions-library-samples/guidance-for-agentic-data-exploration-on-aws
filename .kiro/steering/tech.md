@@ -79,17 +79,31 @@ npx cdk bootstrap
 
 ### Deployment
 ```bash
-# Deploy to AWS
-./dev-tools/deploy.sh
+# Deploy to AWS (basic)
+./dev-tools/deploy.sh --region us-east-1
+
+# Deploy with specific AWS profile
+./dev-tools/deploy.sh --profile my-profile --region us-east-1
 
 # Deploy with Neptune graph database
-./dev-tools/deploy.sh --with-graph-db
+./dev-tools/deploy.sh --region us-east-1 --with-graph-db
 
 # Deploy with existing VPC
-./dev-tools/deploy.sh --vpc-id vpc-123
+./dev-tools/deploy.sh --region us-east-1 --vpc-id vpc-123
+
+# Enterprise deployment with bring-your-own networking
+./dev-tools/deploy.sh --profile prod --region us-east-1 \
+  --vpc-id vpc-123 \
+  --public-subnet-ids subnet-pub1,subnet-pub2 \
+  --private-subnet-ids subnet-priv1,subnet-priv2 \
+  --alb-security-group-id sg-alb \
+  --ecs-security-group-id sg-ecs
+
+# Dry-run to validate without deploying
+./dev-tools/deploy.sh --dry-run --region us-east-1
 
 # CloudShell deployment
-./scripts/cloudshell-deploy.sh
+./scripts/cloudshell-deploy.sh --region us-east-1
 ```
 
 ### Container Operations
